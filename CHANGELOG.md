@@ -25,7 +25,7 @@
 ### General
 
 * Trimmed the release branches by removing the `misc` folder
-  * Dockerfiles are now only available in the `main` and `dev` branches
+    * Dockerfiles are now only available in the `main` and `dev` branches
 * Removed more deprecated content
 
 ## Release 2026-09-12
