@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Propel\Bundle\PropelBundle\DependencyInjection\PropelExtension;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -64,6 +65,31 @@ class PropelExtensionTest extends TestCase
 
         foreach ($resources as $resource) {
             $loader->load("yaml/$resource");
+        }
+
+        $this->assertTrue($container->hasDefinition('propel.schema_locator'));
+        $this->assertTrue($container->hasDefinition('propel.schema_converter'));
+        $this->assertTrue($container->hasDefinition('propel.converter.propel.orm'));
+        $this->assertTrue($container->hasDefinition('propel.security.user.provider'));
+        $this->assertTrue($container->hasDefinition('propel_bundle_propel.command.build_command'));
+        $this->assertTrue($container->hasDefinition('propel_bundle_propel.command.schema_convert_command'));
+    }
+
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testPhpServices(): void
+    {
+        $container = new ContainerBuilder(new ParameterBag([
+            'kernel.project_dir' => dirname(__DIR__, 2),
+            'propel.configuration' => [],
+        ]));
+        $loader = new PhpFileLoader($container, new FileLocator(dirname(__DIR__, 2) . '/Resources/config'));
+        $resources = ['propel.php', 'converters.php', 'security.php', 'console.php', 'services.php'];
+
+        foreach ($resources as $resource) {
+            $loader->load("php/$resource");
         }
 
         $this->assertTrue($container->hasDefinition('propel.schema_locator'));

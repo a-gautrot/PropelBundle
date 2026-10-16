@@ -79,7 +79,8 @@ Nightly release:
   Symfony **6.2**. If you are still using it, you must convert them
   to [Symfony Attributes](https://symfony.com/doc/6.4/reference/attributes.html).
 * XmlFileLoader has been [deprecated](https://symfony.com/blog/new-in-symfony-7-4-deprecated-xml-configuration) since
-  Symfony **7.4**. If you are using XML schemas, you must convert them to YAML schemas.
+  Symfony **7.4**. Use YAML or PHP for Symfony service configuration. This deprecation does not apply to Propel XML
+  schemas or PHPUnit's XML configuration, however it is recommended to migrate to either formats for consistency.
 
 ## New to version 7.1
 
@@ -95,7 +96,7 @@ Nightly release:
     * Removed deprecated content introduced in PHP 8.4 and 8.5
 * Updated `propel/propel` minimum version to its official stable release (2.0.0) for `7.1` and `6.1` and last beta
   release (2.0.0-beta4) for `5.2`
-* Added support for YAML format (schemas, services)
+* Added support for YAML and PHP formats (schemas, services)
     * XmlFileLoader has been deprecated since Symfony 7.4
     * YAML schemas are backports of Propel 1.x's YAML schemas
 

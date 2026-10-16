@@ -8,7 +8,7 @@
         <defaults autowire="true" autoconfigure="true" public="false" />
 
         <prototype namespace="Propel\Bundle\PropelBundle\" resource="../../../*">
-            <exclude>../../../{Console,Propel,Model,Migrations,Tests,Helpers,DependencyInjection,Form,Listener,Validator,Resources/skeleton,Twig/Extension/SyntaxExtension.php,DataCollector,AppBundle.php,vendor}</exclude>
+            <exclude>../../../{Console,Propel,Model,Migrations,Tests,Helpers,DependencyInjection,Form,Listener,Validator,Resources/config,Resources/skeleton,Twig/Extension/SyntaxExtension.php,DataCollector,AppBundle.php,vendor}</exclude>
         </prototype>
 
         <service id="Symfony\Component\DependencyInjection\ContainerInterface" alias="service_container" />

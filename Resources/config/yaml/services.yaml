@@ -6,5 +6,5 @@ services:
     public: false
   Propel\Bundle\PropelBundle\:
     resource: '../../../*'
-    exclude: '../../../{Console,Propel,Model,Migrations,Tests,Helpers,DependencyInjection,Form,Listener,Validator,Resources/skeleton,Twig/Extension/SyntaxExtension.php,DataCollector,AppBundle.php,vendor}'
+    exclude: '../../../{Console,Propel,Model,Migrations,Tests,Helpers,DependencyInjection,Form,Listener,Validator,Resources/config,Resources/skeleton,Twig/Extension/SyntaxExtension.php,DataCollector,AppBundle.php,vendor}'
   Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'

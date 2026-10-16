@@ -16,6 +16,7 @@ use Symfony\Bundle\WebProfilerBundle\DependencyInjection\WebProfilerExtension;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\Kernel;
@@ -66,8 +67,14 @@ class PropelExtension extends Extension
                 foreach ($resources as $resource) {
                     $loader->load("yaml/$resource.yaml");
                 }
+            } elseif ($this->hasResources("$configDir/php", $resources, 'php')) {
+                $loader = new PhpFileLoader($container, $locator);
+
+                foreach ($resources as $resource) {
+                    $loader->load("php/$resource.php");
+                }
             } elseif (Kernel::VERSION_ID < 80000) {
-                // Load XML service files if it's Symfony 7.4 and earlier, and there are no YAML service files available
+                // Legacy fallback when neither YAML nor PHP service files are available
                 $loader = new XmlFileLoader($container, $locator);
 
                 foreach ($resources as $resource) {
@@ -97,12 +104,13 @@ class PropelExtension extends Extension
     /**
      * @param string $directory The services path
      * @param array $resources The service to load
+     * @param string $extension The configuration file extension
      * @return bool
      */
-    private function hasResources(string $directory, array $resources): bool
+    private function hasResources(string $directory, array $resources, string $extension = 'yaml'): bool
     {
         foreach ($resources as $resource) {
-            if (!is_file("$directory/$resource.yaml")) {
+            if (!is_file("$directory/$resource.$extension")) {
                 return false;
             }
         }
