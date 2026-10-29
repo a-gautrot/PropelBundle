@@ -76,7 +76,7 @@
     "symfony/twig-bridge": "^5.4.31",
     "symfony/web-profiler-bundle": "^5.4",
     "twig/twig": "<=3.19||^3.26",
-    "vimeo/psalm": ">=5"
+    "vimeo/psalm": "@stable"
   },
   "config": {
     "allow-plugins": {

@@ -75,6 +75,27 @@ Nightly release:
 * Sensio Framework Extra Bundle, has been deprecated since Symfony **6.2**. If you are still using it, you must convert
   them to [Symfony Attributes](https://symfony.com/doc/6.4/reference/attributes.html).
 
+### Migrating from Sensio ParamConverter
+
+The deprecated Sensio `PropelParamConverter`, its `propel` converter name and existing `@ParamConverter` annotations
+remain supported in 5.2. The native Symfony`PropelValueResolver` is registered alongside it, so controllers can be
+migrated progressively. Values already converted by Sensio, including optional `null` values, are reused by Symfony.
+
+To use the native resolver for controllers without explicit `@ParamConverter` annotations, disable Sensio's automatic
+conversion while keeping its explicit converters enabled:
+
+```yaml
+sensio_framework_extra:
+  request:
+    converters: true
+    auto_convert: false
+```
+
+Keep existing annotations until each controller is migrated. For native resolution, type-hint the Propel model argument
+and move its conversion options (`mapping`, `exclude`, `with`, `query_method`) into the route's
+`defaults.propel_converter.<argument>` configuration. This migration works with Symfony 5.4 and PHP 7.4 without
+requiring PHP attributes.
+
 ## New to version 5.2
 
 * Removed support for Symfony 5.0 to 5.3
@@ -84,6 +105,15 @@ Nightly release:
 * Updated `propel/propel` minimum version to latest beta release (2.0.0-beta4)
 
 You can also read the changelogs [here](CHANGELOG.md).
+
+## Development dependencies
+
+Psalm is installed through `vimeo/psalm` and runs with `composer psalm`.
+On PHP 8.4/8.5, install development dependencies with `composer update --ignore-platform-req=php+`.
+This keeps PHP minimum versions and extension checks, but bypasses PHP upper bounds because
+Psalm releases compatible with Symfony 5.4 do not declare support for PHP 8.5.
+This allows testing the bundle on these runtimes; it does not extend Psalm's declared runtime support.
+Use PHP 7.4–8.3 to run Psalm within its declared PHP compatibility range.
 
 ## And more...
 

@@ -38,7 +38,6 @@ before_install:
   - composer global require --no-progress --no-scripts --no-plugins symfony/flex
 
 install:
-  # Psalm 5 supports PHP <= 8.3; retain bundle tests on newer runtimes.
   - if php -r 'exit(PHP_VERSION_ID >= 80400 ? 0 : 1);'; then export COMPOSER_IGNORE_PLATFORM_REQ=php+; fi
   - composer update --no-interaction --prefer-dist --no-progress --prefer-stable
 

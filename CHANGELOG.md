@@ -46,3 +46,4 @@
     * Updated `composer.json`
     * Optimized the lib with gitattributes
 * Added deprecation warnings for XML schemas
+* Added a way to migrate from Sensio to Symfony

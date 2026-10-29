@@ -7,6 +7,7 @@ use LogicException;
 use Propel\Bundle\PropelBundle\Util\PropelInflector;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
+use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use ReflectionClass;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
@@ -25,7 +26,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  * @author     Jérémie Augustin <jeremie.augustin@pixel-cookers.com>
  * @deprecated since Symfony 6.2, following the deprecation of SensioFrameworkExtraBundle.
- *             When upgrading to Symfony 6.4 or later, use the controller value resolver in PropelBundle 6.1 or later.
+ *             Use Propel\Bundle\PropelBundle\Request\ArgumentResolver\PropelValueResolver for new controllers.
  */
 class PropelParamConverter implements ParamConverterInterface
 {
@@ -33,7 +34,7 @@ class PropelParamConverter implements ParamConverterInterface
      * the pk column (e.g. id)
      * @var string
      */
-    protected string $pk;
+    protected string $pk = 'id';
 
     /**
      * list of column/value to use with filterBy
@@ -79,6 +80,8 @@ class PropelParamConverter implements ParamConverterInterface
         $class = $configuration->getClass();
         $classQuery = $class . 'Query';
         $classTableMap = $class::TABLE_MAP;
+        $this->pk = 'id';
+        $this->hasWith = false;
         $this->filters = [];
         $this->exclude = [];
 
@@ -156,6 +159,9 @@ class PropelParamConverter implements ParamConverterInterface
         }
 
         $request->attributes->set($configuration->getName(), $object);
+        $converted = $request->attributes->get('_propel_converted', []);
+        $converted[$configuration->getName()] = true;
+        $request->attributes->set('_propel_converted', $converted);
 
         return true;
     }
@@ -223,7 +229,7 @@ class PropelParamConverter implements ParamConverterInterface
      * @param string $classQuery the query class
      * @param Request $request
      *
-     * @return mixed
+     * @return ActiveRecordInterface|false|null
      *
      * @throws Exception
      */
@@ -248,7 +254,7 @@ class PropelParamConverter implements ParamConverterInterface
      * @param string $classQuery the query class
      * @param Request $request
      *
-     * @return mixed
+     * @return ActiveRecordInterface|false|null
      *
      * @throws Exception
      */

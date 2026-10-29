@@ -23,7 +23,6 @@ jobs:
   sqlite:
     name: "Test Suite (SQLite, ${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})"
     runs-on: ${{ matrix.platform.runner }}
-    # Psalm 5 supports PHP <= 8.3; retain bundle tests on newer runtimes.
     env:
       COMPOSER_IGNORE_PLATFORM_REQ: ${{ (matrix.php-version == '8.4' || matrix.php-version == '8.5') && 'php+' || '' }}
     strategy:
