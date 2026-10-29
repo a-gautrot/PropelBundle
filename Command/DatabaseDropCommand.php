@@ -10,16 +10,15 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Propel\Runtime\Connection\ConnectionManagerSingle;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ServiceContainer\StandardServiceContainer;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Propel\Runtime\Connection\ConnectionManagerSingle;
 
 /**
- * DatabaseDropCommand class.
+ * # DatabaseDropCommand
  * Useful to drop a database.
  *
  * @author William DURAND
@@ -27,7 +26,7 @@ use Propel\Runtime\Connection\ConnectionManagerSingle;
 class DatabaseDropCommand extends AbstractCommand
 {
     /**
-     * {@inheritdoc}
+     * @return void
      */
     protected function configure(): void
     {
@@ -44,14 +43,14 @@ The <info>--connection</info> parameter allows you to change the connection to u
 The default connection is the active connection (propel.dbal.default_connection).
 EOT
             )
-
-            ->addOption('connection',   null, InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('force',        null, InputOption::VALUE_NONE, 'Set this parameter to execute this action.')
-        ;
+            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
+            ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action.');
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -61,10 +60,10 @@ EOT
             return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
         }
 
-        if ('prod' === $this->getKernel()->getEnvironment()) {
+        if ($this->getKernel()->getEnvironment() === 'prod') {
             $this->writeSection($output, 'WARNING: you are about to drop a database in production !', 'bg=red;fg=white');
 
-            if (false === $this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', false)) {
+            if ($this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', false) === false) {
                 $output->writeln('Aborted, nice decision !');
 
                 // s 5.1 expect integer to be returned
@@ -74,15 +73,15 @@ EOT
 
         $connectionName = $input->getOption('connection') ?: $this->getDefaultConnection();
         $config = $this->getConnectionData($connectionName);
-        $connection = Propel::getConnection($connectionName);
+//        $connection = Propel::getConnection($connectionName);
         $dbName = $this->parseDbName($config['dsn']);
 
-        if (null === $dbName) {
+        if ($dbName === null) {
             $output->writeln('<error>No database name found.</error>');
 
             return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
         } else {
-            $query  = 'DROP DATABASE '. $dbName .';';
+            $query = 'DROP DATABASE ' . $dbName . ';';
         }
 
 
@@ -110,7 +109,7 @@ EOT
      *
      * @see https://github.com/doctrine/doctrine1/blob/master/lib/Doctrine/Connection.php#L1491
      *
-     * @param  array<string, mixed> $config A Propel connection configuration.
+     * @param array<string, mixed> $config A Propel connection configuration.
      * @return array<string, mixed>
      */
     private function getTemporaryConfiguration(array $config): array
@@ -118,7 +117,7 @@ EOT
         $dbName = $this->parseDbName($config['dsn']);
 
         $config['dsn'] = preg_replace(
-            '#;?(dbname|Database)='.$dbName.'#',
+            '#;?(dbname|Database)=' . $dbName . '#',
             '',
             $config['dsn']
         );

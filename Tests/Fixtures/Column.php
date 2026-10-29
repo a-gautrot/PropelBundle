@@ -46,6 +46,11 @@ class Column
         return $this->type;
     }
 
+    public function getValueSet(): array
+    {
+        return [];
+    }
+
     /**
      * @return int
      */

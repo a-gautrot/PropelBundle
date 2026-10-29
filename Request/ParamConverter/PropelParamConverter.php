@@ -2,16 +2,19 @@
 
 namespace Propel\Bundle\PropelBundle\Request\ParamConverter;
 
+use Exception;
+use LogicException;
 use Propel\Bundle\PropelBundle\Util\PropelInflector;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
+use ReflectionClass;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * PropelParamConverter
+ * # PropelParamConverter
  *
  * This convert action parameter to a Propel Object
  * there is two option for this converter:
@@ -21,7 +24,8 @@ use Symfony\Component\HttpFoundation\Request;
  *
  *
  * @author     Jérémie Augustin <jeremie.augustin@pixel-cookers.com>
- * @deprecated SensioFrameworkExtraBundle is deprecated as of Symfony 6.2. It will be updated to use Symfony Attributes
+ * @deprecated since Symfony 6.2, following the deprecation of SensioFrameworkExtraBundle.
+ *             When upgrading to Symfony 6.4 or later, use the controller value resolver in PropelBundle 6.1 or later.
  */
 class PropelParamConverter implements ParamConverterInterface
 {
@@ -29,19 +33,19 @@ class PropelParamConverter implements ParamConverterInterface
      * the pk column (e.g. id)
      * @var string
      */
-    protected $pk;
+    protected string $pk;
 
     /**
      * list of column/value to use with filterBy
      * @var array<string, string>
      */
-    protected array $filters = array();
+    protected array $filters = [];
 
     /**
      * list of route parameters to exclude from the conversion process
      * @var string[]
      */
-    protected array $exclude = array();
+    protected array $exclude = [];
 
     /**
      * list of with option use to hydrate related object
@@ -51,35 +55,35 @@ class PropelParamConverter implements ParamConverterInterface
 
     /**
      * name of method use to call a query method
-     * @var string
+     * @var string|null
      */
-    protected $queryMethod;
+    protected ?string $queryMethod = null;
 
     /**
      * @var bool
      */
-    protected $hasWith = false;
+    protected bool $hasWith = false;
 
     /**
-     * @param Request        $request
+     * @param Request $request
      * @param ParamConverter $configuration
      *
      * @return bool
      *
-     * @throws \LogicException
+     * @throws LogicException
      * @throws NotFoundHttpException
-     * @throws \Exception
+     * @throws Exception
      */
     public function apply(Request $request, ParamConverter $configuration): bool
     {
         $class = $configuration->getClass();
         $classQuery = $class . 'Query';
         $classTableMap = $class::TABLE_MAP;
-        $this->filters = array();
-        $this->exclude = array();
+        $this->filters = [];
+        $this->exclude = [];
 
         if (!class_exists($classQuery)) {
-            throw new \Exception(sprintf('The %s Query class does not exist', $classQuery));
+            throw new Exception(sprintf('The %s Query class does not exist', $classQuery));
         }
 
         $tableMap = new $classTableMap();
@@ -111,7 +115,7 @@ class PropelParamConverter implements ParamConverterInterface
                 }
             }
         } else {
-            $this->exclude = isset($options['exclude']) ? $options['exclude'] : array();
+            $this->exclude = isset($options['exclude']) ? $options['exclude'] : [];
             $this->filters = $request->attributes->all();
         }
 
@@ -119,31 +123,35 @@ class PropelParamConverter implements ParamConverterInterface
             unset($this->filters[$configuration->getName()]);
         }
 
-        $this->withs = isset($options['with']) ? is_array($options['with']) ? $options['with'] : array($options['with']) : array();
+        if (isset($options['with'])) {
+            $this->withs = is_array($options['with']) ? $options['with'] : [$options['with']];
+        } else {
+            $this->withs = [];
+        }
 
-        $this->queryMethod = $queryMethod = isset($options['query_method']) ? $options['query_method'] : null;
+        $this->queryMethod = $queryMethod = $options['query_method'] ?? null;
 
-        if (null !== $this->queryMethod && method_exists($classQuery, $this->queryMethod)) {
+        if ($this->queryMethod !== null && method_exists($classQuery, $this->queryMethod)) {
             // find by custom method
             $query = $this->getQuery($classQuery);
             // execute a custom query
             $object = $query->$queryMethod($request->attributes);
         } else {
             // find by Pk
-            if (false === $object = $this->findPk($classQuery, $request)) {
+            if (($object = $this->findPk($classQuery, $request)) === false) {
                 // find by criteria
-                if (false === $object = $this->findOneBy($classQuery, $request)) {
+                if (($object = $this->findOneBy($classQuery, $request)) === false) {
                     if ($configuration->isOptional()) {
                         //we find nothing but the object is optional
                         $object = null;
                     } else {
-                        throw new \LogicException('Unable to guess how to get a Propel object from the request information.');
+                        throw new LogicException('Unable to guess how to get a Propel object from the request information.');
                     }
                 }
             }
         }
 
-        if (null === $object && false === $configuration->isOptional()) {
+        if ($object === null && $configuration->isOptional() === false) {
             throw new NotFoundHttpException(sprintf('%s object not found.', $configuration->getClass()));
         }
 
@@ -153,39 +161,71 @@ class PropelParamConverter implements ParamConverterInterface
     }
 
     /**
-     * @param ParamConverter $configuration
+     * Init the query class with optional joinWith
      *
-     * @return bool
+     * @param string $classQuery
+     *
+     * @return ModelCriteria
+     *
+     * @throws Exception
      */
-    public function supports(ParamConverter $configuration): bool
+    protected function getQuery(string $classQuery): ModelCriteria
     {
-        $classname = $configuration->getClass();
-        if (!$classname) {
-            return false;
+        $query = $classQuery::create();
+
+        foreach ($this->withs as $with) {
+            if (is_array($with)) {
+                if (count($with) == 2) {
+                    $query->joinWith($with[0], $this->getValidJoin($with));
+                    $this->hasWith = true;
+                } else {
+                    throw new Exception(sprintf('ParamConverter : "with" parameter "%s" is invalid,
+                            only string relation name (e.g. "Book") or an array with two keys (e.g. {"Book", "LEFT_JOIN"}) are allowed',
+                        var_export($with, true)));
+                }
+            } else {
+                $query->joinWith($with);
+                $this->hasWith = true;
+            }
         }
 
-        if (!class_exists($classname)) {
-            return false;
-        }
+        return $query;
+    }
 
-        // Propel Class?
-        $class = new \ReflectionClass($classname);
-        if ($class->implementsInterface('\Propel\Runtime\ActiveRecord\ActiveRecordInterface')) {
-            return true;
+    /**
+     * Return the valid join Criteria base on the with parameter
+     *
+     * @param string[] $with
+     *
+     * @return string
+     *
+     * @throws Exception
+     */
+    protected function getValidJoin(array $with): string
+    {
+        switch (trim(str_replace(['_', 'JOIN'], '', strtoupper($with[1])))) {
+            case 'LEFT':
+                return Criteria::LEFT_JOIN;
+            case 'RIGHT':
+                return Criteria::RIGHT_JOIN;
+            case 'INNER':
+                return Criteria::INNER_JOIN;
+            default:
+                throw new Exception(sprintf('ParamConverter : "with" parameter "%s" is invalid,
+                only "left", "right" or "inner" are allowed for join option',
+                    var_export($with, true)));
         }
-
-        return false;
     }
 
     /**
      * Try to find the object with the id
      *
-     * @param string  $classQuery the query class
+     * @param string $classQuery the query class
      * @param Request $request
      *
      * @return mixed
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected function findPk(string $classQuery, Request $request)
     {
@@ -205,12 +245,12 @@ class PropelParamConverter implements ParamConverterInterface
     /**
      * Try to find the object with all params from the $request
      *
-     * @param string  $classQuery the query class
+     * @param string $classQuery the query class
      * @param Request $request
      *
      * @return mixed
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected function findOneBy($classQuery, Request $request)
     {
@@ -221,7 +261,8 @@ class PropelParamConverter implements ParamConverterInterface
                 try {
                     $query->{'filterBy' . PropelInflector::camelize($column)}($value);
                     $hasCriteria = true;
-                } catch (\Exception $e) { }
+                } catch (Exception $e) {
+                }
             }
         }
 
@@ -237,59 +278,27 @@ class PropelParamConverter implements ParamConverterInterface
     }
 
     /**
-     * Init the query class with optional joinWith
+     * @param ParamConverter $configuration
      *
-     * @param string $classQuery
-     *
-     * @return ModelCriteria
-     *
-     * @throws \Exception
+     * @return bool
      */
-    protected function getQuery(string $classQuery): ModelCriteria
+    public function supports(ParamConverter $configuration): bool
     {
-        $query = $classQuery::create();
-
-        foreach ($this->withs as $with) {
-            if (is_array($with)) {
-                if (2 == count($with)) {
-                    $query->joinWith($with[0], $this->getValidJoin($with));
-                    $this->hasWith = true;
-                } else {
-                    throw new \Exception(sprintf('ParamConverter : "with" parameter "%s" is invalid,
-                            only string relation name (e.g. "Book") or an array with two keys (e.g. {"Book", "LEFT_JOIN"}) are allowed',
-                            var_export($with, true)));
-                }
-            } else {
-                $query->joinWith($with);
-                $this->hasWith = true;
-            }
+        $classname = $configuration->getClass();
+        if (!$classname) {
+            return false;
         }
 
-        return $query;
-    }
-
-    /**
-     * Return the valid join Criteria base on the with parameter
-     *
-     * @param string[] $with
-     *
-     * @return string
-     *
-     * @throws \Exception
-     */
-    protected function getValidJoin(array $with): string
-    {
-        switch (trim(str_replace(array('_', 'JOIN'), '', strtoupper($with[1])))) {
-            case 'LEFT':
-                return Criteria::LEFT_JOIN;
-            case 'RIGHT':
-                return Criteria::RIGHT_JOIN;
-            case 'INNER':
-                return Criteria::INNER_JOIN;
+        if (!class_exists($classname)) {
+            return false;
         }
 
-        throw new \Exception(sprintf('ParamConverter : "with" parameter "%s" is invalid,
-                only "left", "right" or "inner" are allowed for join option',
-                var_export($with, true)));
+        // Propel Class?
+        $class = new ReflectionClass($classname);
+        if ($class->implementsInterface('\Propel\Runtime\ActiveRecord\ActiveRecordInterface')) {
+            return true;
+        }
+
+        return false;
     }
 }

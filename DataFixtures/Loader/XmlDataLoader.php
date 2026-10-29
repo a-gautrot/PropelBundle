@@ -10,7 +10,10 @@
 
 namespace Propel\Bundle\PropelBundle\DataFixtures\Loader;
 
+use SimpleXMLElement;
+
 /**
+ * # XmlDataLoader
  * XML fixtures loader.
  *
  * @author William Durand <william.durand1@gmail.com>
@@ -18,7 +21,8 @@ namespace Propel\Bundle\PropelBundle\DataFixtures\Loader;
 class XmlDataLoader extends AbstractDataLoader
 {
     /**
-     * {@inheritdoc}
+     * @param string $file
+     * @return string[][][]
      */
     protected function transformDataToArray(string $file): array
     {
@@ -28,29 +32,29 @@ class XmlDataLoader extends AbstractDataLoader
     }
 
     /**
-     * @param  \SimpleXMLElement|false $xml
+     * @param SimpleXMLElement|false $xml
      * @return array<string, array<string, array<string, string>>>
      */
     protected function simpleXmlToArray($xml): array
     {
-        $array = array();
-        if ($xml instanceof \SimpleXMLElement) {
+        $array = [];
+        if ($xml instanceof SimpleXMLElement) {
             foreach ($xml as $key => $value) {
                 // First make a valid key which is the Ns (Namespace) attribute
                 // + the element name (the class name)
                 foreach ($value->attributes() as $subkey => $subvalue) {
-                    if ('Namespace' === (string) $subkey) {
+                    if ((string) $subkey === 'Namespace') {
                         $key = $subvalue . '\\' . $key;
                         break;
                     }
                 }
 
-                $array[$key] = array();
+                $array[$key] = [];
                 foreach ($value as $elementKey => $elementValue) {
-                    $array[$key][$elementKey] = array();
+                    $array[$key][$elementKey] = [];
 
                     foreach ($elementValue->attributes() as $subkey => $subvalue) {
-                        $array[$key][$elementKey][$subkey] = (string) $subvalue;
+                        $array[$key][$elementKey][$subkey] = (string)$subvalue;
                     }
                 }
             }

@@ -18,43 +18,20 @@ class User extends BaseUser implements UserInterface
     }
 
     /**
-     * @return void
+     * @return array
      */
-    public function getRoles(): void
+    public function getRoles(): array
     {
         // TODO: Implement getRoles() method.
+        return [];
     }
 
     /**
-     * @return void
+     * @return string
      */
-    public function getUserIdentifier(): void
+    public function getUserIdentifier(): string
     {
         // TODO: Implement getUserIdentifier() method.
-    }
-
-    /**
-     * @return void
-     */
-    public function getPassword(): void
-    {
-        // TODO: Implement getPassword() method.
-    }
-
-    /**
-     * @return void
-     */
-    public function getSalt(): void
-    {
-        // TODO: Implement getSalt() method.
-    }
-
-    /**
-     * @return void
-     * @deprecated since Symfony 5.3, use getUserIdentifier() instead
-     */
-    public function getUsername(): void
-    {
-        // TODO: Implement getUsername() method.
+        return '';
     }
 }

@@ -77,7 +77,7 @@ abstract class BookQuery extends ModelCriteria
             return $criteria;
         }
         $query = new ChildBookQuery();
-        if (null !== $modelAlias) {
+        if ($modelAlias !== null) {
             $query->setModelAlias($modelAlias);
         }
         if ($criteria instanceof Criteria) {
@@ -258,7 +258,7 @@ abstract class BookQuery extends ModelCriteria
             if ($useMinMax) {
                 return $this;
             }
-            if (null === $comparison) {
+            if ($comparison === null) {
                 $comparison = Criteria::IN;
             }
         }
@@ -359,7 +359,7 @@ abstract class BookQuery extends ModelCriteria
             if ($useMinMax) {
                 return $this;
             }
-            if (null === $comparison) {
+            if ($comparison === null) {
                 $comparison = Criteria::IN;
             }
         }

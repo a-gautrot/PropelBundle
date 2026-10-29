@@ -403,17 +403,17 @@ abstract class Book implements ActiveRecordInterface
     {
         try {
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? $startcol : BookTableMap::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->id = (null !== $col) ? (int)$col : null;
+            $col = $row[$indexType == TableMap::TYPE_NUM ? $startcol : BookTableMap::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->id = ($col !== null) ? (int)$col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : BookTableMap::translateFieldName('Name', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->name = (null !== $col) ? (string)$col : null;
+            $col = $row[$indexType == TableMap::TYPE_NUM ? 1 + $startcol : BookTableMap::translateFieldName('Name', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->name = ($col !== null) ? (string)$col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : BookTableMap::translateFieldName('Isbn', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->isbn = (null !== $col) ? (string)$col : null;
+            $col = $row[$indexType == TableMap::TYPE_NUM ? 2 + $startcol : BookTableMap::translateFieldName('Isbn', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->isbn = ($col !== null) ? (string)$col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 3 + $startcol : BookTableMap::translateFieldName('AuthorId', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->author_id = (null !== $col) ? (int)$col : null;
+            $col = $row[$indexType == TableMap::TYPE_NUM ? 3 + $startcol : BookTableMap::translateFieldName('AuthorId', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->author_id = ($col !== null) ? (int)$col : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -437,7 +437,7 @@ abstract class Book implements ActiveRecordInterface
     public function resetModified(?string $col = null): void
     {
         if ($col !== null) {
-            while (false !== ($offset = array_search($col, $this->modifiedColumns))) {
+            while (($offset = array_search($col, $this->modifiedColumns)) !== false) {
                 array_splice($this->modifiedColumns, $offset, 1);
             }
         } else {
@@ -701,7 +701,7 @@ abstract class Book implements ActiveRecordInterface
         $index = 0;
 
         $this->modifiedColumns[] = BookTableMap::ID;
-        if (null !== $this->id) {
+        if ($this->id !== null) {
             throw new PropelException('Cannot insert a value for auto-increment primary key (' . BookTableMap::ID . ')');
         }
 
@@ -787,7 +787,7 @@ abstract class Book implements ActiveRecordInterface
      *
      * @param ConnectionInterface $con
      *
-     * @return Integer Number of updated rows
+     * @return int Number of updated rows
      * @see doSave()
      */
     protected function doUpdate(ConnectionInterface $con): int

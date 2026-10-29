@@ -27,6 +27,7 @@ class ItemQuery
     private array $map = [
         'id' => PropelTypes::INTEGER,
         'value' => PropelTypes::VARCHAR,
+        'code' => PropelTypes::CHAR,
         'price' => PropelTypes::FLOAT,
         'is_active' => PropelTypes::BOOLEAN,
         'enabled' => PropelTypes::BOOLEAN_EMU,

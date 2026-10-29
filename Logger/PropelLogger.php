@@ -12,18 +12,31 @@ namespace Propel\Bundle\PropelBundle\Logger;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
+use Stringable;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\VarDumper\Caster\TraceStub;
 
 /**
+ * # PropelLogger
  * @author Kévin Gomez <contact@kevingomez.fr>
  */
 class PropelLogger implements LoggerInterface
 {
+    /**
+     * @var LoggerInterface|null
+     */
     protected ?LoggerInterface $logger = null;
-    /** @var array<int, array{sql: string, connection: string, time: int|float, memory: int, trace: TraceStub}>  */
-    protected array $queries = array();
+    /**
+     * @var array<int, array{sql: string, connection: string, time: int|float, memory: int, trace: TraceStub}>
+     */
+    protected array $queries = [];
+    /**
+     * @var Stopwatch|null
+     */
     protected ?Stopwatch $stopwatch;
+    /**
+     * @var bool
+     */
     private bool $isPrepared;
 
     use LoggerTrait;
@@ -31,12 +44,12 @@ class PropelLogger implements LoggerInterface
     /**
      * Constructor.
      *
-     * @param LoggerInterface $logger    A LoggerInterface instance
-     * @param Stopwatch       $stopwatch A Stopwatch instance
+     * @param LoggerInterface|null $logger A LoggerInterface instance
+     * @param Stopwatch|null $stopwatch A Stopwatch instance
      */
     public function __construct(?LoggerInterface $logger = null, ?Stopwatch $stopwatch = null)
     {
-        $this->logger    = $logger;
+        $this->logger = $logger;
         $this->stopwatch = $stopwatch;
         $this->isPrepared = false;
     }
@@ -44,24 +57,24 @@ class PropelLogger implements LoggerInterface
     /**
      * Logs with an arbitrary level.
      *
-     * @param  mixed  $level
-     * @param  string $message
-     * @param  array<mixed>  $context
+     * @param mixed $level
+     * @param string|Stringable $message
+     * @param array $context
      */
-    public function log($level, $message, array $context = array()): void
+    public function log($level, $message, array $context = []): void
     {
-        if (null === $this->logger) {
+        if ($this->logger === null) {
             return;
         }
 
         $add = true;
         $trace = debug_backtrace();
 
-        if (null !== $this->stopwatch) {
+        if ($this->stopwatch !== null) {
             $method = $trace[3]['function'];
 
-            $watch = 'Propel Query '.(count($this->queries)+1);
-            if ('prepare' === $method) {
+            $watch = 'Propel Query ' . (count($this->queries) + 1);
+            if ($method === 'prepare') {
                 $this->isPrepared = true;
                 $this->stopwatch->start($watch, 'propel');
 
@@ -76,13 +89,13 @@ class PropelLogger implements LoggerInterface
         if ($add && isset($event) && isset($trace[2]['object'])) {
             $connection = $trace[2]['object'];
 
-            $this->queries[] = array(
-                'sql'           => $message,
-                'connection'    => $connection->getName(),
-                'time'          => $event->getDuration() / 1000,
-                'memory'        => $event->getMemory(),
-                'trace'         => new TraceStub($trace),
-            );
+            $this->queries[] = [
+                'sql' => $message,
+                'connection' => $connection->getName(),
+                'time' => $event->getDuration() / 1000,
+                'memory' => $event->getMemory(),
+                'trace' => new TraceStub($trace),
+            ];
         }
 
         $this->logger->log($level, $message, $context);

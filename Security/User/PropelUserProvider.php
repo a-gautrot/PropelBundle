@@ -17,6 +17,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 /**
+ * # PropelUserProvider
  * Provides easy to use provisioning for Propel model users.
  *
  * @author William DURAND <william.durand1@gmail.com>

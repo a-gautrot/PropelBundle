@@ -10,6 +10,8 @@
 
 namespace Propel\Bundle\PropelBundle\Controller;
 
+use Exception;
+use PDO;
 use Propel\Bundle\PropelBundle\DataCollector\PropelDataCollector;
 use Propel\Runtime\Propel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,6 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 
 /**
+ * # PanelController
  * PanelController is designed to display information in the Propel Panel.
  *
  * @author William DURAND <william.durand1@gmail.com>
@@ -25,16 +28,17 @@ class PanelController extends AbstractController
 {
     /**
      * This method renders the global Propel configuration.
+     * @return Response
      */
     public function configurationAction(): Response
     {
         return $this->render(
             '@Propel/Panel/configuration.html.twig',
-            array(
-                'propel_version'     => Propel::VERSION,
-                'configuration'      => $this->getParameter('propel.configuration'),
-                'logging'            => $this->getParameter('propel.logging'),
-            )
+            [
+                'propel_version' => Propel::VERSION,
+                'configuration' => $this->getParameter('propel.configuration'),
+                'logging' => $this->getParameter('propel.logging'),
+            ]
         );
     }
 
@@ -43,7 +47,7 @@ class PanelController extends AbstractController
      *
      * @param string $token The profiler token
      * @param string $connection The connection name
-     * @param integer $query
+     * @param int $query
      *
      * @param Profiler|null $profiler
      * @return Response A Response instance
@@ -67,18 +71,18 @@ class PanelController extends AbstractController
 
         try {
             $dataFetcher = $con->query('EXPLAIN ' . $queries[$query]['sql']);
-            $results = array();
-            while (($results[] = $dataFetcher->fetch(\PDO::FETCH_ASSOC)));
-        } catch (\Exception $e) {
+            $results = [];
+            while (($results[] = $dataFetcher->fetch(PDO::FETCH_ASSOC))) ;
+        } catch (Exception $e) {
             return new Response('<div class="error">This query cannot be explained.</div>');
         }
 
         return $this->render(
             '@Propel/Panel/explain.html.twig',
-            array(
+            [
                 'data' => $results,
                 'query' => $query,
-            )
+            ]
         );
     }
 }

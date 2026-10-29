@@ -1,5 +1,5 @@
 {
-  "name": "gautrot/propel-bundle",
+  "name": "a-gautrot/propel-bundle",
   "description": "Integration of Propel in Symfony",
   "keywords": [
     "propel",
@@ -37,6 +37,7 @@
   },
   "require": {
     "php": ">=7.4",
+    "ext-simplexml": "*",
     "propel/propel": "~2.0.0-beta4",
     "sensio/framework-extra-bundle": "^6.2",
     "symfony/cache": "^5.4.46",
@@ -60,7 +61,7 @@
     "ext-json": "*",
     "ext-libxml": "*",
     "ext-pdo": "*",
-    "ext-simplexml": "*",
+    "ext-pdo_sqlite": "*",
     "fakerphp/faker": "^1.0",
     "mikey179/vfsstream": "^1.6",
     "phpstan/extension-installer": "^1.4",
@@ -68,12 +69,14 @@
     "phpstan/phpstan-deprecation-rules": "^2.0",
     "phpstan/phpstan-symfony": "^2.0",
     "phpunit/phpunit": ">=9.6.33",
+    "squizlabs/php_codesniffer": "^4.0.1",
     "symfony/form": "^5.4.19",
     "symfony/profiler-pack": "^1.0.4",
     "symfony/stopwatch": "^5.4.19",
     "symfony/twig-bridge": "^5.4.31",
     "symfony/web-profiler-bundle": "^5.4",
-    "twig/twig": "<=3.19||^3.26"
+    "twig/twig": "<=3.19||^3.26",
+    "vimeo/psalm": ">=5"
   },
   "config": {
     "allow-plugins": {
@@ -90,5 +93,10 @@
   "extra": {
   },
   "scripts": {
+    "test": "@php Tests/run.php",
+    "test:coverage": "@test --coverage-clover Tests/coverage.xml --log-junit Tests/junit.xml",
+    "phpstan": "vendor/bin/phpstan analyse -c phpstan.dist.neon",
+    "psalm": "@php vendor/vimeo/psalm/psalm --config=psalm.dist.xml",
+    "phpcs": "phpcs --standard=phpcs.dist.xml"
   }
 }

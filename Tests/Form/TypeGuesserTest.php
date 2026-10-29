@@ -52,6 +52,7 @@ class TypeGuesserTest extends TestCase
             ['enabled', CheckboxType::class, Guess::HIGH_CONFIDENCE],
             ['id', IntegerType::class, Guess::MEDIUM_CONFIDENCE],
             ['value', TextType::class, Guess::MEDIUM_CONFIDENCE],
+            ['code', TextType::class, Guess::MEDIUM_CONFIDENCE],
             ['price', NumberType::class, Guess::MEDIUM_CONFIDENCE],
             ['updated_at', DateTimeType::class, Guess::HIGH_CONFIDENCE],
 
@@ -99,6 +100,16 @@ class TypeGuesserTest extends TestCase
         $value = $this->guesser->guessPattern(self::CLASS_NAME, 'value');
 
         $this->assertNull($value);
+    }
+
+    public function testGuessMaxLengthWithoutApplicableConstraint(): void
+    {
+        $this->assertNull($this->guesser->guessMaxLength(self::CLASS_NAME, 'id'));
+    }
+
+    public function testGuessPatternWithoutApplicableConstraint(): void
+    {
+        $this->assertNull($this->guesser->guessPattern(self::CLASS_NAME, 'id'));
     }
 
     /**

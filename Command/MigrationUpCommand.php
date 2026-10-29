@@ -10,19 +10,19 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputInterface;
-
 use Propel\Generator\Command\MigrationUpCommand as BaseMigrationCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
+ * # MigrationUpCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
  */
 class MigrationUpCommand extends WrappedCommand
 {
     /**
-     * {@inheritdoc}
+     * @return void
      */
     protected function configure(): void
     {
@@ -31,17 +31,15 @@ class MigrationUpCommand extends WrappedCommand
         $this
             ->setName('propel:migration:up')
             ->setDescription('Execute (only one) next migration')
-
-            ->addOption('connection',       null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('migration-table',  null, InputOption::VALUE_OPTIONAL,  'Migration table name (if none given, the configured table is used)', null)
-            ->addOption('output-dir',       null, InputOption::VALUE_OPTIONAL,  'The output directory')
-            ->addOption('fake',             null, InputOption::VALUE_NONE,       'Does not touch the actual schema, but marks next migration as executed.')
-            ->addOption('force',            null, InputOption::VALUE_NONE,       'Continues with the migration even when errors occur.')
-        ;
+            ->addOption('connection', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
+            ->addOption('migration-table', null, InputOption::VALUE_OPTIONAL, 'Migration table name (if none given, the configured table is used)', null)
+            ->addOption('output-dir', null, InputOption::VALUE_OPTIONAL, 'The output directory')
+            ->addOption('fake', null, InputOption::VALUE_NONE, 'Does not touch the actual schema, but marks next migration as executed.')
+            ->addOption('force', null, InputOption::VALUE_NONE, 'Continues with the migration even when errors occur.');
     }
 
     /**
-     * {@inheritdoc}
+     * @return Command
      */
     protected function createSubCommandInstance(): Command
     {
@@ -49,19 +47,20 @@ class MigrationUpCommand extends WrappedCommand
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @return array
      */
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $config = $this->getConfig();
         $defaultOutputDir = $config['paths']['migrationDir'];
 
-        return array(
-            '--connection'      => $this->getConnections($input->getOption('connection')),
+        return [
+            '--connection' => $this->getConnections($input->getOption('connection')),
             '--migration-table' => $input->getOption('migration-table') ?: $this->getMigrationsTable(),
-            '--output-dir'      => $input->getOption('output-dir') ?: $defaultOutputDir,
-            '--fake'            => $input->getOption('fake'),
-            '--force'           => $input->getOption('force'),
-        );
+            '--output-dir' => $input->getOption('output-dir') ?: $defaultOutputDir,
+            '--fake' => $input->getOption('fake'),
+            '--force' => $input->getOption('force'),
+        ];
     }
 }

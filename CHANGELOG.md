@@ -8,6 +8,7 @@
     * [5.2.0.1](#5201)
     * [5.2.0.2](#5202)
     * [5.2.0.3](#5203)
+    * [5.2.0.4](#5204)
 
 <!-- TOC -->
 
@@ -38,3 +39,10 @@
 
 * Updated `composer.json`
 * Removed more deprecated content
+
+### 5.2.0.4
+
+* Updated the project's source code
+    * Updated `composer.json`
+    * Optimized the lib with gitattributes
+* Added deprecation warnings for XML schemas

@@ -1,0 +1,62 @@
+language: php
+dist: jammy
+
+php:
+  - '8.1'
+  - '8.2'
+  - '8.3'
+  - '8.4'
+  - '8.5'
+
+env:
+  global:
+    - SYMFONY_REQUIRE=5.4
+    - XDEBUG_MODE=off
+    - COVERAGE=0
+
+jobs:
+  include:
+    - php: '7.4'
+      dist: focal
+    - php: '8.0'
+      dist: focal
+    - name: Coverage / PHP 8.4
+      php: '8.4'
+      env: COVERAGE=1 XDEBUG_MODE=coverage
+      addons:
+        apt:
+          packages:
+            - python3-venv
+
+cache:
+  directories:
+    - $HOME/.cache/composer
+
+before_install:
+  - composer self-update --2
+  - composer global config --no-plugins allow-plugins.symfony/flex true
+  - composer global require --no-progress --no-scripts --no-plugins symfony/flex
+
+install:
+  # Psalm 5 supports PHP <= 8.3; retain bundle tests on newer runtimes.
+  - if php -r 'exit(PHP_VERSION_ID >= 80400 ? 0 : 1);'; then export COMPOSER_IGNORE_PLATFORM_REQ=php+; fi
+  - composer update --no-interaction --prefer-dist --no-progress --prefer-stable
+
+script:
+  - composer validate --strict
+  - |
+    if [ "$COVERAGE" = "1" ]; then
+      php --ri xdebug
+      php --ri pdo_sqlite
+      composer test:coverage
+    else
+      composer test
+    fi
+
+after_success:
+  - |
+    if [ "$COVERAGE" = "1" ]; then
+      python3 -m venv /tmp/propel-bundle-codecov
+      /tmp/propel-bundle-codecov/bin/pip install codecov-cli
+      /tmp/propel-bundle-codecov/bin/codecovcli --auto-load-params-from Travis upload-process --file Tests/coverage.xml --disable-search --flag travis --name travis-php-8.4
+    fi

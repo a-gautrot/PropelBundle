@@ -3,6 +3,7 @@
 namespace ##NAMESPACE##;
 
 use Symfony\Component\Form\AbstractType;
+
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -22,7 +23,7 @@ class ##CLASS## extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => '##FQCN##',
-            'name'       => '##TYPE_NAME##',
+            'name' => '##TYPE_NAME##',
         ]);
     }
 }

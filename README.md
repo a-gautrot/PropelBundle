@@ -3,8 +3,8 @@
 ---
 
 ![Minimum PHP version](https://img.shields.io/badge/php-%3E%3D%207.4-8892BF.svg)
-[![GitHub Actions workflow status](https://img.shields.io/github/actions/workflow/status/Gautrot/PropelBundle/ci.yml?branch=5.2&label=GitHub%20Actions%20-%20CI%20branch%205.2)](https://github.com/Gautrot/PropelBundle/actions/workflows/ci.yml)
-[![Codecov (5.2)](https://img.shields.io/codecov/c/github/gautrot/PropelBundle/5.2)](https://codecov.io/gh/gautrot/PropelBundle/tree/5.2)
+[![GitHub Actions workflow status](https://img.shields.io/github/actions/workflow/status/a-gautrot/PropelBundle/ci.yml?branch=5.2&label=GitHub%20Actions%20-%20CI%20branch%205.2)](https://github.com/a-gautrot/PropelBundle/actions/workflows/ci.yml)
+[![Codecov (5.2)](https://img.shields.io/codecov/c/github/a-gautrot/PropelBundle/5.2)](https://codecov.io/gh/a-gautrot/PropelBundle/tree/5.2)
 
 **PropelBundle** is the official implementation of [Propel](https://www.propelorm.org/) in Symfony. This version is an
 extended LTS version for Symfony 5.4 only.
@@ -22,9 +22,9 @@ extended LTS version for Symfony 5.4 only.
 
 ```shell
 composer require propel/propel "2.0.0-beta4"
-composer require gautrot/propel-bundle "~5.2" # (or newer tag/release)
+composer require a-gautrot/propel-bundle "~5.2" # (or newer tag/release)
 # or
-composer require gautrot/propel-bundle "5.2.x-dev"
+composer require a-gautrot/propel-bundle "5.2.x-dev"
 ```
 
 #### composer.json
@@ -35,7 +35,7 @@ Stable release:
 {
   "require": {
     "propel/propel": "2.0.0-beta4",
-    "gautrot/propel-bundle": "~5.2"
+    "a-gautrot/propel-bundle": "~5.2"
   }
 }
 ```
@@ -46,7 +46,7 @@ Nightly release:
 {
   "require": {
     "propel/propel": "2.0.0-beta4",
-    "gautrot/propel-bundle": "5.2.x-dev"
+    "a-gautrot/propel-bundle": "5.2.x-dev"
   }
 }
 ```
@@ -70,6 +70,8 @@ Nightly release:
 
 ### Deprecated
 
+* XmlFileLoader has been [deprecated](https://symfony.com/blog/new-in-symfony-7-4-deprecated-xml-configuration) since
+  Symfony **7.4**. If you are using XML schemas, you must convert them to YAML schemas.
 * Sensio Framework Extra Bundle, has been deprecated since Symfony **6.2**. If you are still using it, you must convert
   them to [Symfony Attributes](https://symfony.com/doc/6.4/reference/attributes.html).
 
@@ -86,4 +88,4 @@ You can also read the changelogs [here](CHANGELOG.md).
 ## And more...
 
 You can read and learn Propel 2 from their official documentation [here](https://propelorm.org/documentation/). For
-licenses, see: [LICENSE](Resources/meta/LICENSE).
+licenses, see: [LICENSE](LICENSE).

@@ -10,15 +10,17 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use InvalidArgumentException;
+use PDO;
 use Propel\Runtime\Adapter\Pdo\MysqlAdapter;
 use Propel\Runtime\Propel;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
+ * # TableDropCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
  */
 class TableDropCommand extends AbstractCommand
@@ -26,22 +28,22 @@ class TableDropCommand extends AbstractCommand
     use FormattingHelpers;
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
     protected function configure(): void
     {
         $this
             ->setName('propel:table:drop')
             ->setDescription('Drop a given table or all tables in the database.')
-
-            ->addOption('connection',   null, InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('force',        null, InputOption::VALUE_NONE, 'Set this parameter to execute this action.')
-            ->addArgument('table',      InputArgument::IS_ARRAY, 'Set this parameter to défine which table to delete (default all the table in the database.')
-        ;
+            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
+            ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action.')
+            ->addArgument('table', InputArgument::IS_ARRAY, 'Set this parameter to défine which table to delete (default all the table in the database.');
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -62,9 +64,9 @@ class TableDropCommand extends AbstractCommand
 
         $tablesToDelete = $input->getArgument('table');
         $nbTable = count($tablesToDelete);
-        $tablePlural = (($nbTable > 1 || $nbTable == 0) ? 's' : '' );
+        $tablePlural = (($nbTable > 1 || $nbTable == 0) ? 's' : '');
 
-        if ('prod' === $this->getKernel()->getEnvironment()) {
+        if ($this->getKernel()->getEnvironment() === 'prod') {
             $count = $nbTable ?: 'all';
 
             $this->writeSection(
@@ -73,7 +75,7 @@ class TableDropCommand extends AbstractCommand
                 'bg=red;fg=white'
             );
 
-            if (false === $this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', false)) {
+            if ($this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', false) === false) {
                 $output->writeln('<info>Aborted, nice decision !</info>');
 
                 return -2;
@@ -83,12 +85,12 @@ class TableDropCommand extends AbstractCommand
         $showStatement = $connection->prepare('SHOW TABLES;');
         $showStatement->execute();
 
-        $allTables = $showStatement->fetchAll(\PDO::FETCH_COLUMN);
+        $allTables = $showStatement->fetchAll(PDO::FETCH_COLUMN);
 
         if ($nbTable) {
             foreach ($tablesToDelete as $tableToDelete) {
                 if (!array_search($tableToDelete, $allTables)) {
-                    throw new \InvalidArgumentException(sprintf('Table %s doesn\'t exist in the database.', $tableToDelete));
+                    throw new InvalidArgumentException(sprintf('Table %s doesn\'t exist in the database.', $tableToDelete));
                 }
             }
         } else {
@@ -103,7 +105,7 @@ class TableDropCommand extends AbstractCommand
 
         $tablesToDelete = join(', ', $tablesToDelete);
 
-        if ('' !== $tablesToDelete) {
+        if ($tablesToDelete !== '') {
             $connection->exec('DROP TABLE ' . $tablesToDelete . ' ;');
 
             $output->writeln(sprintf('Table' . $tablePlural . ' <info><comment>%s</comment> has been dropped.</info>', $tablesToDelete));

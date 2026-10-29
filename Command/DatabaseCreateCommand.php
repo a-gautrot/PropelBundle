@@ -10,15 +10,16 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use InvalidArgumentException;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ServiceContainer\StandardServiceContainer;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * DatabaseCreateCommand class.
+ * # DatabaseCreateCommand
  * Useful to create a database.
  *
  * @author William DURAND
@@ -33,15 +34,13 @@ class DatabaseCreateCommand extends AbstractCommand
         $this
             ->setName('propel:database:create')
             ->setDescription('Create a given database or the default one.')
-
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a connection to use')
-        ;
+            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a connection to use');
     }
 
     /**
+     * @throws InvalidArgumentException When the target directory does not exist
      * @see Command
      *
-     * @throws \InvalidArgumentException When the target directory does not exist
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -49,12 +48,12 @@ class DatabaseCreateCommand extends AbstractCommand
         $config = $this->getConnectionData($connectionName);
         $dbName = $this->parseDbName($config['dsn']);
 
-        if (null === $dbName) {
+        if ($dbName === null) {
             $output->writeln('<error>No database name found.</error>');
 
             return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
         } else {
-            $query  = 'CREATE DATABASE '. $dbName .';';
+            $query = 'CREATE DATABASE ' . $dbName . ';';
         }
 
         $manager = new ConnectionManagerSingle($connectionName);
@@ -82,7 +81,7 @@ class DatabaseCreateCommand extends AbstractCommand
      *
      * @see https://github.com/doctrine/doctrine1/blob/master/lib/Doctrine/Connection.php#L1491
      *
-     * @param  array<string, mixed> $config A Propel connection configuration.
+     * @param array<string, mixed> $config A Propel connection configuration.
      * @return array<string, mixed>
      */
     private function getTemporaryConfiguration(array $config): array
@@ -90,7 +89,7 @@ class DatabaseCreateCommand extends AbstractCommand
         $dbName = $this->parseDbName($config['dsn']);
 
         $config['dsn'] = preg_replace(
-            '#;?(dbname|Database)='.$dbName.'#',
+            '#;?(dbname|Database)=' . $dbName . '#',
             '',
             $config['dsn']
         );
