@@ -2,9 +2,9 @@
 
 ---
 
-[![GitHub Actions status](https://github.com/a-gautrot/PropelBundle/actions/workflows/ci.yml/badge.svg?branch=8.0)](https://github.com/a-gautrot/PropelBundle/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/a-gautrot/PropelBundle/branch/8.0/graph/badge.svg?token=J4QC832AR0)](https://codecov.io/gh/a-gautrot/PropelBundle)
-[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%208.2-8892BF.svg)](https://php.net/)
+![Minimum PHP version](https://img.shields.io/badge/php-%3E%3D%208.2-8892BF.svg)
+[![GitHub Actions workflow status](https://img.shields.io/github/actions/workflow/status/a-gautrot/PropelBundle/ci.yml?branch=8.0&label=GitHub%20Actions%20-%20CI%20branch%208.0)](https://github.com/a-gautrot/PropelBundle/actions/workflows/ci.yml)
+[![Codecov (8.0)](https://img.shields.io/codecov/c/github/a-gautrot/PropelBundle/8.0)](https://codecov.io/gh/a-gautrot/PropelBundle/tree/8.0)
 
 This is the official implementation of [Propel](https://www.propelorm.org/) in Symfony.
 
@@ -20,9 +20,9 @@ This is the official implementation of [Propel](https://www.propelorm.org/) in S
 
 ```shell
 composer require propel/propel "~2.0"
-composer require gautrot/propel-bundle "~8.0" # (or newer tag/release)
+composer require a-gautrot/propel-bundle "~8.0" # (or newer tag/release)
 # or
-composer require gautrot/propel-bundle "8.0.x-dev"
+composer require a-gautrot/propel-bundle "8.0.x-dev"
 ```
 
 #### composer.json
@@ -33,7 +33,7 @@ Stable release:
 {
   "require": {
     "propel/propel": "~2.0",
-    "gautrot/propel-bundle": "~8.0"
+    "a-gautrot/propel-bundle": "~8.0"
   }
 }
 ```
@@ -44,7 +44,7 @@ Nightly release:
 {
   "require": {
     "propel/propel": "~2.0",
-    "gautrot/propel-bundle": "8.0.x-dev"
+    "a-gautrot/propel-bundle": "8.0.x-dev"
   }
 }
 ```
