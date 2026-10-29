@@ -95,12 +95,13 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
                 $resultsSets[] = $this->fixOrderingOfForeignKeyDataInSameTable($resultsSets, $tableName, $fixColumn);
             } else {
                 $in = array();
+                $adapter = Propel::getAdapter($this->dbMap->getName());
                 foreach ($tableMap->getColumns() as $column) {
-                    $in[] = strtolower($column->getName());
+                    $in[] = $adapter->quoteIdentifier(strtolower($column->getName()));
                 }
                 $stmt = $this
                     ->con
-                    ->query(sprintf('SELECT `%s` FROM `%s`', implode('`, `', $in), constant(constant($tableName . '::TABLE_MAP') . '::TABLE_NAME')));
+                    ->query(sprintf('SELECT %s FROM %s', implode(', ', $in), $adapter->quoteIdentifier($tableMap->getName())));
 
                 $set = array();
                 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {

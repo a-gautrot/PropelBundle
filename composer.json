@@ -1,13 +1,13 @@
 {
-  "name": "gautrot/propel-bundle",
+  "name": "a-gautrot/propel-bundle",
   "description": "Integration of Propel in Symfony",
+  "type": "symfony-bundle",
+  "license": "MIT",
   "keywords": [
     "propel",
     "orm",
     "persistence"
   ],
-  "type": "symfony-bundle",
-  "license": "MIT",
   "authors": [
     {
       "name": "William Durand",
@@ -59,6 +59,7 @@
     "ext-json": "*",
     "ext-libxml": "*",
     "ext-pdo": "*",
+    "ext-pdo_sqlite": "*",
     "ext-simplexml": "*",
     "fakerphp/faker": "^1.0",
     "mikey179/vfsstream": "^1.6",
@@ -67,11 +68,13 @@
     "phpstan/phpstan-deprecation-rules": "^2.0",
     "phpstan/phpstan-symfony": "^2.0",
     "phpunit/phpunit": ">=10.5.62",
+    "squizlabs/php_codesniffer": "@stable",
     "symfony/form": "^6.4",
     "symfony/profiler-pack": "^1.0.4",
     "symfony/stopwatch": "^6.4",
     "symfony/web-profiler-bundle": "^6.4",
-    "twig/twig": "^3.26"
+    "twig/twig": "^3.26",
+    "vimeo/psalm": "@stable"
   },
   "config": {
     "allow-plugins": {
@@ -81,5 +84,10 @@
   "extra": {
   },
   "scripts": {
+    "test": "@php Tests/run.php",
+    "test:coverage": "@test --coverage-clover Tests/coverage.xml --log-junit Tests/junit.xml",
+    "phpstan": "vendor/bin/phpstan analyse -c phpstan.dist.neon",
+    "psalm": "vendor/bin/psalm --config=psalm.dist.xml",
+    "phpcs": "phpcs --standard=phpcs.dist.xml"
   }
 }

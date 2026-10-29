@@ -12,15 +12,17 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash
+
+env:
+  SYMFONY_REQUIRE: '6.4'
+
 jobs:
   testsuite:
     name: "Test Suite (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})"
     runs-on: ${{ matrix.platform.runner }}
-    defaults:
-      run:
-        shell: bash
-    env:
-      SYMFONY_REQUIRE: '6.4'
     strategy:
       fail-fast: false
       matrix:
@@ -42,6 +44,11 @@ jobs:
           - name: macOS arm64
             runner: macos-26
         include:
+          - php-version: '8.1'
+            platform:
+              name: Linux x64
+              runner: ubuntu-26.04
+            dependencies: lowest
           - php-version: '8.5'
             platform:
               name: macOS Intel
@@ -49,11 +56,11 @@ jobs:
 
     steps:
       - name: Setup PHP, with composer and extensions
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
           extensions: pdo_sqlite
-          coverage: pcov
+          coverage: none
 
       - name: Checkout
         uses: actions/checkout@v7
@@ -68,34 +75,146 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
-          restore-keys: ${{ runner.os }}-composer-
+          key: ${{ runner.os }}-${{ runner.arch }}-php-${{ matrix.php-version }}-${{ matrix.dependencies || 'highest' }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-php-${{ matrix.php-version }}-
 
-      - name: Composer update
+      - name: Setup Symfony Flex
         run: |
           composer global config --no-plugins allow-plugins.symfony/flex true
           composer global require --no-progress --no-scripts --no-plugins symfony/flex
-          composer u --prefer-dist -n
 
-      - name: Run tests with PHP
-        run: vendor/bin/phpunit --display-deprecations --display-notices --display-warnings --coverage-clover=Tests/coverage.xml --log-junit=Tests/junit.xml
+      - name: Install dependencies
+        if: matrix.dependencies != 'lowest'
+        run: composer u -n --prefer-dist --no-progress --prefer-stable
 
-      - name: Code Coverage Report
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
+      - name: Install lowest supported dependencies
+        if: matrix.dependencies == 'lowest'
+        run: composer u -n --prefer-dist --no-progress --prefer-lowest --prefer-stable
+
+      - run: composer validate --strict
+      - run: composer test
+
+  databases:
+    name: "${{ matrix.database }} / PHP ${{ matrix.php-version }}"
+    runs-on: ubuntu-26.04
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.1', '8.2', '8.3', '8.4', '8.5']
+        database: [mysql, mariadb, postgres]
+        include:
+          - database: mysql
+            driver: mysql
+            port: '33381'
+            user: root
+          - database: mariadb
+            driver: mysql
+            port: '33382'
+            user: root
+          - database: postgres
+            driver: pgsql
+            port: '35453'
+            user: postgres
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: pdo_mysql, pdo_pgsql, pdo_sqlite
+          coverage: none
+
+      - name: Composer get cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Composer cache dependencies
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-${{ runner.arch }}-php-${{ matrix.php-version }}-highest-composer-${{ hashFiles('composer.json') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-php-${{ matrix.php-version }}-
+
+      - name: Install dependencies with Symfony Flex
+        run: |
+          composer global config --no-plugins allow-plugins.symfony/flex true
+          composer global require --no-progress --no-scripts --no-plugins symfony/flex
+          composer update --no-interaction --prefer-dist --no-progress --prefer-stable
+
+      - run: composer validate --strict
+
+      - name: Start selected database
+        run: docker compose -f Tests/compose.yaml up -d --wait ${{ matrix.database }}
+
+      - name: Run tests on selected database
+        run: composer test
+        env:
+          TEST_DSN: ${{ matrix.driver }}:host=127.0.0.1;port=${{ matrix.port }};dbname=propel_bundle
+          TEST_USER: ${{ matrix.user }}
+          TEST_PASSWORD: bundle_test
+
+      - name: Stop test databases
+        if: ${{ always() }}
+        run: docker compose -f Tests/compose.yaml down --volumes
+
+  coverage:
+    name: Coverage, PHP 8.4
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.4'
+          extensions: pdo_sqlite
+          coverage: xdebug
+
+      - name: Composer get cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Composer cache dependencies
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-${{ runner.arch }}-php-8.4-coverage-composer-${{ hashFiles('composer.json') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-php-8.4-
+
+      - name: Install dependencies with Symfony Flex
+        run: |
+          composer global config --no-plugins allow-plugins.symfony/flex true
+          composer global require --no-progress --no-scripts --no-plugins symfony/flex
+          composer u -n --prefer-dist --no-progress --prefer-stable
+
+      - run: composer validate --strict
+      - run: composer test:coverage
+        env:
+          XDEBUG_MODE: coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./Tests/
-          files: ./Tests/coverage.xml
+          files: Tests/coverage.xml
+          disable_search: true
+          flags: github
+          name: github-php-8.4
           fail_ci_if_error: true
-          verbose: true
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
-          files: ./Tests/junit.xml
+          files: Tests/junit.xml
           disable_search: true
           fail_ci_if_error: true
-          verbose: true

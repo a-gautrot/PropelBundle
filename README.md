@@ -21,9 +21,9 @@ LTS version for Symfony 6.4 only.
 
 ```shell
 composer require propel/propel "~2.0"
-composer require gautrot/propel-bundle "~6.1" # (or newer tag/release)
+composer require agautrot/propel-bundle "~6.1" # (or newer tag/release)
 # or
-composer require gautrot/propel-bundle "6.1.x-dev"
+composer require agautrot/propel-bundle "6.1.x-dev"
 ```
 
 #### composer.json
@@ -34,7 +34,7 @@ Stable release:
 {
   "require": {
     "propel/propel": "~2.0",
-    "gautrot/propel-bundle": "~6.1"
+    "agautrot/propel-bundle": "~6.1"
   }
 }
 ```
@@ -45,7 +45,7 @@ Nightly release:
 {
   "require": {
     "propel/propel": "~2.0",
-    "gautrot/propel-bundle": "6.1.x-dev"
+    "agautrot/propel-bundle": "6.1.x-dev"
   }
 }
 ```
@@ -80,4 +80,4 @@ You can also read the changelogs [here](CHANGELOG.md).
 ## And more...
 
 You can read and learn Propel 2 from their official documentation [here](https://propelorm.org/documentation/). For
-licenses, see: [LICENSE](Resources/meta/LICENSE).
+licenses, see: [LICENSE](LICENSE).

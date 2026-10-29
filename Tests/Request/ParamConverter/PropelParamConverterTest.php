@@ -6,7 +6,7 @@ use Exception;
 use LogicException;
 use Propel\Bundle\PropelBundle\Request\ParamConverter\PropelParamConverter;
 use Propel\Bundle\PropelBundle\Tests\TestCase;
-use Propel\Generator\Util\QuickBuilder;
+use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
 use Propel\Runtime\Propel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
@@ -309,7 +309,7 @@ class PropelParamConverterTest extends TestCase
 XML;
 
         if (!class_exists('Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor')) {
-            QuickBuilder::buildSchema($schema);
+            SchemaBuilder::buildSchema($schema);
         }
 
         $this->con = Propel::getConnection('default');

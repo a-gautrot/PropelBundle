@@ -13,7 +13,7 @@ namespace Propel\Bundle\PropelBundle\Tests\Security\User;
 use Propel\Bundle\PropelBundle\Security\User\PropelUserProvider;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\User;
 use Propel\Bundle\PropelBundle\Tests\TestCase;
-use Propel\Generator\Util\QuickBuilder;
+use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
@@ -21,7 +21,7 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
  * # PropelUserProviderTest
  * @author William Durand <william.durand1@gmail.com>
  *
- * NOTE: currently no driver is selected "sqlite" will be used by default
+ * The test database is selected through TEST_DSN, defaulting to SQLite in memory.
  */
 class PropelUserProviderTest extends TestCase
 {
@@ -51,12 +51,10 @@ class PropelUserProviderTest extends TestCase
     </database>
     SCHEMA;
 
-            $builder = new QuickBuilder();
-            $builder->setSchema($schema);
             $classTargets = ['tablemap', 'object', 'query', /*'objectstub',*/
                 'querystub'];
 
-            $this::$con = $builder->build(classTargets: $classTargets);
+            $this::$con = SchemaBuilder::buildSchema($schema, $classTargets);
         }
     }
 
