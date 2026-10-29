@@ -106,15 +106,6 @@ requiring PHP attributes.
 
 You can also read the changelogs [here](CHANGELOG.md).
 
-## Development dependencies
-
-Psalm is installed through `vimeo/psalm` and runs with `composer psalm`.
-On PHP 8.4/8.5, install development dependencies with `composer update --ignore-platform-req=php+`.
-This keeps PHP minimum versions and extension checks, but bypasses PHP upper bounds because
-Psalm releases compatible with Symfony 5.4 do not declare support for PHP 8.5.
-This allows testing the bundle on these runtimes; it does not extend Psalm's declared runtime support.
-Use PHP 7.4–8.3 to run Psalm within its declared PHP compatibility range.
-
 ## And more...
 
 You can read and learn Propel 2 from their official documentation [here](https://propelorm.org/documentation/). For
