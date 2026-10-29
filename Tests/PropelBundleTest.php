@@ -195,7 +195,7 @@ class PropelBundleTest extends TestCase
      * test logger is set and methods exist
      * @return void
      */
-    public function testConfigureLogging()
+    public function testConfigureLogging(): void
     {
         Propel::setServiceContainer(new StandardServiceContainer());
         $serviceContainer = Propel::getServiceContainer();

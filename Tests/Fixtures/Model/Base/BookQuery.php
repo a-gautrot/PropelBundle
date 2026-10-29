@@ -77,7 +77,7 @@ abstract class BookQuery extends ModelCriteria
             return $criteria;
         }
         $query = new ChildBookQuery();
-        if (null !== $modelAlias) {
+        if ($modelAlias !== null) {
             $query->setModelAlias($modelAlias);
         }
         if ($criteria instanceof Criteria) {
@@ -102,7 +102,7 @@ abstract class BookQuery extends ModelCriteria
      * @return ChildBook|array|mixed the result, formatted by the current formatter
      * @throws PropelException
      */
-    public function findPk($key, ?ConnectionInterface $con = null): mixed
+    public function findPk(mixed $key, ?ConnectionInterface $con = null): mixed
     {
         if ($key === null) {
             return null;
@@ -176,7 +176,7 @@ abstract class BookQuery extends ModelCriteria
             $stmt->execute();
         } catch (Exception $e) {
             Propel::log($e->getMessage(), Propel::LOG_ERR);
-            throw new PropelException(sprintf('Unable to execute SELECT statement [%s]', $sql), 0, $e);
+            throw new PropelException("Unable to execute SELECT statement [$sql]", 0, $e);
         }
         $obj = null;
         if ($row = $stmt->fetch(PDO::FETCH_NUM)) {
@@ -258,7 +258,7 @@ abstract class BookQuery extends ModelCriteria
             if ($useMinMax) {
                 return $this;
             }
-            if (null === $comparison) {
+            if ($comparison === null) {
                 $comparison = Criteria::IN;
             }
         }
@@ -359,7 +359,7 @@ abstract class BookQuery extends ModelCriteria
             if ($useMinMax) {
                 return $this;
             }
-            if (null === $comparison) {
+            if ($comparison === null) {
                 $comparison = Criteria::IN;
             }
         }

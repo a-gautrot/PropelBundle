@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -16,7 +16,7 @@ use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 
 /**
- * CollectionToArrayTransformer class.
+ * # CollectionToArrayTransformer
  *
  * @author William Durand <william.durand1@gmail.com>
  * @author Pierre-Yves Lebecq <py.lebecq@gmail.com>
@@ -26,41 +26,41 @@ use Symfony\Component\Form\Exception\TransformationFailedException;
 class CollectionToArrayTransformer implements DataTransformerInterface
 {
     /**
-     * @param $collection
+     * @param mixed $value
      *
-     * @return array<mixed>
+     * @return array
      */
-    public function transform($collection): array
+    public function transform(mixed $value): array
     {
-        if (null === $collection) {
-            return array();
+        if ($value === null) {
+            return [];
         }
 
-        if (!$collection instanceof ObjectCollection) {
+        if (!$value instanceof ObjectCollection) {
             throw new TransformationFailedException('Expected a \Propel\Runtime\Collection\ObjectCollection.');
         }
 
-        return $collection->getData();
+        return $value->getData();
     }
 
     /**
-     * @param array<mixed>|string|null $array
+     * @param array|string|null $value
      *
      * @return ObjectCollection
      */
-    public function reverseTransform($array): ObjectCollection
+    public function reverseTransform(mixed $value): ObjectCollection
     {
         $collection = new ObjectCollection();
 
-        if ('' === $array || null === $array) {
+        if ($value === '' || $value === null) {
             return $collection;
         }
 
-        if (!is_array($array)) {
+        if (!is_array($value)) {
             throw new TransformationFailedException('Expected an array.');
         }
 
-        $collection->setData($array);
+        $collection->setData($value);
 
         return $collection;
     }

@@ -10,13 +10,14 @@
 
 namespace Propel\Bundle\PropelBundle\DependencyInjection;
 
+use Exception;
 use Symfony\Bundle\WebProfilerBundle\DependencyInjection\WebProfilerExtension;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\DependencyInjection\Extension\Extension;
-use Symfony\Component\HttpKernel\Profiler\Profiler;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\HttpKernel\Profiler\Profiler;
 
 /**
  * PropelExtension loads the PropelBundle configuration.
@@ -26,16 +27,18 @@ use Symfony\Component\Config\FileLocator;
 class PropelExtension extends Extension
 {
     /**
-     * {@inheritdoc}
+     * @param array $configs
+     * @param ContainerBuilder $container
+     * @return void
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = $this->getConfiguration($configs, $container);
         $config = $this->processConfiguration($configuration, $configs);
 
-        if (1 === count($config['database']['connections'])) {
+        if (count($config['database']['connections']) === 1) {
             $defaultConnection = array_keys($config['database']['connections'])[0];
             if (!isset($config['runtime']['defaultConnection'])) {
                 $config['runtime']['defaultConnection'] = $defaultConnection;
@@ -50,23 +53,19 @@ class PropelExtension extends Extension
 
         // Load services
         if (!$container->hasDefinition('propel')) {
-            $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-            $loader->load('propel.xml');
-            $loader->load('converters.xml');
-            $loader->load('security.xml');
-            $loader->load('console.xml');
+            $this->loadXmlResources($container);
 
-            $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+            $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
             $loader->load('services.yml');
 
-            if (($env = $container->getParameter('kernel.environment')) === 'dev' && class_exists(WebProfilerExtension::class)) {
+            if ($container->getParameter('kernel.environment') === 'dev' && class_exists(WebProfilerExtension::class)) {
                 $container->setAlias(Profiler::class, 'profiler');
             }
         }
     }
 
     /**
-     * @param array<mixed> $config
+     * @param array $config
      * @param ContainerBuilder $container
      *
      * @return Configuration
@@ -74,6 +73,21 @@ class PropelExtension extends Extension
     public function getConfiguration(array $config, ContainerBuilder $container): Configuration
     {
         return new Configuration($container->getParameter('kernel.debug'), $container->getParameter('kernel.project_dir'));
+    }
+
+    /**
+     * Loads the legacy XML service definitions.
+     *
+     * @throws Exception
+     * @deprecated since Symfony 7.4; migrate Symfony service definitions to PHP or YAML before upgrading to Symfony 8.0.
+     */
+    private function loadXmlResources(ContainerBuilder $container): void
+    {
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('propel.xml');
+        $loader->load('converters.xml');
+        $loader->load('security.xml');
+        $loader->load('console.xml');
     }
 
     /**
@@ -85,7 +99,7 @@ class PropelExtension extends Extension
      */
     public function getXsdValidationBasePath(): string
     {
-        return __DIR__.'/../Resources/config/schema';
+        return __DIR__ . '/../Resources/config/schema';
     }
 
     /**

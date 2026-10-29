@@ -19,28 +19,38 @@ use Symfony\Component\VarDumper\Cloner\Data;
 use Throwable;
 
 /**
- * The PropelDataCollector collector class collects information.
+ * # PropelDataCollector
+ * The Propel Data Collector class collects information.
  *
  * @author Kévin Gomez <contact@kevingomez.fr>
  */
 class PropelDataCollector extends DataCollector
 {
+    /**
+     * @var PropelLogger
+     */
     protected PropelLogger $logger;
 
+    /**
+     * @param PropelLogger $logger
+     */
     public function __construct(PropelLogger $logger)
     {
         $this->logger = $logger;
     }
 
     /**
-     * {@inheritdoc}
+     * @param Request $request
+     * @param Response $response
+     * @param Throwable|null $exception
+     * @return void
      */
     public function collect(Request $request, Response $response, ?Throwable $exception = null): void
     {
-        $this->data = array(
-            'queries'       => $this->cloneVar($this->buildQueries()),
-            'querycount'    => $this->countQueries(),
-        );
+        $this->data = [
+            'queries' => $this->cloneVar($this->buildQueries()),
+            'querycount' => $this->countQueries(),
+        ];
     }
 
     /**
@@ -109,10 +119,10 @@ class PropelDataCollector extends DataCollector
     }
 
     /**
-     * @inheritdoc
+     * @return void
      */
     public function reset(): void
     {
-        // TODO: Implement reset() method.
+        $this->data = [];
     }
 }

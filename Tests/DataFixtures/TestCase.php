@@ -11,8 +11,8 @@
 namespace Propel\Bundle\PropelBundle\Tests\DataFixtures;
 
 use PDO;
-use Propel\Bundle\PropelBundle\Tests\TestCase as BaseTestCase;
 use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
+use Propel\Bundle\PropelBundle\Tests\TestCase as BaseTestCase;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Connection\PropelPDO;
 use Propel\Runtime\Propel;

@@ -19,6 +19,7 @@ use RuntimeException;
 use ValueError;
 
 /**
+ * # AbstractDataDumper
  * Abstract class to manage a common logic to dump data.
  *
  * @author William Durand <william.durand1@gmail.com>
@@ -26,11 +27,13 @@ use ValueError;
 abstract class AbstractDataDumper extends AbstractDataHandler implements DataDumperInterface
 {
     /**
-     * {@inheritdoc}
+     * @param string|null $filename
+     * @param string|null $connectionName
+     * @return void
      */
     public function dump(?string $filename, ?string $connectionName = null): void
     {
-        if (null === $filename || '' === $filename) {
+        if ($filename === null || $filename === '') {
             throw new RuntimeException('Invalid filename provided.');
         }
 
@@ -40,8 +43,8 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
         $array = $this->getDataAsArray();
         $data = $this->transformArrayToData($array);
 
-        if (false === file_put_contents($filename, $data)) {
-            throw new RuntimeException(sprintf('Cannot write file: %s', $filename));
+        if (file_put_contents($filename, $data) === false) {
+            throw new RuntimeException("Cannot write file: $filename");
         }
     }
 
@@ -53,16 +56,16 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
      */
     protected function getDataAsArray(): array
     {
-        $tables = array();
+        $tables = [];
         foreach ($this->dbMap->getTables() as $table) {
             $tables[] = $table->getClassname();
         }
 
         $tables = $this->fixOrderingOfForeignKeyData($tables);
 
-        $dumpData = array();
+        $dumpData = [];
         foreach ($tables as $tableName) {
-            $tableMap = $this->dbMap->getTable(constant(constant($tableName . '::TABLE_MAP') . '::TABLE_NAME'));
+            $tableMap = $this->dbMap->getTable(constant(constant("$tableName::TABLE_MAP") . '::TABLE_NAME'));
             $hasParent = false;
             $haveParents = false;
             $fixColumn = null;
@@ -90,20 +93,21 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
             }
 
             // get db info
-            $resultsSets = array();
+            $resultsSets = [];
             if ($hasParent) {
                 $resultsSets[] = $this->fixOrderingOfForeignKeyDataInSameTable($resultsSets, $tableName, $fixColumn);
             } else {
-                $in = array();
+                $in = [];
                 $adapter = Propel::getAdapter($this->dbMap->getName());
                 foreach ($tableMap->getColumns() as $column) {
                     $in[] = $adapter->quoteIdentifier(strtolower($column->getName()));
                 }
+                $columns = implode(', ', $in);
                 $stmt = $this
                     ->con
-                    ->query(sprintf('SELECT %s FROM %s', implode(', ', $in), $adapter->quoteIdentifier($tableMap->getName())));
+                    ->query("SELECT $columns FROM {$adapter->quoteIdentifier($tableMap->getName())}");
 
-                $set = array();
+                $set = [];
                 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     $set[] = $row;
                 }
@@ -114,25 +118,25 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
 
             foreach ($resultsSets as $rows) {
                 if (count($rows) > 0 && !isset($dumpData[$tableName])) {
-                    $dumpData[$tableName] = array();
+                    $dumpData[$tableName] = [];
 
                     foreach ($rows as $row) {
                         $pk = $shortTableName;
-                        $values = array();
-                        $primaryKeys = array();
-                        $foreignKeys = array();
+                        $values = [];
+                        $primaryKeys = [];
+                        $foreignKeys = [];
 
                         foreach ($tableMap->getColumns() as $column) {
                             $col = strtolower($column->getName());
                             $isPrimaryKey = $column->isPrimaryKey();
 
-                            if (null === $row[$col]) {
+                            if ($row[$col] === null) {
                                 continue;
                             }
 
                             if ($isPrimaryKey) {
                                 $value = $row[$col];
-                                $pk .= '_' . $value;
+                                $pk .= "_$value";
                                 $primaryKeys[$col] = $value;
                             }
 
@@ -140,27 +144,27 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
                                 $relatedTable = $this->dbMap->getTable($column->getRelatedTableName());
                                 if ($isPrimaryKey) {
                                     $foreignKeys[$col] = $row[$col];
-                                    $primaryKeys[$col] = $relatedTable->getPhpName() . '_' . $row[$col];
+                                    $primaryKeys[$col] = "{$relatedTable->getPhpName()}_$row[$col]";
                                 } else {
-                                    $values[$col] = $relatedTable->getPhpName() . '_' . $row[$col];
-                                    $values[$col] = strlen($row[$col]) ? $relatedTable->getPhpName() . '_' . $row[$col] : '';
+                                    $values[$col] = "{$relatedTable->getPhpName()}_$row[$col]";
+                                    $values[$col] = strlen($row[$col]) ? "{$relatedTable->getPhpName()}_$row[$col]" : '';
                                 }
                             } elseif (!$isPrimaryKey || !$tableMap->isUseIdGenerator()) {
-                                if (!empty($row[$col]) && PropelTypes::PHP_ARRAY === $column->getType()) {
+                                if (!empty($row[$col]) && $column->getType() === PropelTypes::PHP_ARRAY) {
                                     $serialized = substr($row[$col], 2, -2);
-                                    $row[$col] = $serialized ? explode(' | ', $serialized) : array();
+                                    $row[$col] = $serialized ? explode(' | ', $serialized) : [];
                                 }
 
                                 // We did not want auto incremented primary keys
                                 $values[$col] = $row[$col];
                             }
 
-                            if (PropelTypes::OBJECT === $column->getType()) {
+                            if ($column->getType() === PropelTypes::OBJECT) {
                                 $values[$col] = unserialize($row[$col]);
                             }
                         }
 
-                        if (count($primaryKeys) > 1 || (count($primaryKeys) > 0 && count($foreignKeys) > 0)) {
+                        if (count($primaryKeys) > 1 || (!empty($primaryKeys) && !empty($foreignKeys))) {
                             $values = array_merge($primaryKeys, $values);
                         }
 
@@ -186,7 +190,7 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
         // reordering classes to take foreign keys into account
         for ($i = 0, $count = count($classes); $i < $count; $i++) {
             $class = $classes[$i];
-            $tableMap = $this->dbMap->getTable(constant(constant($class . '::TABLE_MAP') . '::TABLE_NAME'));
+            $tableMap = $this->dbMap->getTable(constant(constant("$class::TABLE_MAP") . '::TABLE_NAME'));
 
             foreach ($tableMap->getColumns() as $column) {
                 if ($column->isForeignKey()) {
@@ -198,7 +202,7 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
                         // move related table 1 position before current table
                         $classes = array_merge(
                             array_slice($classes, 0, $i),
-                            array($classes[$relatedTablePos]),
+                            [$classes[$relatedTablePos]],
                             array_slice($classes, $i, $relatedTablePos - $i),
                             array_slice($classes, $relatedTablePos + 1)
                         );
@@ -243,17 +247,16 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
             }
         }
 
-        $sql = sprintf('SELECT * FROM %s WHERE %s %s',
-            constant(constant($tableName . '::TABLE_MAP') . '::TABLE_NAME'),
-            $columnName,
-            ($in === null) ? 'IS NULL' : "IN ($in)");
+        $databaseTableName = constant(constant("$tableName::TABLE_MAP") . '::TABLE_NAME');
+        $condition = $in === null ? 'IS NULL' : "IN ($in)";
+        $sql = "SELECT * FROM $databaseTableName WHERE $columnName $condition";
 
         $stmt = $this->con->prepare($sql);
         $stmt->execute();
 
-        $in = array();
+        $in = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $in[] = "'" . $row[strtolower($column->getRelatedColumnName())] . "'";
+            $in[] = "'{$row[strtolower($column->getRelatedColumnName())]}'";
             $resultsSets[] = $row;
         }
 

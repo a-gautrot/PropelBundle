@@ -3,6 +3,7 @@
 namespace Propel\Bundle\PropelBundle\Tests;
 
 use DOMDocument;
+use Exception;
 use InvalidArgumentException;
 use PDO;
 use Propel\Generator\Platform\MysqlPlatform;
@@ -13,7 +14,6 @@ use Propel\Runtime\Adapter\Pdo\MysqlAdapter;
 use Propel\Runtime\Adapter\Pdo\PgsqlAdapter;
 use Propel\Runtime\Adapter\Pdo\SqliteAdapter;
 use Propel\Runtime\Connection\ConnectionWrapper;
-use Random\RandomException;
 
 /**
  * # SchemaBuilder
@@ -25,7 +25,7 @@ final class SchemaBuilder
      * @param string $schema
      * @param array|null $classTargets
      * @return ConnectionWrapper
-     * @throws RandomException
+     * @throws Exception
      */
     public static function buildSchema(string $schema, ?array $classTargets = null): ConnectionWrapper
     {
@@ -45,7 +45,7 @@ final class SchemaBuilder
         $tableNames = [];
         foreach ($document->getElementsByTagName('table') as $table) {
             $name = $table->getAttribute('name');
-            $tableNames[$name] = $name . $suffix;
+            $tableNames[$name] = "$name$suffix";
             if (!$table->hasAttribute('phpName')) {
                 $table->setAttribute('phpName', str_replace(' ', '', ucwords(str_replace('_', ' ', $name))));
             }
@@ -67,7 +67,7 @@ final class SchemaBuilder
             foreach ($behavior->getElementsByTagName('parameter') as $parameter) {
                 if ($parameter->getAttribute('name') === $parameterName) {
                     $names = array_map('trim', explode(',', $parameter->getAttribute('value')));
-                    $parameter->setAttribute('value', implode(',', array_map(static fn($name) => $tableNames[$name] ?? $name, $names)));
+                    $parameter->setAttribute('value', implode(',', array_map(static fn(string $name): string => $tableNames[$name] ?? $name, $names)));
                 }
             }
         }

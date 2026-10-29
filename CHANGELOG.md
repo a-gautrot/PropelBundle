@@ -8,6 +8,7 @@
     * [6.1.0.1](#6101)
     * [6.1.0.2](#6102)
     * [6.1.0.3](#6103)
+    * [6.1.0.4](#6104)
 
 <!-- TOC -->
 
@@ -37,3 +38,10 @@
 
 * Updated `composer.json`
 * Removed more deprecated content
+
+### 6.1.0.4
+
+* Updated the project's source code
+  * Updated `composer.json`
+  * Optimized the lib with gitattributes
+* Added deprecation warnings for XML schemas

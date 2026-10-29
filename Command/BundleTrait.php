@@ -19,20 +19,16 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
+ * # BundleTrait
  * @author Moritz Schroeder <moritz.schroeder@molabs.de>
  */
 trait BundleTrait
 {
     /**
-     * @return ContainerInterface
-     */
-    abstract protected function getContainer(): ContainerInterface;
-
-    /**
      * Returns the selected bundle.
      * If no bundle argument is set, the user will get ask for it.
      *
-     * @param InputInterface  $input
+     * @param InputInterface $input
      * @param OutputInterface $output
      *
      * @return BundleInterface
@@ -44,7 +40,7 @@ trait BundleTrait
             ->getContainer()
             ->get('kernel');
 
-        if ($input->hasArgument('bundle') && !empty($input->getArgument('bundle')) && '@' === substr($input->getArgument('bundle'), 0, 1)) {
+        if ($input->hasArgument('bundle') && !empty($input->getArgument('bundle')) && str_starts_with($input->getArgument('bundle'), '@')) {
             return $kernel->getBundle(substr($input->getArgument('bundle'), 1));
         }
 
@@ -66,7 +62,7 @@ trait BundleTrait
             if (in_array($bundleName, $bundleNames) || empty(trim($bundleName)) || $bundleName == AppBundle::NAME) {
                 break;
             }
-            $output->writeln(sprintf('<bg=red>Bundle "%s" does not exist.</bg>', $bundleName));
+            $output->writeln("<bg=red>Bundle \"$bundleName\" does not exist.</bg>");
         } while (true);
 
         if (empty($bundleName) || $bundleName === AppBundle::NAME) {
@@ -75,4 +71,9 @@ trait BundleTrait
 
         return $kernel->getBundle($bundleName);
     }
+
+    /**
+     * @return ContainerInterface
+     */
+    abstract protected function getContainer(): ContainerInterface;
 }

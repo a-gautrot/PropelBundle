@@ -13,10 +13,10 @@ namespace Propel\Bundle\PropelBundle\Command;
 use App\AppBundle;
 use Propel\Bundle\PropelBundle\Form\FormBuilder;
 use Propel\Generator\Config\GeneratorConfig;
+use Propel\Generator\Manager\ModelManager;
 use Propel\Generator\Model\Database;
 use Propel\Generator\Model\Table;
-use Propel\Generator\Manager\ModelManager;
-
+use SplFileInfo;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -25,28 +25,30 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
+ * # FormGenerateCommand
  * @author William DURAND <william.durand1@gmail.com>
  */
 class FormGenerateCommand extends AbstractCommand
 {
+    /**
+     * @var string
+     */
     const DEFAULT_FORM_TYPE_DIRECTORY = '/Form/Type';
-    
+
     use BundleTrait;
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
     protected function configure(): void
     {
         $this
             ->setName('propel:form:generate')
             ->setDescription('Generate Form types stubs based on the schema.xml')
-
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Overwrite existing Form types')
-            ->addOption('platform',  null, InputOption::VALUE_REQUIRED,  'The platform')
+            ->addOption('platform', null, InputOption::VALUE_REQUIRED, 'The platform')
             ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to use to generate Form types (Ex: @AcmeDemoBundle)')
             ->addArgument('models', InputArgument::IS_ARRAY, 'Model classes to generate Form Types from')
-
             ->setHelp(<<<EOT
 The <info>%command.name%</info> command allows you to quickly generate Form Type stubs for a given bundle.
 
@@ -54,11 +56,13 @@ The <info>%command.name%</info> command allows you to quickly generate Form Type
 
 The <info>--force</info> parameter allows you to overwrite existing files.
 EOT
-        );
+            );
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -72,7 +76,7 @@ EOT
         $schemas = $this->getFinalSchemas($kernel, $bundle);
 
         if (!$schemas) {
-            $output->writeln(sprintf('No <comment>*schemas.xml</comment> files found in bundle <comment>%s</comment>.', $bundle->getName()));
+            $output->writeln("No <comment>*schemas.xml</comment> files found in bundle <comment>{$bundle->getName()}</comment>.");
 
             return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
         }
@@ -89,26 +93,67 @@ EOT
     }
 
     /**
+     * Get the ModelManager to use.
+     *
+     * @param InputInterface $input An InputInterface instance.
+     * @param array<string, array{?BundleInterface, SplFileInfo}> $schemas A list of schemas.
+     *
+     * @return ModelManager
+     */
+    protected function getModelManager(InputInterface $input, array $schemas): ModelManager
+    {
+        $schemaFiles = [];
+        foreach ($schemas as $data) {
+            $schemaFiles[] = $data[1];
+        }
+
+        $manager = new ModelManager();
+        $manager->setFilesystem(new Filesystem());
+        $manager->setGeneratorConfig($this->getGeneratorConfig($input));
+        $manager->setSchemas($schemaFiles);
+
+        return $manager;
+    }
+
+    /**
+     * Get the GeneratorConfig instance to use.
+     *
+     * @param InputInterface $input An InputInterface instance.
+     *
+     * @return GeneratorConfig
+     */
+    protected function getGeneratorConfig(InputInterface $input): GeneratorConfig
+    {
+        $generatorConfig = null;
+
+        if ($input->getOption('platform') !== null) {
+            $generatorConfig['propel']['generator']['platformClass'] = $input->getOption('platform');
+        }
+
+        return new GeneratorConfig("{$this->getCacheDir()}/propel.json", $generatorConfig);
+    }
+
+    /**
      * Create FormTypes from a given database, bundle and models.
      *
-     * @param BundleInterface $bundle   The bundle for which the FormTypes will be generated.
-     * @param Database        $database The database to inspect.
-     * @param string[]        $models   The models to build.
-     * @param OutputInterface $output   An OutputInterface instance
-     * @param boolean         $force    Override files if present.
+     * @param BundleInterface $bundle The bundle for which the FormTypes will be generated.
+     * @param Database $database The database to inspect.
+     * @param string[] $models The models to build.
+     * @param OutputInterface $output An OutputInterface instance
+     * @param boolean $force Override files if present.
      */
     protected function createFormTypeFromDatabase(BundleInterface $bundle, Database $database, array $models, OutputInterface $output, bool $force = false): void
     {
         $dir = $this->createDirectory($bundle, $output);
 
         foreach ($database->getTables() as $table) {
-            if (0 < count($models) && !in_array($table->getPhpName(), $models)) {
+            if (!empty($models) && !in_array($table->getPhpName(), $models)) {
                 continue;
             }
 
-            $file = new \SplFileInfo(sprintf('%s/%sType.php', $dir, $table->getPhpName()));
+            $file = new SplFileInfo("$dir/{$table->getPhpName()}Type.php");
 
-            if (!file_exists($file) || true === $force) {
+            if (!file_exists($file) || $force === true) {
                 $this->writeFormType($bundle, $table, $file, $force, $output);
             } else {
                 $output->writeln(sprintf('File <comment>%-60s</comment> exists, skipped. Try the <info>--force</info> option.', $this->getRelativeFileName($file)));
@@ -124,7 +169,7 @@ EOT
      *
      * @return string The path to the created directory.
      */
-    protected function createDirectory(BundleInterface $bundle, OutputInterface $output)
+    protected function createDirectory(BundleInterface $bundle, OutputInterface $output): string
     {
         $fs = new Filesystem();
 
@@ -146,12 +191,12 @@ EOT
      * Write a FormType.
      *
      * @param BundleInterface $bundle The bundle in which the FormType will be created.
-     * @param Table           $table  The table for which the FormType will be created.
-     * @param \SplFileInfo    $file   File representing the FormType.
-     * @param boolean         $force  Is the write forced?
+     * @param Table $table The table for which the FormType will be created.
+     * @param SplFileInfo $file File representing the FormType.
+     * @param boolean $force Is the write forced?
      * @param OutputInterface $output An OutputInterface instance.
      */
-    protected function writeFormType(BundleInterface $bundle, Table $table, \SplFileInfo $file, bool $force, OutputInterface $output): void
+    protected function writeFormType(BundleInterface $bundle, Table $table, SplFileInfo $file, bool $force, OutputInterface $output): void
     {
         $formBuilder = new FormBuilder();
         $formTypeContent = $formBuilder->buildFormType($bundle, $table, self::DEFAULT_FORM_TYPE_DIRECTORY);
@@ -161,52 +206,11 @@ EOT
     }
 
     /**
-     * @param  \SplFileInfo $file
+     * @param SplFileInfo $file
      * @return string
      */
-    protected function getRelativeFileName(\SplFileInfo $file): string
+    protected function getRelativeFileName(SplFileInfo $file): string
     {
-        return substr(str_replace(realpath($this->getContainer()->getParameter('kernel.project_dir') . '/../'), '', $file), 1);
-    }
-
-    /**
-     * Get the GeneratorConfig instance to use.
-     *
-     * @param InputInterface $input An InputInterface instance.
-     *
-     * @return GeneratorConfig
-     */
-    protected function getGeneratorConfig(InputInterface $input): GeneratorConfig
-    {
-        $generatorConfig = null;
-
-        if (null !== $input->getOption('platform')) {
-            $generatorConfig['propel']['generator']['platformClass'] = $input->getOption('platform');
-        }
-
-        return new GeneratorConfig($this->getCacheDir().'/propel.json', $generatorConfig);
-    }
-
-    /**
-     * Get the ModelManager to use.
-     *
-     * @param InputInterface                                       $input   An InputInterface instance.
-     * @param array<string, array{?BundleInterface, \SplFileInfo}> $schemas A list of schemas.
-     *
-     * @return ModelManager
-     */
-    protected function getModelManager(InputInterface $input, array $schemas): ModelManager
-    {
-        $schemaFiles = array();
-        foreach ($schemas as $data) {
-            $schemaFiles[] = $data[1];
-        }
-
-        $manager = new ModelManager();
-        $manager->setFilesystem(new Filesystem());
-        $manager->setGeneratorConfig($this->getGeneratorConfig($input));
-        $manager->setSchemas($schemaFiles);
-
-        return $manager;
+        return substr(str_replace(realpath("{$this->getContainer()->getParameter('kernel.project_dir')}/../"), '', $file), 1);
     }
 }

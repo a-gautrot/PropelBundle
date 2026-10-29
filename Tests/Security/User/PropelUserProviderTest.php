@@ -12,8 +12,8 @@ namespace Propel\Bundle\PropelBundle\Tests\Security\User;
 
 use Propel\Bundle\PropelBundle\Security\User\PropelUserProvider;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\User;
-use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
+use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 

@@ -19,7 +19,7 @@ use Propel\Runtime\Map\TableMap;
 /**
  * # ItemQuery
  */
-class ItemQuery
+class ItemQuery extends TableMap
 {
     /**
      * @var array
@@ -27,6 +27,7 @@ class ItemQuery
     private array $map = [
         'id' => PropelTypes::INTEGER,
         'value' => PropelTypes::VARCHAR,
+        'code' => PropelTypes::CHAR,
         'price' => PropelTypes::FLOAT,
         'is_active' => PropelTypes::BOOLEAN,
         'enabled' => PropelTypes::BOOLEAN_EMU,
@@ -52,32 +53,37 @@ class ItemQuery
      */
     public function getPrimaryKeys(): array
     {
-        $cm = new ColumnMap('id', new TableMap());
-        $cm->setType('INTEGER');
+        $cm = new ColumnMap('id', $this, 'Id', PropelTypes::INTEGER);
 
         return ['id' => $cm];
     }
 
     /**
      * Method from the TableMap API
-     * @param mixed $column
-     * @return Column|null
+     * @param string $column
+     * @param bool $normalize
+     * @return ColumnMap
      */
-    public function getColumn(mixed $column): ?Column
+    public function getColumn(string $column, bool $normalize = true): ColumnMap
     {
         if ($this->hasColumn($column)) {
-            return new Column($column, $this->map[$column]);
+            $map = new ColumnMap($column, $this, ucfirst($column), $this->map[$column]);
+            $map->setSize($map->isText() ? 255 : 0);
+            $map->setNotNull($column === 'id');
+
+            return $map;
         }
 
-        return null;
+        return parent::getColumn($column, $normalize);
     }
 
     /**
      * Method from the TableMap API
      * @param mixed $column
+     * @param bool $normalize
      * @return bool
      */
-    public function hasColumn(mixed $column): bool
+    public function hasColumn(mixed $column, bool $normalize = true): bool
     {
         return in_array($column, array_keys($this->map));
     }

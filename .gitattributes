@@ -16,3 +16,4 @@
 /phpunit.dist.xml export-ignore
 /psalm.dist.xml export-ignore
 /Tests export-ignore
+/CHANGELOG.md export-ignore

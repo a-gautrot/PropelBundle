@@ -15,31 +15,30 @@ use Propel\Generator\Model\Table;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
+ * # FormBuilder
  * @author Moritz Schroeder <moritz.schroeder@molabs.de>
  */
 class FormBuilder
 {
     /**
      * Build a form based on the given table.
-     * 
+     *
      * @param BundleInterface $bundle
-     * @param Table           $table
-     * @param string          $formTypeNamespace
+     * @param Table $table
+     * @param string $formTypeNamespace
      *
      * @return string
      */
-    public function buildFormType(BundleInterface $bundle, Table $table, $formTypeNamespace)
+    public function buildFormType(BundleInterface $bundle, Table $table, string $formTypeNamespace): string
     {
         $modelName = $table->getPhpName();
         $formTypeContent = file_get_contents(__DIR__ . '/../Resources/skeleton/FormType.php');
 
         $formTypeContent = str_replace('##NAMESPACE##', $bundle->getNamespace() . str_replace('/', '\\', $formTypeNamespace), $formTypeContent);
-        $formTypeContent = str_replace('##CLASS##', $modelName . 'Type', $formTypeContent);
-        $formTypeContent = str_replace('##FQCN##', sprintf('%s\%s', $table->getNamespace(), $modelName), $formTypeContent);
+        $formTypeContent = str_replace('##CLASS##', "{$modelName}Type", $formTypeContent);
+        $formTypeContent = str_replace('##FQCN##', "{$table->getNamespace()}\\$modelName", $formTypeContent);
         $formTypeContent = str_replace('##TYPE_NAME##', strtolower($modelName), $formTypeContent);
-        $formTypeContent = str_replace('##BUILD_CODE##', $this->buildFormFields($table), $formTypeContent);
-
-        return $formTypeContent;
+        return str_replace('##BUILD_CODE##', $this->buildFormFields($table), $formTypeContent);
     }
 
     /**
@@ -49,7 +48,7 @@ class FormBuilder
      *
      * @return string The FormType code.
      */
-    protected function buildFormFields(Table $table)
+    protected function buildFormFields(Table $table): string
     {
         $buildCode = '';
         foreach ($table->getColumns() as $column) {
@@ -57,14 +56,15 @@ class FormBuilder
                 continue;
             }
             $name = $column->getPhpName();
-            
-            // Use foreignKey table name, so the TypeGuesser gets it right 
+
+            // Use foreignKey table name, so the TypeGuesser gets it right
             if ($column->isForeignKey()) {
                 /** @var ForeignKey $foreignKey */
                 $foreignKey = current($column->getForeignKeys());
                 $name = $foreignKey->getForeignTable()->getPhpName();
             }
-            $buildCode .= sprintf("\n        \$builder->add('%s');", lcfirst($name));
+            $fieldName = lcfirst($name);
+            $buildCode .= "\n        \$builder->add('$fieldName');";
         }
 
         return $buildCode;

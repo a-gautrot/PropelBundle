@@ -60,20 +60,20 @@ class SchemaLocatorTest extends TestCase
         $root = vfsStream::setup('projectDir');
         vfsStream::create($pathStructure);
 
-        $kernelMock = $this->getMockBuilder(Kernel::class)->disableOriginalConstructor()->getMock();
-        $kernelMock->method('getProjectDir')->willReturn($root->url());
-        $kernelMock->method('locateResource')->willReturnCallback(function ($argument) {
+        $kernelStub = $this->createStub(Kernel::class);
+        $kernelStub->method('getProjectDir')->willReturn($root->url());
+        $kernelStub->method('locateResource')->willReturnCallback(function (string $argument): string {
             return (str_replace('@', __DIR__ . '/../Fixtures/', $argument));
         });
 
         // attach kernel service to container
         $this->container = $this->getContainer();
-        $this->container->set('kernel', $kernelMock);
+        $this->container->set('kernel', $kernelStub);
 
         $this->bundleMock = new FakeBundle();
 
         $this->configuration['paths']['schemaDir'] = vfsStream::url('projectDir/configuration/directory');
-        $this->fileLocator = new FileLocator($kernelMock);
+        $this->fileLocator = new FileLocator($kernelStub);
     }
 
     /**

@@ -40,10 +40,10 @@ class Item implements ActiveRecordInterface
     private mixed $price;
 
     /**
-     * @param mixed|null $id
-     * @param mixed|null $value
-     * @param mixed|null $groupName
-     * @param mixed|null $price
+     * @param mixed $id
+     * @param mixed $value
+     * @param mixed $groupName
+     * @param mixed $price
      */
     public function __construct(mixed $id = null, mixed $value = null, mixed $groupName = null, mixed $price = null)
     {
@@ -94,7 +94,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed|null $id
+     * @param mixed $id
      * @return void
      */
     public function setId(mixed $id = null): void
@@ -103,7 +103,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed|null $primaryKey
+     * @param mixed $primaryKey
      * @return void
      */
     public function setPrimaryKey(mixed $primaryKey = null): void
@@ -144,10 +144,10 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @param $b
+     * @param bool $b
      * @return void
      */
-    public function setNew($b): void
+    public function setNew(bool $b): void
     {
     }
 
@@ -167,10 +167,10 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @param $b
+     * @param bool $b
      * @return void
      */
-    public function setDeleted($b): void
+    public function setDeleted(bool $b): void
     {
     }
 

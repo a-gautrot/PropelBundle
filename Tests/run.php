@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use PHPUnit\TextUI\Application;
+
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 $_SERVER['argv'] = array_merge(
@@ -10,4 +12,4 @@ $_SERVER['argv'] = array_merge(
 );
 $_SERVER['argc'] = count($_SERVER['argv']);
 
-exit((new \PHPUnit\TextUI\Application())->run($_SERVER['argv']));
+exit((new Application())->run($_SERVER['argv']));

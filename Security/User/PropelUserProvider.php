@@ -17,6 +17,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 /**
+ * # PropelUserProvider
  * Provides easy to use provisioning for Propel model users.
  *
  * @author William DURAND <william.durand1@gmail.com>
@@ -53,7 +54,7 @@ class PropelUserProvider implements UserProviderInterface
     public function __construct(string $class, ?string $property = null)
     {
         $this->class = $class;
-        $this->queryClass = $class . 'Query';
+        $this->queryClass = "{$class}Query";
         $this->property = $property;
     }
 
@@ -89,7 +90,8 @@ class PropelUserProvider implements UserProviderInterface
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof $this->class) {
-            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', get_class($user)));
+            $userClass = get_class($user);
+            throw new UnsupportedUserException("Instances of \"$userClass\" are not supported.");
         }
 
         $queryClass = $this->queryClass;

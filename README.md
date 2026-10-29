@@ -67,6 +67,11 @@ Nightly release:
 * Propel's ParamConverter can be used
   with [Symfony Attributes](https://symfony.com/doc/6.4/reference/attributes.html).
 
+### Deprecated
+
+* XmlFileLoader has been [deprecated](https://symfony.com/blog/new-in-symfony-7-4-deprecated-xml-configuration) since
+  Symfony **7.4**. If you are using XML schemas, you must convert them to YAML schemas.
+
 ## New to version 6.1
 
 * Removed support for Symfony 6.0 to 6.3

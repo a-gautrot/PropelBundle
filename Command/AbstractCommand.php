@@ -10,32 +10,56 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use InvalidArgumentException;
 use Propel\Bundle\PropelBundle\Service\SchemaLocator;
+use ReflectionClass;
+use RuntimeException;
+use SplFileInfo;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
+ * # AbstractCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
  */
 abstract class AbstractCommand extends Command
 {
+    /**
+     * @var string|null
+     */
     protected ?string $cacheDir = null;
+    /**
+     * @var BundleInterface|null
+     */
     protected ?BundleInterface $bundle = null;
+    /**
+     * @var InputInterface
+     */
     protected InputInterface $input;
+    /**
+     * @var OutputInterface
+     */
     protected OutputInterface $output;
+    /**
+     * @var ContainerInterface
+     */
     private ContainerInterface $container;
 
     use FormattingHelpers;
 
-    public function __construct(ContainerInterface $container, $name = null)
+    /**
+     * @param ContainerInterface $container
+     * @param string|null $name
+     */
+    public function __construct(ContainerInterface $container, ?string $name = null)
     {
         $this->container = $container;
 
@@ -43,15 +67,17 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return void
      */
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         $this->input = $input;
         $this->output = $output;
-        $this->cacheDir = $this->getKernel()->getCacheDir().'/propel';
+        $this->cacheDir = "{$this->getKernel()->getCacheDir()}/propel";
 
-        if ($input->hasArgument('bundle') && !empty($input->getArgument('bundle')) && '@' === substr($input->getArgument('bundle'), 0, 1)) {
+        if ($input->hasArgument('bundle') && !empty($input->getArgument('bundle')) && str_starts_with($input->getArgument('bundle'), '@')) {
             $this->bundle = $this
                 ->getContainer()
                 ->get('kernel')
@@ -59,6 +85,30 @@ abstract class AbstractCommand extends Command
         }
     }
 
+    /**
+     * Return the current Propel cache directory.
+     *
+     * @return string The current Propel cache directory.
+     */
+    protected function getCacheDir(): string
+    {
+        return $this->cacheDir;
+    }
+
+    /**
+     * @return KernelInterface
+     */
+    protected function getKernel(): KernelInterface
+    {
+        /** @var Application $application */
+        $application = $this->getApplication();
+
+        return $application->getKernel();
+    }
+
+    /**
+     * @return ContainerInterface
+     */
     public function getContainer(): ContainerInterface
     {
         return $this->container;
@@ -76,30 +126,30 @@ abstract class AbstractCommand extends Command
         $this->copySchemas($this->getKernel(), $this->cacheDir);
 
         // propel.json
-        $this->createPropelConfigurationFile($this->cacheDir.'/propel.json');
+        $this->createPropelConfigurationFile("$this->cacheDir/propel.json");
     }
 
     /**
-     * @param KernelInterface $kernel   The application kernel.
-     * @param string          $cacheDir The directory in which the schemas will
+     * @param KernelInterface $kernel The application kernel.
+     * @param string $cacheDir The directory in which the schemas will
      *                                  be copied.
      */
     protected function copySchemas(KernelInterface $kernel, string $cacheDir): void
     {
         $filesystem = new Filesystem();
 
-        /** @var array<string, array{?BundleInterface, \SplFileInfo}> $finalSchemas */
+        /** @var array<string, array{?BundleInterface, SplFileInfo}> $finalSchemas */
         $finalSchemas = $this->getFinalSchemas($kernel, $this->bundle);
         foreach ($finalSchemas as $schema) {
             list($bundle, $finalSchema) = $schema;
 
             if ($bundle) {
-                $file = $cacheDir.DIRECTORY_SEPARATOR.'bundle-'.$bundle->getName().'-'.$finalSchema->getBaseName();
+                $file = $cacheDir . DIRECTORY_SEPARATOR . 'bundle-' . $bundle->getName() . '-' . $finalSchema->getBaseName();
             } else {
-                $file = $cacheDir.DIRECTORY_SEPARATOR.'app-'.$finalSchema->getBaseName();
+                $file = $cacheDir . DIRECTORY_SEPARATOR . 'app-' . $finalSchema->getBaseName();
             }
 
-            $filesystem->copy((string) $finalSchema, $file, true);
+            $filesystem->copy((string)$finalSchema, $file, true);
 
             // the package needs to be set absolute
             // besides, the automated namespace to package conversion has
@@ -117,28 +167,21 @@ abstract class AbstractCommand extends Command
                     $database['package'] = $this->getPackageFromApp((string)$database['namespace']);
                 }
             } else {
-                throw new \RuntimeException(
-                    sprintf(
-                        '%s : Please define a `package` attribute or a `namespace` attribute for schema `%s`',
-                        $bundle ? $bundle->getName() : 'App',
-                        $finalSchema->getBaseName()
-                    )
+                $bundleName = $bundle ? $bundle->getName() : 'App';
+                throw new RuntimeException(
+                    "$bundleName : Please define a `package` attribute or a `namespace` attribute for schema `{$finalSchema->getBaseName()}`"
                 );
             }
 
             if ($this->input->hasOption('connection')) {
-                $connections = $this->input->getOption('connection') ?: array($this->getDefaultConnection());
+                $connections = $this->input->getOption('connection') ?: [$this->getDefaultConnection()];
 
-                if (!in_array((string) $database['name'], $connections)) {
+                if (!in_array((string)$database['name'], $connections)) {
                     // we skip this schema because the connection name doesn't
                     // match the input values
                     $filesystem->remove($file);
-                    $this->output->writeln(sprintf(
-                        '<info>Skipped schema %s due to database name missmatch (%s not in [%s]).</info>',
-                        $finalSchema->getPathname(),
-                        $database['name'],
-                        implode(',', $connections)
-                    ));
+                    $connectionNames = implode(',', $connections);
+                    $this->output->writeln("<info>Skipped schema {$finalSchema->getPathname()} due to database name missmatch ({$database['name']} not in [$connectionNames]).</info>");
                     continue;
                 }
             }
@@ -164,15 +207,15 @@ abstract class AbstractCommand extends Command
     /**
      * Return a list of final schema files that will be processed.
      *
-     * @param KernelInterface      $kernel The application kernel.
+     * @param KernelInterface $kernel The application kernel.
      * @param BundleInterface|null $bundle If given, only the bundle's schemas will
      *                                     be returned.
      *
-     * @return array<string, array{?BundleInterface, \SplFileInfo}> A list of schemas.
+     * @return array<string, array{?BundleInterface, SplFileInfo}> A list of schemas.
      */
     protected function getFinalSchemas(KernelInterface $kernel, ?BundleInterface $bundle = null): array
     {
-        if (null !== $bundle) {
+        if ($bundle !== null) {
             return $this->getSchemaLocator()->locateFromBundle($bundle);
         }
 
@@ -180,16 +223,142 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * @return SchemaLocator
+     */
+    protected function getSchemaLocator(): SchemaLocator
+    {
+        return $this->getContainer()->get('propel.schema_locator');
+    }
+
+    /**
+     * @param BundleInterface $bundle
+     * @param string $namespace
+     *
+     * @return string
+     */
+    protected function getPackageFromBundle(BundleInterface $bundle, string $namespace): string
+    {
+        //find relative path from namespace to bundle->getNamespace()
+        $baseNamespace = (new ReflectionClass($bundle))->getNamespaceName();
+        if (str_starts_with($namespace, $baseNamespace)) {
+            //base namespace fits
+            //eg.
+            //  Base: Jarves/JarvesBundle => Jarves
+            //  Model namespace: Jarves\Model
+            //  strpos(Jarves\Model, Jarves) === 0
+            // $namespaceDiff = Model
+
+            $namespaceDiff = substr($namespace, strlen($baseNamespace) + 1);
+
+            $bundlePath = realpath($bundle->getPath()) . '/' . str_replace('\\', '/', $namespaceDiff);
+            $appPath = realpath($this->getKernel()->getProjectDir());
+
+            $path = static::getRelativePath($bundlePath, $appPath);
+
+            return str_replace('/', '.', $path);
+        }
+
+        //does not match, or it's an absolute path, so return it without suffix
+        if ($namespace[0] === '\\') {
+            $namespace = substr($namespace, 1);
+        }
+
+        return str_replace('\\', '.', $namespace);
+    }
+
+    /**
+     * Returns a relative path from $path to $current.
+     *
+     * @param string $from
+     * @param string $to relative to this
+     *
+     * @return string relative path without trailing slash
+     */
+    public static function getRelativePath(string $from, string $to): string
+    {
+        $from = '/' . trim($from, '/');
+        $to = '/' . trim($to, '/');
+
+        if (str_starts_with($from, $to)) {
+            return substr($from, strlen($to) + ($to === '/' ? 0 : 1));
+        }
+
+        $result = '';
+        while ($to && !str_contains($from, $to)) {
+            $result .= '../';
+            $to = substr($to, 0, strrpos($to, '/'));
+        }
+
+        return !$to /*we reached root*/ ? $result . substr($from, 1) : $result . substr($from, strlen($to) + 1);
+    }
+
+    /**
+     * @param string $namespace
+     *
+     * @return string
+     */
+    protected function getPackageFromApp(string $namespace): string
+    {
+        if ($namespace[0] === '\\') {
+            $namespace = substr($namespace, 1);
+        }
+
+        if (stripos($namespace, 'App\\') === 0) {
+            $namespace = substr($namespace, 4);
+        }
+
+        return 'src.' . str_replace('\\', '.', $namespace);
+    }
+
+    /**
+     * Returns the name of the default connection.
+     *
+     * @return string
+     */
+    protected function getDefaultConnection(): string
+    {
+        $config = $this->getConfig();
+
+        return !empty($config['generator']['defaultConnection']) ? $config['generator']['defaultConnection'] : key($config['database']['connections']);
+    }
+
+    /**
+     * @return array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: ?string, loaderScriptDir: string}, database: array{connections: array<string, array<string, mixed>>}, runtime: array{defaultConnection: string, logging: bool}, migrations: array{tableName: string, parserClass: string}, generator: array<string, mixed>}
+     */
+    protected function getConfig(): array
+    {
+        return $this->getContainer()->getParameter('propel.configuration');
+    }
+
+    /**
+     * Create a JSON file which represents propel.configuration.
+     *
+     * @param string $file Should be 'propel.json'.
+     */
+    protected function createPropelConfigurationFile(string $file): void
+    {
+        $propelConfig = $this->getConfig();
+
+        //needed because Propel 2's configuration tree is a bit different
+        //propel.runtime.logging is PropelBundle feature only.
+        unset($propelConfig['runtime']['logging']);
+
+        $config = ['propel' => $propelConfig];
+
+        file_put_contents($file, json_encode($config, JSON_PRETTY_PRINT));
+    }
+
+    /**
      * Run a Symfony command.
      *
-     * @param Command              $command    The command to run.
+     * @param Command $command The command to run.
      * @param array<string, mixed> $parameters An array of parameters to give to the command.
-     * @param InputInterface       $input      An InputInterface instance
-     * @param OutputInterface      $output     An OutputInterface instance
+     * @param InputInterface $input An InputInterface instance
+     * @param OutputInterface $output An OutputInterface instance
      *
      * @return int The command return code.
      *
-     * @throws \Symfony\Component\Console\Exception\ExceptionInterface
+     * @throws ExceptionInterface
      */
     protected function runCommand(Command $command, array $parameters, InputInterface $input, OutputInterface $output): int
     {
@@ -197,9 +366,7 @@ abstract class AbstractCommand extends Command
         array_unshift($parameters, $this->getName());
 
         // merge the default parameters
-        $extraParameters = [
-            '--verbose' => $input->getOption('verbose')
-        ];
+        $extraParameters = ['--verbose' => $input->getOption('verbose')];
 
         if ($command->getDefinition()->hasOption('schema-dir')) {
             $extraParameters['--schema-dir'] = $this->cacheDir;
@@ -228,23 +395,15 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * Create an XML file which represents propel.configuration
+     * Reads the platform class from the configuration
      *
-     * @param string $file Should be 'propel.json'.
+     * @return string|null The platform class name.
      */
-    protected function createPropelConfigurationFile(string $file): void
+    protected function getPlatform(): ?string
     {
-        $propelConfig = $this->getConfig();
+        $config = $this->getConfig();
 
-        //needed because because Propel2's configuration tree is a bit different
-        //propel.runtime.logging is PropelBundle feature only.
-        unset($propelConfig['runtime']['logging']);
-
-        $config = array(
-            'propel' => $propelConfig
-        );
-
-        file_put_contents($file, json_encode($config, JSON_PRETTY_PRINT));
+        return $config['generator']['platformClass'];
     }
 
     /**
@@ -256,29 +415,12 @@ abstract class AbstractCommand extends Command
      */
     protected function getConnections(array $connections): array
     {
-        $dsnList = array();
+        $dsnList = [];
         foreach ($connections as $connection) {
-            $dsnList[] = sprintf('%s=%s', $connection, $this->getDsn($connection));
+            $dsnList[] = "$connection={$this->getDsn($connection)}";
         }
 
         return $dsnList;
-    }
-
-    /**
-     * Get the data (host, user, ...) for a given connection.
-     *
-     * @param string $name The connection name.
-     *
-     * @return array<string, mixed> The connection data.
-     */
-    protected function getConnectionData(string $name): array
-    {
-        $knownConnections = $this->getConfig();
-        if (!isset($knownConnections['database']['connections'][$name])) {
-            throw new \InvalidArgumentException(sprintf('Unknown connection "%s"', $name));
-        }
-
-        return $knownConnections['database']['connections'][$name];
     }
 
     /**
@@ -304,104 +446,20 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * @return SchemaLocator
-     */
-    protected function getSchemaLocator(): SchemaLocator
-    {
-        /** @var SchemaLocator $obj */
-        $obj = $this->getContainer()->get('propel.schema_locator');
-
-        return $obj;
-    }
-
-    /**
-     * @param string $namespace
+     * Get the data (host, user, ...) for a given connection.
      *
-     * @return string
-     */
-    protected function getPackageFromApp(string $namespace): string
-    {
-        if ('\\' === $namespace[0]) {
-            $namespace = substr($namespace, 1);
-        }
-
-        if (0 === stripos($namespace, 'App\\')) {
-            $namespace = substr($namespace, 4);
-        }
-
-        return 'src.'.str_replace('\\', '.', $namespace);
-    }
-
-    /**
-     * @param BundleInterface $bundle
-     * @param string $namespace
+     * @param string $name The connection name.
      *
-     * @return string
+     * @return array<string, mixed> The connection data.
      */
-    protected function getPackageFromBundle(BundleInterface $bundle, string $namespace): string
+    protected function getConnectionData(string $name): array
     {
-        //find relative path from namespace to bundle->getNamespace()
-        $baseNamespace = (new \ReflectionClass($bundle))->getNamespaceName();
-        if (0 === strpos($namespace, $baseNamespace)) {
-            //base namespace fits
-            //eg.
-            //  Base: Jarves/JarvesBundle => Jarves
-            //  Model namespace: Jarves\Model
-            //  strpos(Jarves\Model, Jarves) === 0
-            // $namespaceDiff = Model
-
-            $namespaceDiff = substr($namespace, strlen($baseNamespace) + 1);
-
-            $bundlePath = realpath($bundle->getPath()) . '/' . str_replace('\\', '/', $namespaceDiff);
-            $appPath = realpath($this->getKernel()->getProjectDir());
-
-            $path = static::getRelativePath($bundlePath, $appPath);
-
-            return str_replace('/', '.', $path);
+        $knownConnections = $this->getConfig();
+        if (!isset($knownConnections['database']['connections'][$name])) {
+            throw new InvalidArgumentException("Unknown connection \"$name\"");
         }
 
-        //does not match or its a absolute path, so return it without suffix
-        if ('\\' === $namespace[0]) {
-            $namespace = substr($namespace, 1);
-        }
-
-        return str_replace('\\', '.', $namespace);
-    }
-
-    /**
-     * Return the current Propel cache directory.
-     *
-     * @return string The current Propel cache directory.
-     */
-    protected function getCacheDir(): string
-    {
-        return $this->cacheDir;
-    }
-
-    /**
-     * Returns a relative path from $path to $current.
-     *
-     * @param string $from
-     * @param string $to relative to this
-     *
-     * @return string relative path without trailing slash
-     */
-    public static function getRelativePath(string $from, string $to): string
-    {
-        $from = '/' . trim($from, '/');
-        $to = '/' . trim($to, '/');
-
-        if (0 === $pos = strpos($from, $to)) {
-            return substr($from, strlen($to) + ('/' === $to ? 0 : 1));
-        }
-
-        $result = '';
-        while ($to && false === strpos($from, $to)) {
-            $result .= '../';
-            $to = substr($to, 0, strrpos($to, '/'));
-        }
-
-        return !$to /*we reached root*/ ? $result . substr($from, 1) : $result. substr($from, strlen($to) + 1);
+        return $knownConnections['database']['connections'][$name];
     }
 
     /**
@@ -412,7 +470,7 @@ abstract class AbstractCommand extends Command
      */
     protected function parseDbName(string $dsn): ?string
     {
-        preg_match('#(dbname|Database)=([a-zA-Z0-9\_]+)#', $dsn, $matches);
+        preg_match('#(dbname|Database)=(\w+)#', $dsn, $matches);
 
         if (isset($matches[2])) {
             return $matches[2];
@@ -432,45 +490,5 @@ abstract class AbstractCommand extends Command
         $config = $this->getConfig();
 
         return $config['migrations']['tableName'];
-    }
-
-    /**
-     * Returns the name of the default connection.
-     *
-     * @return string
-     */
-    protected function getDefaultConnection(): string
-    {
-        $config = $this->getConfig();
-
-        return !empty($config['generator']['defaultConnection']) ? $config['generator']['defaultConnection'] : key($config['database']['connections']);
-    }
-
-    /**
-     * Reads the platform class from the configuration
-     *
-     * @return string|null The platform class name.
-     */
-    protected function getPlatform(): ?string
-    {
-        $config = $this->getConfig();
-
-        return $config['generator']['platformClass'];
-    }
-
-    protected function getKernel(): KernelInterface
-    {
-        /** @var Application $application */
-        $application = $this->getApplication();
-
-        return $application->getKernel();
-    }
-
-    /**
-     * @return array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: ?string, loaderScriptDir: string}, database: array{connections: array<string, array<string, mixed>>}, runtime: array{defaultConnection: string, logging: bool}, migrations: array{tableName: string, parserClass: string}, generator: array<string, mixed>}
-     */
-    protected function getConfig(): array
-    {
-        return $this->getContainer()->getParameter('propel.configuration');
     }
 }

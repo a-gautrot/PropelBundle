@@ -219,7 +219,7 @@ abstract class Book implements ActiveRecordInterface
      * Avoids recursive loops that turn into segmentation faults when serializing
      * @deprecated in PHP 8.5
      */
-    public function __sleep()
+    public function __sleep(): array
     {
         $this->clearAllReferences();
 
@@ -403,17 +403,17 @@ abstract class Book implements ActiveRecordInterface
     {
         try {
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? $startcol : BookTableMap::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->id = (null !== $col) ? (int)$col : null;
+            $col = $row[$indexType == TableMap::TYPE_NUM ? $startcol : BookTableMap::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->id = ($col !== null) ? (int)$col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : BookTableMap::translateFieldName('Name', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->name = (null !== $col) ? (string)$col : null;
+            $col = $row[$indexType == TableMap::TYPE_NUM ? 1 + $startcol : BookTableMap::translateFieldName('Name', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->name = ($col !== null) ? (string)$col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : BookTableMap::translateFieldName('Isbn', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->isbn = (null !== $col) ? (string)$col : null;
+            $col = $row[$indexType == TableMap::TYPE_NUM ? 2 + $startcol : BookTableMap::translateFieldName('Isbn', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->isbn = ($col !== null) ? (string)$col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 3 + $startcol : BookTableMap::translateFieldName('AuthorId', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->author_id = (null !== $col) ? (int)$col : null;
+            $col = $row[$indexType == TableMap::TYPE_NUM ? 3 + $startcol : BookTableMap::translateFieldName('AuthorId', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->author_id = ($col !== null) ? (int)$col : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -437,7 +437,7 @@ abstract class Book implements ActiveRecordInterface
     public function resetModified(?string $col = null): void
     {
         if ($col !== null) {
-            while (false !== ($offset = array_search($col, $this->modifiedColumns))) {
+            while (($offset = array_search($col, $this->modifiedColumns)) !== false) {
                 array_splice($this->modifiedColumns, $offset, 1);
             }
         } else {
@@ -517,7 +517,7 @@ abstract class Book implements ActiveRecordInterface
      * Code to be run after deleting the object in database
      * @param ConnectionInterface|null $con
      */
-    public function postDelete(?ConnectionInterface $con = null)
+    public function postDelete(?ConnectionInterface $con = null): void
     {
 
     }
@@ -699,7 +699,7 @@ abstract class Book implements ActiveRecordInterface
         $index = 0;
 
         $this->modifiedColumns[] = BookTableMap::ID;
-        if (null !== $this->id) {
+        if ($this->id !== null) {
             throw new PropelException('Cannot insert a value for auto-increment primary key (' . BookTableMap::ID . ')');
         }
 
@@ -717,11 +717,9 @@ abstract class Book implements ActiveRecordInterface
             $modifiedColumns[':p' . $index++] = 'AUTHOR_ID';
         }
 
-        $sql = sprintf(
-            'INSERT INTO book (%s) VALUES (%s)',
-            implode(', ', $modifiedColumns),
-            implode(', ', array_keys($modifiedColumns))
-        );
+        $columns = implode(', ', $modifiedColumns);
+        $placeholders = implode(', ', array_keys($modifiedColumns));
+        $sql = "INSERT INTO book ($columns) VALUES ($placeholders)";
 
         try {
             $stmt = $con->prepare($sql);
@@ -744,7 +742,7 @@ abstract class Book implements ActiveRecordInterface
             $stmt->execute();
         } catch (Exception $e) {
             Propel::log($e->getMessage(), Propel::LOG_ERR);
-            throw new PropelException(sprintf('Unable to execute INSERT statement [%s]', $sql), 0, $e);
+            throw new PropelException("Unable to execute INSERT statement [$sql]", 0, $e);
         }
 
         try {
@@ -785,7 +783,7 @@ abstract class Book implements ActiveRecordInterface
      *
      * @param ConnectionInterface $con
      *
-     * @return Integer Number of updated rows
+     * @return int Number of updated rows
      * @see doSave()
      */
     protected function doUpdate(ConnectionInterface $con): int
@@ -816,7 +814,7 @@ abstract class Book implements ActiveRecordInterface
      * Code to be run after inserting to database
      * @param ConnectionInterface|null $con
      */
-    public function postInsert(?ConnectionInterface $con = null)
+    public function postInsert(?ConnectionInterface $con = null): void
     {
 
     }
@@ -825,7 +823,7 @@ abstract class Book implements ActiveRecordInterface
      * Code to be run after updating the object in database
      * @param ConnectionInterface|null $con
      */
-    public function postUpdate(?ConnectionInterface $con = null)
+    public function postUpdate(?ConnectionInterface $con = null): void
     {
 
     }
@@ -834,7 +832,7 @@ abstract class Book implements ActiveRecordInterface
      * Code to be run after persisting the object
      * @param ConnectionInterface|null $con
      */
-    public function postSave(?ConnectionInterface $con = null)
+    public function postSave(?ConnectionInterface $con = null): void
     {
 
     }
@@ -1152,7 +1150,7 @@ abstract class Book implements ActiveRecordInterface
             return $this->exportTo($format, $includeLazyLoadColumns);
         }
 
-        throw new BadMethodCallException(sprintf('Call to undefined method: %s.', $name));
+        throw new BadMethodCallException("Call to undefined method: $name.");
     }
 
     /**
@@ -1177,7 +1175,7 @@ abstract class Book implements ActiveRecordInterface
     public function getVirtualColumn(string $name): mixed
     {
         if (!$this->hasVirtualColumn($name)) {
-            throw new PropelException(sprintf('Cannot get value of inexistent virtual column %s.', $name));
+            throw new PropelException("Cannot get value of inexistent virtual column $name.");
         }
 
         return $this->virtualColumns[$name];
@@ -1271,7 +1269,7 @@ abstract class Book implements ActiveRecordInterface
         }
 
         if ($includeForeignObjects) {
-            if (null !== $this->aAuthor) {
+            if ($this->aAuthor !== null) {
                 $result['Author'] = $this->aAuthor->toArray($keyType, $includeLazyLoadColumns, $alreadyDumpedObjects, true);
             }
         }

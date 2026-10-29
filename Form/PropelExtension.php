@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
 * This file is part of the Symfony package.
 *
 * (c) Fabien Potencier <fabien@symfony.com>
@@ -20,6 +20,7 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 /**
+ * # PropelExtension
  * Represents the Propel form extension, which loads the Propel functionality.
  *
  * @author Joseph Rouff <rouffj@gmail.com>
@@ -30,12 +31,12 @@ class PropelExtension extends AbstractExtension
     /**
      * @var PropertyAccessorInterface
      */
-    protected $propertyAccessor;
+    protected PropertyAccessorInterface $propertyAccessor;
 
     /**
      * @var ChoiceListFactoryInterface
      */
-    protected $choiceListFactory;
+    protected ChoiceListFactoryInterface $choiceListFactory;
 
     /**
      * PropelExtension constructor.
@@ -51,11 +52,11 @@ class PropelExtension extends AbstractExtension
 
     protected function loadTypes(): array
     {
-        return array(
+        return [
             new Type\ModelType($this->propertyAccessor, $this->choiceListFactory),
             new Type\TranslationCollectionType(),
             new Type\TranslationType()
-        );
+        ];
     }
 
     protected function loadTypeGuesser(): ?FormTypeGuesserInterface

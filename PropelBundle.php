@@ -22,14 +22,14 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
- * PropelBundle
+ * # PropelBundle
  *
  * @author William DURAND <william.durand1@gmail.com>
  */
 class PropelBundle extends Bundle
 {
     /**
-     * {@inheritdoc}
+     * @return void
      */
     public function boot(): void
     {
@@ -43,6 +43,9 @@ class PropelBundle extends Bundle
         }
     }
 
+    /**
+     * @return void
+     */
     protected function configureConnections(): void
     {
         $config = $this->container->getParameter('propel.configuration');
@@ -78,12 +81,15 @@ class PropelBundle extends Bundle
             $serviceContainer->setConnectionManager($manager);
 
             // load database maps
-            if (file_exists($config['paths']['loaderScriptDir'] . '/loadDatabase.php') && is_readable($config['paths']['loaderScriptDir'] . '/loadDatabase.php')) {
-                require_once($config['paths']['loaderScriptDir'] . '/loadDatabase.php');
+            if (file_exists("{$config['paths']['loaderScriptDir']}/loadDatabase.php") && is_readable("{$config['paths']['loaderScriptDir']}/loadDatabase.php")) {
+                require_once("{$config['paths']['loaderScriptDir']}/loadDatabase.php");
             }
         }
     }
 
+    /**
+     * @return void
+     */
     protected function configureLogging(): void
     {
         /** @var StandardServiceContainer $serviceContainer */
@@ -102,7 +108,8 @@ class PropelBundle extends Bundle
     }
 
     /**
-     * {@inheritdoc}
+     * @param ContainerBuilder $container
+     * @return void
      */
     public function build(ContainerBuilder $container): void
     {

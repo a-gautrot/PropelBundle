@@ -1,17 +1,19 @@
 <?xml version="1.0" ?>
 
-<container xmlns="http://symfony.com/schema/dic/services"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<container xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns="http://symfony.com/schema/dic/services"
            xsi:schemaLocation="http://symfony.com/schema/dic/services https://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
         <defaults autowire="true" autoconfigure="true" public="false">
-            <bind key="$container" type="service" id="service_container" />
+            <bind key="$container" type="service" id="service_container"/>
         </defaults>
-        <service id="propel_bundle_propel.command.build_command" class="Propel\Bundle\PropelBundle\Command\BuildCommand">
-            <tag name="console.command" command="propel:build" />
+        <service id="propel_bundle_propel.command.build_command"
+                 class="Propel\Bundle\PropelBundle\Command\BuildCommand">
+            <tag name="console.command" command="propel:build"/>
         </service>
-        <service id="propel_bundle_propel.command.database_create_command" class="Propel\Bundle\PropelBundle\Command\DatabaseCreateCommand">
-            <tag name="console.command" command="propel:database:create" />
+        <service id="propel_bundle_propel.command.database_create_command"
+                 class="Propel\Bundle\PropelBundle\Command\DatabaseCreateCommand">
+            <tag name="console.command" command="propel:database:create"/>
         </service>
         <service class="Propel\Bundle\PropelBundle\Command\DatabaseDropCommand"
                  id="propel_bundle_propel.command.database_drop_command">

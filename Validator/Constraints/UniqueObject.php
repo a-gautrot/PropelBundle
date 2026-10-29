@@ -15,6 +15,7 @@ use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
+ * # UniqueObject
  * Constraint for the Unique Object validator
  *
  * @author Maxime AILLOUD <maxime.ailloud@gmail.com>
@@ -33,16 +34,19 @@ class UniqueObject extends Constraint
     public string $messageFieldSeparator = ' and ';
 
     /**
-     * @var array<mixed>|string
+     * @var array|string
      */
-    public $fields = array();
+    public array|string $fields = [];
 
     /**
      * @var string|null Used to set the path where the error will be attached, default is global.
      */
     public ?string $errorPath = null;
 
-    public function __construct($options = null)
+    /**
+     * @param mixed $options
+     */
+    public function __construct(mixed $options = null)
     {
         parent::__construct($options);
 
@@ -50,11 +54,11 @@ class UniqueObject extends Constraint
             throw new UnexpectedTypeException($this->fields, 'array');
         }
 
-        if (0 === count($this->fields)) {
+        if (empty($this->fields)) {
             throw new ConstraintDefinitionException("At least one field must be specified.");
         }
 
-        if (null !== $this->errorPath && !is_string($this->errorPath)) {
+        if ($this->errorPath !== null && !is_string($this->errorPath)) {
             throw new UnexpectedTypeException($this->errorPath, 'string or null');
         }
     }
@@ -66,10 +70,13 @@ class UniqueObject extends Constraint
      */
     public function getRequiredOptions(): array
     {
-        return array('fields');
+        return ['fields'];
     }
 
-    public function getTargets(): array|string
+    /**
+     * @return string
+     */
+    public function getTargets(): string
     {
         return self::CLASS_CONSTRAINT;
     }

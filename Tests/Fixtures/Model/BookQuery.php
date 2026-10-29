@@ -48,7 +48,7 @@ class BookQuery extends BaseBookQuery
     /**
      * fake for test
      * @param mixed $slug
-     * @param mixed|null $comparison
+     * @param mixed $comparison
      * @return $this
      */
     public function filterByAuthorSlug(mixed $slug = null, mixed $comparison = null): self
@@ -63,7 +63,7 @@ class BookQuery extends BaseBookQuery
     /**
      * fake for test
      * @param mixed $slug
-     * @param mixed|null $comparison
+     * @param mixed $comparison
      * @return $this
      */
     public function filterBySlug(mixed $slug = null, mixed $comparison = null): self
@@ -77,8 +77,8 @@ class BookQuery extends BaseBookQuery
 
     /**
      * fake for test
-     * @param mixed|null $name
-     * @param mixed|null $comparison
+     * @param mixed $name
+     * @param mixed $comparison
      * @return mixed
      * @throws Exception
      */

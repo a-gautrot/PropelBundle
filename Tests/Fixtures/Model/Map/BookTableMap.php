@@ -200,11 +200,11 @@ class BookTableMap extends TableMap
     public static function getPrimaryKeyHashFromRow(array $row, int $offset = 0, string $indexType = TableMap::TYPE_NUM): ?string
     {
         // If the PK cannot be derived from the row, return NULL.
-        if ($row[TableMap::TYPE_NUM == $indexType ? $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)] === null) {
+        if ($row[$indexType == TableMap::TYPE_NUM ? $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)] === null) {
             return null;
         }
 
-        return (string)$row[TableMap::TYPE_NUM == $indexType ? $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
+        return (string)$row[$indexType == TableMap::TYPE_NUM ? $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
     }
 
     /**
@@ -278,11 +278,11 @@ class BookTableMap extends TableMap
             $criteria->addSelectColumn(BookTableMap::ISBN);
             $criteria->addSelectColumn(BookTableMap::AUTHOR_ID);
         } else {
-            $criteria->addSelectColumn($alias . '.ID');
-            $criteria->addSelectColumn($alias . '.NAME');
-            $criteria->addSelectColumn($alias . '.SLUG');
-            $criteria->addSelectColumn($alias . '.ISBN');
-            $criteria->addSelectColumn($alias . '.AUTHOR_ID');
+            $criteria->addSelectColumn("$alias.ID");
+            $criteria->addSelectColumn("$alias.NAME");
+            $criteria->addSelectColumn("$alias.SLUG");
+            $criteria->addSelectColumn("$alias.ISBN");
+            $criteria->addSelectColumn("$alias.AUTHOR_ID");
         }
     }
 

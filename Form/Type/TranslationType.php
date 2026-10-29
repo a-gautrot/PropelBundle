@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -11,13 +11,14 @@
 
 namespace Propel\Bundle\PropelBundle\Form\Type;
 
+use Propel\Bundle\PropelBundle\Form\EventListener\TranslationFormListener;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Propel\Bundle\PropelBundle\Form\EventListener\TranslationFormListener;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
+ * # TranslationType
  * Translation type class
  *
  * @author Patrick Kaufmann
@@ -25,8 +26,8 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 class TranslationType extends AbstractType
 {
     /**
-      * {@inheritdoc}
-      */
+     * {@inheritdoc}
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addEventSubscriber(
@@ -39,19 +40,19 @@ class TranslationType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setRequired(array(
+        $resolver->setRequired([
             'data_class',
             'columns'
-        ));
-    }
-
-    public function getBlockPrefix(): string
-    {
-        return 'propel_translation';
+        ]);
     }
 
     public function getName(): string
     {
         return $this->getBlockPrefix();
+    }
+
+    public function getBlockPrefix(): string
+    {
+        return 'propel_translation';
     }
 }
