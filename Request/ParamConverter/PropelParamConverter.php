@@ -15,7 +15,7 @@ use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * PropelParamConverter
+ * # PropelParamConverter
  *
  * This convert action parameter to a Propel Object
  * there is two option for this converter:

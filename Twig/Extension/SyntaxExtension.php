@@ -87,9 +87,9 @@ class SyntaxExtension extends AbstractExtension
     /**
      * @param string|string[] $sql
      *
-     * @return string|string[]|null
+     * @return string|string[]
      */
-    public function formatSQL(string|array $sql): string|array|null
+    public function formatSQL(string|array $sql): string|array
     {
         // list of keywords to prepend a newline in output
         $newlines = [
