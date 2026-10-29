@@ -21,9 +21,9 @@ LTS version for Symfony 6.4 only.
 
 ```shell
 composer require propel/propel "~2.0"
-composer require agautrot/propel-bundle "~6.1" # (or newer tag/release)
+composer require a-gautrot/propel-bundle "~6.1" # (or newer tag/release)
 # or
-composer require agautrot/propel-bundle "6.1.x-dev"
+composer require a-gautrot/propel-bundle "6.1.x-dev"
 ```
 
 #### composer.json
@@ -34,7 +34,7 @@ Stable release:
 {
   "require": {
     "propel/propel": "~2.0",
-    "agautrot/propel-bundle": "~6.1"
+    "a-gautrot/propel-bundle": "~6.1"
   }
 }
 ```
@@ -45,7 +45,7 @@ Nightly release:
 {
   "require": {
     "propel/propel": "~2.0",
-    "agautrot/propel-bundle": "6.1.x-dev"
+    "a-gautrot/propel-bundle": "6.1.x-dev"
   }
 }
 ```
