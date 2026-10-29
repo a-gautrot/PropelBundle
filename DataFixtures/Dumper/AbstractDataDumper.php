@@ -44,7 +44,7 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
         $data = $this->transformArrayToData($array);
 
         if (file_put_contents($filename, $data) === false) {
-            throw new RuntimeException(sprintf('Cannot write file: %s', $filename));
+            throw new RuntimeException("Cannot write file: $filename");
         }
     }
 
@@ -65,7 +65,7 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
 
         $dumpData = [];
         foreach ($tables as $tableName) {
-            $tableMap = $this->dbMap->getTable(constant(constant($tableName . '::TABLE_MAP') . '::TABLE_NAME'));
+            $tableMap = $this->dbMap->getTable(constant(constant("$tableName::TABLE_MAP") . '::TABLE_NAME'));
             $hasParent = false;
             $haveParents = false;
             $fixColumn = null;
@@ -102,9 +102,10 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
                 foreach ($tableMap->getColumns() as $column) {
                     $in[] = $adapter->quoteIdentifier(strtolower($column->getName()));
                 }
+                $columns = implode(', ', $in);
                 $stmt = $this
                     ->con
-                    ->query(sprintf('SELECT %s FROM %s', implode(', ', $in), $adapter->quoteIdentifier($tableMap->getName())));
+                    ->query("SELECT $columns FROM {$adapter->quoteIdentifier($tableMap->getName())}");
 
                 $set = [];
                 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -135,7 +136,7 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
 
                             if ($isPrimaryKey) {
                                 $value = $row[$col];
-                                $pk .= '_' . $value;
+                                $pk .= "_$value";
                                 $primaryKeys[$col] = $value;
                             }
 
@@ -143,10 +144,10 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
                                 $relatedTable = $this->dbMap->getTable($column->getRelatedTableName());
                                 if ($isPrimaryKey) {
                                     $foreignKeys[$col] = $row[$col];
-                                    $primaryKeys[$col] = $relatedTable->getPhpName() . '_' . $row[$col];
+                                    $primaryKeys[$col] = "{$relatedTable->getPhpName()}_$row[$col]";
                                 } else {
-                                    $values[$col] = $relatedTable->getPhpName() . '_' . $row[$col];
-                                    $values[$col] = strlen($row[$col]) ? $relatedTable->getPhpName() . '_' . $row[$col] : '';
+                                    $values[$col] = "{$relatedTable->getPhpName()}_$row[$col]";
+                                    $values[$col] = strlen($row[$col]) ? "{$relatedTable->getPhpName()}_$row[$col]" : '';
                                 }
                             } elseif (!$isPrimaryKey || !$tableMap->isUseIdGenerator()) {
                                 if (!empty($row[$col]) && $column->getType() === PropelTypes::PHP_ARRAY) {
@@ -189,7 +190,7 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
         // reordering classes to take foreign keys into account
         for ($i = 0, $count = count($classes); $i < $count; $i++) {
             $class = $classes[$i];
-            $tableMap = $this->dbMap->getTable(constant(constant($class . '::TABLE_MAP') . '::TABLE_NAME'));
+            $tableMap = $this->dbMap->getTable(constant(constant("$class::TABLE_MAP") . '::TABLE_NAME'));
 
             foreach ($tableMap->getColumns() as $column) {
                 if ($column->isForeignKey()) {
@@ -246,17 +247,16 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
             }
         }
 
-        $sql = sprintf('SELECT * FROM %s WHERE %s %s',
-            constant(constant($tableName . '::TABLE_MAP') . '::TABLE_NAME'),
-            $columnName,
-            ($in === null) ? 'IS NULL' : "IN ($in)");
+        $databaseTableName = constant(constant("$tableName::TABLE_MAP") . '::TABLE_NAME');
+        $condition = $in === null ? 'IS NULL' : "IN ($in)";
+        $sql = "SELECT * FROM $databaseTableName WHERE $columnName $condition";
 
         $stmt = $this->con->prepare($sql);
         $stmt->execute();
 
         $in = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $in[] = "'" . $row[strtolower($column->getRelatedColumnName())] . "'";
+            $in[] = "'{$row[strtolower($column->getRelatedColumnName())]}'";
             $resultsSets[] = $row;
         }
 

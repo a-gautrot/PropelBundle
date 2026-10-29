@@ -57,9 +57,9 @@ abstract class AbstractCommand extends Command
 
     /**
      * @param ContainerInterface $container
-     * @param $name
+     * @param string|null $name
      */
-    public function __construct(ContainerInterface $container, $name = null)
+    public function __construct(ContainerInterface $container, ?string $name = null)
     {
         $this->container = $container;
 
@@ -75,7 +75,7 @@ abstract class AbstractCommand extends Command
     {
         $this->input = $input;
         $this->output = $output;
-        $this->cacheDir = $this->getKernel()->getCacheDir() . '/propel';
+        $this->cacheDir = "{$this->getKernel()->getCacheDir()}/propel";
 
         if ($input->hasArgument('bundle') && !empty($input->getArgument('bundle')) && substr($input->getArgument('bundle'), 0, 1) === '@') {
             $this->bundle = $this
@@ -126,7 +126,7 @@ abstract class AbstractCommand extends Command
         $this->copySchemas($this->getKernel(), $this->cacheDir);
 
         // propel.json
-        $this->createPropelConfigurationFile($this->cacheDir . '/propel.json');
+        $this->createPropelConfigurationFile("$this->cacheDir/propel.json");
     }
 
     /**
@@ -167,12 +167,9 @@ abstract class AbstractCommand extends Command
                     $database['package'] = $this->getPackageFromApp((string)$database['namespace']);
                 }
             } else {
+                $bundleName = $bundle ? $bundle->getName() : 'App';
                 throw new RuntimeException(
-                    sprintf(
-                        '%s : Please define a `package` attribute or a `namespace` attribute for schema `%s`',
-                        $bundle ? $bundle->getName() : 'App',
-                        $finalSchema->getBaseName()
-                    )
+                    "$bundleName : Please define a `package` attribute or a `namespace` attribute for schema `{$finalSchema->getBaseName()}`"
                 );
             }
 
@@ -183,12 +180,8 @@ abstract class AbstractCommand extends Command
                     // we skip this schema because the connection name doesn't
                     // match the input values
                     $filesystem->remove($file);
-                    $this->output->writeln(sprintf(
-                        '<info>Skipped schema %s due to database name missmatch (%s not in [%s]).</info>',
-                        $finalSchema->getPathname(),
-                        $database['name'],
-                        implode(',', $connections)
-                    ));
+                    $connectionNames = implode(',', $connections);
+                    $this->output->writeln("<info>Skipped schema {$finalSchema->getPathname()} due to database name missmatch ({$database['name']} not in [$connectionNames]).</info>");
                     continue;
                 }
             }
@@ -265,7 +258,7 @@ abstract class AbstractCommand extends Command
             return str_replace('/', '.', $path);
         }
 
-        //does not match or its a absolute path, so return it without suffix
+        //does not match, or it's an absolute path, so return it without suffix
         if ($namespace[0] === '\\') {
             $namespace = substr($namespace, 1);
         }
@@ -346,7 +339,7 @@ abstract class AbstractCommand extends Command
     {
         $propelConfig = $this->getConfig();
 
-        //needed because because Propel2's configuration tree is a bit different
+        //needed because Propel 2's configuration tree is a bit different
         //propel.runtime.logging is PropelBundle feature only.
         unset($propelConfig['runtime']['logging']);
 
@@ -424,7 +417,7 @@ abstract class AbstractCommand extends Command
     {
         $dsnList = [];
         foreach ($connections as $connection) {
-            $dsnList[] = sprintf('%s=%s', $connection, $this->getDsn($connection));
+            $dsnList[] = "$connection={$this->getDsn($connection)}";
         }
 
         return $dsnList;
@@ -463,7 +456,7 @@ abstract class AbstractCommand extends Command
     {
         $knownConnections = $this->getConfig();
         if (!isset($knownConnections['database']['connections'][$name])) {
-            throw new InvalidArgumentException(sprintf('Unknown connection "%s"', $name));
+            throw new InvalidArgumentException("Unknown connection \"$name\"");
         }
 
         return $knownConnections['database']['connections'][$name];

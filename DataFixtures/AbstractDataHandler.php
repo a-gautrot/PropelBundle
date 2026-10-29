@@ -93,10 +93,10 @@ abstract class AbstractDataHandler
         if (!empty($this->datasources['database']['connections'][$connectionName]['model_paths'])) {
             $modelPaths = $this->datasources['database']['connections'][$connectionName]['model_paths'];
             foreach ($modelPaths as $modelPath) {
-                $searchPath[] = $this->getRootDir() . '/' . $modelPath;
+                $searchPath[] = "{$this->getRootDir()}/$modelPath";
             }
         } else {
-            $searchPath[] = $this->getRootDir() . '/';
+            $searchPath[] = "{$this->getRootDir()}/";
         }
 
         return $searchPath;
@@ -133,7 +133,7 @@ abstract class AbstractDataHandler
         $array = array_reverse($array);
         while ($ns = array_pop($array)) {
 
-            $class = $ns . '\\' . $shortClassName;
+            $class = "$ns\\$shortClassName";
             if (class_exists($class)) {
                 return $class;
             }
@@ -152,6 +152,6 @@ abstract class AbstractDataHandler
      */
     protected function isInDatabase(string $class, string $connectionName): bool
     {
-        return constant($class . '::DATABASE_NAME') === $connectionName;
+        return constant("$class::DATABASE_NAME") === $connectionName;
     }
 }

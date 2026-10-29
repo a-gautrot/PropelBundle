@@ -119,7 +119,7 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
      */
     protected function deleteClassData(string $class): void
     {
-        $tableMap = $this->dbMap->getTable(constant(constant($class . '::TABLE_MAP') . '::TABLE_NAME'));
+        $tableMap = $this->dbMap->getTable(constant(constant("$class::TABLE_MAP") . '::TABLE_NAME'));
         $tableMap->doDeleteAll($this->con);
 
         $this->deletedClasses[] = $class;
@@ -157,31 +157,31 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
             if ($class[0] == '\\') {
                 $class = substr($class, 1);
             }
-            $tableMap = $this->dbMap->getTable(constant(constant($class . '::TABLE_MAP') . '::TABLE_NAME'));
+            $tableMap = $this->dbMap->getTable(constant(constant("$class::TABLE_MAP") . '::TABLE_NAME'));
             $column_names = $tableMap->getFieldnames(TableMap::TYPE_PHPNAME);
 
             foreach ($datas as $key => $values) {
                 // create a new entry in the database
                 if (!class_exists($class)) {
-                    throw new InvalidArgumentException(sprintf('Unknown class "%s".', $class));
+                    throw new InvalidArgumentException("Unknown class \"$class\".");
                 }
 
                 $obj = new $class();
 
                 if (!$obj instanceof ActiveRecordInterface) {
                     throw new RuntimeException(
-                        sprintf('The class "%s" is not a Propel class. There is probably another class named "%s" somewhere.', $class, $class)
+                        "The class \"$class\" is not a Propel class. There is probably another class named \"$class\" somewhere."
                     );
                 }
 
                 if (!is_array($values)) {
-                    throw new InvalidArgumentException(sprintf('You must give a name for each fixture data entry (class %s).', $class));
+                    throw new InvalidArgumentException("You must give a name for each fixture data entry (class $class).");
                 }
 
                 foreach ($values as $name => $value) {
                     if (is_array($value) && substr($name, -1) === 's') {
                         try {
-                            // many to many relationship
+                            // many-to-many relationship
                             $this->loadManyToMany($obj, substr($name, 0, -1), $value);
 
                             continue;
@@ -211,8 +211,8 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
                          * but which is not a ForeignKey (e.g. delegatable behavior on 1:1 relation).
                          */
                         if ($column->isPrimaryKey() && $value !== null && !$column->isForeignKey()) {
-                            if (isset($this->object_references[$this->cleanObjectRef($class . '_' . $value)])) {
-                                $obj = $this->object_references[$this->cleanObjectRef($class . '_' . $value)];
+                            if (isset($this->object_references[$this->cleanObjectRef("{$class}_$value")])) {
+                                $obj = $this->object_references[$this->cleanObjectRef("{$class}_$value")];
 
                                 continue;
                             }
@@ -220,15 +220,15 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
 
                         if ($column->isForeignKey() && $value !== null) {
                             $relatedTable = $this->dbMap->getTable($column->getRelatedTableName());
-                            if (isset($this->object_references[$this->cleanObjectRef($relatedTable->getClassname() . '_' . $value)])) {
+                            if (isset($this->object_references[$this->cleanObjectRef("{$relatedTable->getClassname()}_$value")])) {
                                 $value = $this
-                                    ->object_references[$this->cleanObjectRef($relatedTable->getClassname() . '_' . $value)]
+                                    ->object_references[$this->cleanObjectRef("{$relatedTable->getClassname()}_$value")]
                                     ->getByName($column->getRelatedName(), TableMap::TYPE_COLNAME);
                             } else {
                                 $relatedClass = $this->cleanObjectRef($relatedTable->getClassName());
-                                if (isset($data[$relatedClass]) || isset($data['\\' . $relatedClass])) {
+                                if (isset($data[$relatedClass]) || isset($data["\\$relatedClass"])) {
                                     throw new InvalidArgumentException(
-                                        sprintf('The object "%s" from class "%s" is not defined in your data file.', $value, $relatedTable->getClassname())
+                                        "The object \"$value\" from class \"{$relatedTable->getClassname()}\" is not defined in your data file."
                                     );
 
                                 }
@@ -241,7 +241,7 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
                     } elseif (is_callable([$obj, $method = 'set' . ucfirst(PropelInflector::camelize($name))])) {
                         $obj->$method($value);
                     } else {
-                        throw new InvalidArgumentException(sprintf('Column "%s" does not exist for class "%s".', $name, $class));
+                        throw new InvalidArgumentException("Column \"$name\" does not exist for class \"$class\".");
                     }
                 }
 
@@ -269,27 +269,28 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
             if ($column->isForeignKey()) {
                 if ($tableName !== $column->getRelatedTableName()) {
                     $relatedClass = $this->dbMap->getTable($column->getRelatedTableName())->getClassname();
-                    $relatedSetter = 'set' . $column->getRelation()->getName();
+                    $relatedSetter = "set{$column->getRelation()->getName()}";
                 } else {
-                    $setter = 'set' . $column->getRelation()->getName();
+                    $setter = "set{$column->getRelation()->getName()}";
                 }
             }
         }
 
         if (!isset($relatedClass)) {
-            throw new InvalidArgumentException(sprintf('Unable to find the many-to-many relationship for object "%s".', get_class($obj)));
+            $objectClass = get_class($obj);
+            throw new InvalidArgumentException("Unable to find the many-to-many relationship for object \"$objectClass\".");
         }
 
         foreach ($values as $value) {
-            if (!isset($this->object_references[$this->cleanObjectRef($relatedClass . '_' . $value)])) {
+            if (!isset($this->object_references[$this->cleanObjectRef("{$relatedClass}_$value")])) {
                 throw new InvalidArgumentException(
-                    sprintf('The object "%s" from class "%s" is not defined in your data file.', $value, $relatedClass)
+                    "The object \"$value\" from class \"$relatedClass\" is not defined in your data file."
                 );
             }
 
             $middle = new $middleClass();
             $middle->$setter($obj);
-            $middle->$relatedSetter($this->object_references[$this->cleanObjectRef($relatedClass . '_' . $value)]);
+            $middle->$relatedSetter($this->object_references[$this->cleanObjectRef("{$relatedClass}_$value")]);
             $middle->save($this->con);
         }
     }
@@ -314,7 +315,7 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
             return;
         }
 
-        $this->object_references[$this->cleanObjectRef($class . '_' . $key)] = $obj;
+        $this->object_references[$this->cleanObjectRef("{$class}_$key")] = $obj;
 
         // Get parent (schema ancestor) of parent (Propel base class) in case of inheritance
         if (($parentClass = get_parent_class(get_parent_class($class))) !== false) {

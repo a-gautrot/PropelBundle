@@ -278,11 +278,11 @@ class BookTableMap extends TableMap
             $criteria->addSelectColumn(BookTableMap::ISBN);
             $criteria->addSelectColumn(BookTableMap::AUTHOR_ID);
         } else {
-            $criteria->addSelectColumn($alias . '.ID');
-            $criteria->addSelectColumn($alias . '.NAME');
-            $criteria->addSelectColumn($alias . '.SLUG');
-            $criteria->addSelectColumn($alias . '.ISBN');
-            $criteria->addSelectColumn($alias . '.AUTHOR_ID');
+            $criteria->addSelectColumn("$alias.ID");
+            $criteria->addSelectColumn("$alias.NAME");
+            $criteria->addSelectColumn("$alias.SLUG");
+            $criteria->addSelectColumn("$alias.ISBN");
+            $criteria->addSelectColumn("$alias.AUTHOR_ID");
         }
     }
 

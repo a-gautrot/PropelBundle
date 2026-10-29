@@ -73,7 +73,7 @@ EOT
 
         $connectionName = $input->getOption('connection') ?: $this->getDefaultConnection();
         $config = $this->getConnectionData($connectionName);
-//        $connection = Propel::getConnection($connectionName);
+        $connection = Propel::getConnection($connectionName);
         $dbName = $this->parseDbName($config['dsn']);
 
         if ($dbName === null) {
@@ -81,7 +81,7 @@ EOT
 
             return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
         } else {
-            $query = 'DROP DATABASE ' . $dbName . ';';
+            $query = "DROP DATABASE $dbName;";
         }
 
 
@@ -93,12 +93,11 @@ EOT
         $serviceContainer->setAdapterClass($connectionName, $config['adapter']);
         $serviceContainer->setConnectionManager($manager);
 
-        $connection = Propel::getConnection($connectionName);
 
         $statement = $connection->prepare($query);
         $statement->execute();
 
-        $output->writeln(sprintf('<info>Database <comment>%s</comment> has been dropped.</info>', $dbName));
+        $output->writeln("<info>Database <comment>$dbName</comment> has been dropped.</info>");
 
         return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
     }
@@ -117,7 +116,7 @@ EOT
         $dbName = $this->parseDbName($config['dsn']);
 
         $config['dsn'] = preg_replace(
-            '#;?(dbname|Database)=' . $dbName . '#',
+            "#;?(dbname|Database)=$dbName#",
             '',
             $config['dsn']
         );

@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -133,13 +133,13 @@ class TypeGuesser implements FormTypeGuesserInterface
      *
      * @return TableMap|null
      */
-    protected function getTable(string $class)
+    protected function getTable(string $class): ?TableMap
     {
         if (isset($this->cache[$class])) {
             return $this->cache[$class];
         }
 
-        if (class_exists($queryClass = $class . 'Query')) {
+        if (class_exists($queryClass = "{$class}Query")) {
             $query = new $queryClass();
 
             return $this->cache[$class] = $query->getTableMap();
@@ -154,16 +154,16 @@ class TypeGuesser implements FormTypeGuesserInterface
      *
      * @return ColumnMap|null
      */
-    protected function getColumn(string $class, string $property)
+    protected function getColumn(string $class, string $property): ?ColumnMap
     {
-        if (isset($this->cache[$class . '::' . $property])) {
-            return $this->cache[$class . '::' . $property];
+        if (isset($this->cache["$class::$property"])) {
+            return $this->cache["$class::$property"];
         }
 
         $table = $this->getTable($class);
 
         if ($table && $table->hasColumn($property)) {
-            return $this->cache[$class . '::' . $property] = $table->getColumn($property);
+            return $this->cache["$class::$property"] = $table->getColumn($property);
         }
 
         return null;

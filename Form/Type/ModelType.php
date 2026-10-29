@@ -60,7 +60,7 @@ class ModelType extends AbstractType
     /**
      * @var ChoiceListFactoryInterface
      */
-    private $choiceListFactory;
+    private ChoiceListFactoryInterface $choiceListFactory;
 
     /**
      * ModelType constructor.
@@ -134,7 +134,7 @@ class ModelType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $choiceLoader = function (Options $options) {
+        $choiceLoader = function (Options $options): ?PropelChoiceLoader {
             // Unless the choices are given explicitly, load them on demand
             if ($options['choices'] === null) {
 
@@ -149,7 +149,7 @@ class ModelType extends AbstractType
             return null;
         };
 
-        $choiceName = function (Options $options) {
+        $choiceName = function (Options $options): ?array {
 
             /** @var ModelCriteria $query */
             $query = $options['query'];
@@ -166,7 +166,7 @@ class ModelType extends AbstractType
             return null;
         };
 
-        $choiceValue = function (Options $options) {
+        $choiceValue = function (Options $options): ?callable {
 
             /** @var ModelCriteria $query */
             $query = $options['query'];
@@ -190,16 +190,13 @@ class ModelType extends AbstractType
 
         $queryNormalizer = function (Options $options, $query) {
             if ($query === null) {
-                $queryClass = $options['class'] . 'Query';
+                $queryClass = "{$options['class']}Query";
                 if (!class_exists($queryClass)) {
                     if (empty($options['class'])) {
                         throw new MissingOptionsException('The "class" parameter is empty, you should provide the model class');
                     }
                     throw new InvalidOptionsException(
-                        sprintf(
-                            'The query class "%s" is not found, you should provide the FQCN of the model class',
-                            $queryClass
-                        )
+                        "The query class \"$queryClass\" is not found, you should provide the FQCN of the model class"
                     );
                 }
                 $query = new $queryClass();
@@ -216,7 +213,7 @@ class ModelType extends AbstractType
                     /** @var ModelCriteria $query */
                     $query = $options['query'];
 
-                    $choiceLabel = function ($choice) use ($valueProperty, $query) {
+                    $choiceLabel = function (object $choice) use ($valueProperty, $query) {
                         $getter = 'get' . ucfirst($valueProperty);
                         if (!method_exists($choice, $getter)) {
                             $getter = 'get' . ucfirst($query->getTableMap()->getColumn($valueProperty)->getPhpName());

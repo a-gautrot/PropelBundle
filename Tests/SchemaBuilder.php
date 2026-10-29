@@ -55,7 +55,7 @@ final class SchemaBuilder
         $tableNames = [];
         foreach ($document->getElementsByTagName('table') as $table) {
             $name = $table->getAttribute('name');
-            $tableNames[$name] = $name . $suffix;
+            $tableNames[$name] = "$name$suffix";
             if (!$table->hasAttribute('phpName')) {
                 $table->setAttribute('phpName', str_replace(' ', '', ucwords(str_replace('_', ' ', $name))));
             }

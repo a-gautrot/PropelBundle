@@ -76,7 +76,7 @@ EOT
         $schemas = $this->getFinalSchemas($kernel, $bundle);
 
         if (!$schemas) {
-            $output->writeln(sprintf('No <comment>*schemas.xml</comment> files found in bundle <comment>%s</comment>.', $bundle->getName()));
+            $output->writeln("No <comment>*schemas.xml</comment> files found in bundle <comment>{$bundle->getName()}</comment>.");
 
             return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
         }
@@ -130,7 +130,7 @@ EOT
             $generatorConfig['propel']['generator']['platformClass'] = $input->getOption('platform');
         }
 
-        return new GeneratorConfig($this->getCacheDir() . '/propel.json', $generatorConfig);
+        return new GeneratorConfig("{$this->getCacheDir()}/propel.json", $generatorConfig);
     }
 
     /**
@@ -151,7 +151,7 @@ EOT
                 continue;
             }
 
-            $file = new SplFileInfo(sprintf('%s/%sType.php', $dir, $table->getPhpName()));
+            $file = new SplFileInfo("$dir/{$table->getPhpName()}Type.php");
 
             if (!file_exists($file) || $force === true) {
                 $this->writeFormType($bundle, $table, $file, $force, $output);
@@ -211,6 +211,6 @@ EOT
      */
     protected function getRelativeFileName(SplFileInfo $file): string
     {
-        return substr(str_replace(realpath($this->getContainer()->getParameter('kernel.project_dir') . '/../'), '', $file), 1);
+        return substr(str_replace(realpath("{$this->getContainer()->getParameter('kernel.project_dir')}/../"), '', $file), 1);
     }
 }

@@ -99,10 +99,10 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
 
     /**
      * @param array $values
-     * @param $value
+     * @param callable|null $value
      * @return array
      */
-    public function loadChoicesForValues(array $values, $value = null): array
+    public function loadChoicesForValues(array $values, ?callable $value = null): array
     {
         // Performance optimization
         if (empty($values)) {
@@ -138,7 +138,7 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
      * Returns the values of the identifier fields of a model.
      *
      * Propel must know about this model, that is, the model must already
-     * be persisted or added to the idmodel map before. Otherwise an
+     * be persisted or added to the id model map before. Otherwise, an
      * exception is thrown.
      *
      * @param object $model The model for which to get the identifier
@@ -153,8 +153,8 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
 
         if (count($this->identifier) === 1 && current($this->identifier) instanceof ColumnMap) {
             $phpName = current($this->identifier)->getPhpName();
-            if (method_exists($model, 'get' . $phpName)) {
-                return [$model->{'get' . $phpName}()];
+            if (method_exists($model, "get$phpName")) {
+                return [$model->{"get$phpName"}()];
             }
         }
 
@@ -166,10 +166,10 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
     }
 
     /**
-     * @param $value
+     * @param callable|null $value
      * @return ChoiceListInterface
      */
-    public function loadChoiceList($value = null): ChoiceListInterface
+    public function loadChoiceList(?callable $value = null): ChoiceListInterface
     {
         if ($this->choiceList) {
             return $this->choiceList;
@@ -184,10 +184,10 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
 
     /**
      * @param array $choices
-     * @param $value
+     * @param callable|null $value
      * @return array|string[]
      */
-    public function loadValuesForChoices(array $choices, $value = null): array
+    public function loadValuesForChoices(array $choices, ?callable $value = null): array
     {
         // Performance optimization
         if (empty($choices)) {

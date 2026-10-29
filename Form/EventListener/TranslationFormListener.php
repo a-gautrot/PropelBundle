@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -89,7 +89,7 @@ class TranslationFormListener implements EventSubscriberInterface
                 $customOptions = $options['options'];
             }
             $options = [
-                'label' => $label . ' ' . strtoupper($data->getLocale())
+                'label' => "$label " . strtoupper($data->getLocale())
             ];
 
             $options = array_merge($options, $customOptions);

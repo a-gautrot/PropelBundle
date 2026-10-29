@@ -124,12 +124,12 @@ EOT
         if ($this->bundle !== null) {
             $this->absoluteFixturesPath = $this->getFixturesPath($this->bundle);
         } else {
-            $this->absoluteFixturesPath = realpath($this->getKernel()->getProjectDir() . '/' . $input->getOption('dir'));
+            $this->absoluteFixturesPath = realpath("{$this->getKernel()->getProjectDir()}/{$input->getOption('dir')}");
         }
 
         if (!$this->absoluteFixturesPath && !file_exists($this->absoluteFixturesPath)) {
             $this->writeSection($output, [
-                'The fixtures directory "' . $this->absoluteFixturesPath . '" does not exist.'
+                "The fixtures directory \"$this->absoluteFixturesPath\" does not exist."
             ], 'fg=white;bg=red');
 
             return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
@@ -182,7 +182,7 @@ EOT
     protected function loadSqlFixtures(InputInterface $input, OutputInterface $output): int
     {
         $tmpdir = $this->getCacheDir();
-        $datas = $this->getFixtureFiles('sql');
+        $datas = $this->getFixtureFiles();
 
         $this->prepareCache($tmpdir);
 
@@ -191,17 +191,17 @@ EOT
         // Create a "sqldb.map" file
         $sqldbContent = '';
         foreach ($datas as $data) {
-            $output->writeln(sprintf('<info>Loading SQL fixtures from</info> <comment>%s</comment>.', $data));
+            $output->writeln("<info>Loading SQL fixtures from</info> <comment>$data</comment>.");
 
-            $sqldbContent .= $data->getFilename() . '=' . $connectionName . PHP_EOL;
-            $this->filesystem->copy($data, $tmpdir . '/' . $data->getFilename(), true);
+            $sqldbContent .= "{$data->getFilename()}=$connectionName" . PHP_EOL;
+            $this->filesystem->copy($data, "$tmpdir/{$data->getFilename()}", true);
         }
 
         if ($sqldbContent === '') {
             return -1;
         }
 
-        $sqldbFile = $tmpdir . '/sqldb.map';
+        $sqldbFile = "$tmpdir/sqldb.map";
         file_put_contents($sqldbFile, $sqldbContent);
 
         if (!$this->insertSql($connectionName, $input, $output)) {
@@ -225,9 +225,9 @@ EOT
     protected function getFixtureFiles(string $type = 'sql', ?string $in = null)
     {
         $finder = new Finder();
-        $finder->sort(function ($a, $b) {
+        $finder->sort(function (SplFileInfo $a, SplFileInfo $b): int {
             return strcmp($a->getPathname(), $b->getPathname());
-        })->name('*.' . $type);
+        })->name("*.$type");
 
         $files = $finder->in($in !== null ? $in : $this->absoluteFixturesPath);
 
@@ -238,7 +238,7 @@ EOT
         $finalFixtureFiles = [];
         foreach ($files as $file) {
             $fixtureFilePath = str_replace($this->getFixturesPath($this->bundle) . DIRECTORY_SEPARATOR, '', $file->getRealPath());
-            $logicalName = sprintf('@%s/Resources/fixtures/%s', $this->bundle->getName(), $fixtureFilePath);
+            $logicalName = "@{$this->bundle->getName()}/Resources/fixtures/$fixtureFilePath";
             $finalFixtureFiles[] = new SplFileInfo($this->getFileLocator()->locate($logicalName));
         }
 
@@ -307,12 +307,12 @@ EOT
      * @param OutputInterface $output
      * @param string|null $type If specified, only fixtures with the given type will be loaded (yml, xml).
      *
-     * @return bool|int|void
+     * @return bool|int|null
      */
     protected function loadFixtures(InputInterface $input, OutputInterface $output, ?string $type = null)
     {
         if ($type === null) {
-            return;
+            return null;
         }
 
         $datas = $this->getFixtureFiles($type);
@@ -328,12 +328,14 @@ EOT
         } elseif ($type === 'xml') {
             $loader = $this->getContainer()->get('propel.loader.xml');
         } else {
-            return;
+            return null;
         }
 
         $nb = $loader->load(iterator_to_array($datas), $connectionName);
 
-        $output->writeln(sprintf('<comment>%s</comment> %s fixtures file%s loaded.', $nb, strtoupper($type), $nb > 1 ? 's' : ''));
+        $fixtureType = strtoupper($type);
+        $plural = $nb > 1 ? 's' : '';
+        $output->writeln("<comment>$nb</comment> $fixtureType fixtures file$plural loaded.");
 
         return true;
     }

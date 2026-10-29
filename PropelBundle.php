@@ -81,8 +81,8 @@ class PropelBundle extends Bundle
             $serviceContainer->setConnectionManager($manager);
 
             // load database maps
-            if (file_exists($config['paths']['loaderScriptDir'] . '/loadDatabase.php') && is_readable($config['paths']['loaderScriptDir'] . '/loadDatabase.php')) {
-                require_once($config['paths']['loaderScriptDir'] . '/loadDatabase.php');
+            if (file_exists("{$config['paths']['loaderScriptDir']}/loadDatabase.php") && is_readable("{$config['paths']['loaderScriptDir']}/loadDatabase.php")) {
+                require_once("{$config['paths']['loaderScriptDir']}/loadDatabase.php");
             }
         }
     }

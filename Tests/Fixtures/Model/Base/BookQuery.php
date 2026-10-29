@@ -176,7 +176,7 @@ abstract class BookQuery extends ModelCriteria
             $stmt->execute();
         } catch (Exception $e) {
             Propel::log($e->getMessage(), Propel::LOG_ERR);
-            throw new PropelException(sprintf('Unable to execute SELECT statement [%s]', $sql), 0, $e);
+            throw new PropelException("Unable to execute SELECT statement [$sql]", 0, $e);
         }
         $obj = null;
         if ($row = $stmt->fetch(PDO::FETCH_NUM)) {

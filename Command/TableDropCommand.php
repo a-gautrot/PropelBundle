@@ -71,7 +71,7 @@ class TableDropCommand extends AbstractCommand
 
             $this->writeSection(
                 $output,
-                'WARNING: you are about to drop ' . $count . ' table' . $tablePlural . ' in production !',
+                "WARNING: you are about to drop $count table$tablePlural in production !",
                 'bg=red;fg=white'
             );
 
@@ -90,7 +90,7 @@ class TableDropCommand extends AbstractCommand
         if ($nbTable) {
             foreach ($tablesToDelete as $tableToDelete) {
                 if (!array_search($tableToDelete, $allTables)) {
-                    throw new InvalidArgumentException(sprintf('Table %s doesn\'t exist in the database.', $tableToDelete));
+                    throw new InvalidArgumentException("Table $tableToDelete doesn't exist in the database.");
                 }
             }
         } else {
@@ -99,16 +99,16 @@ class TableDropCommand extends AbstractCommand
 
         $connection->exec('SET FOREIGN_KEY_CHECKS = 0;');
 
-        array_walk($tablesToDelete, function (&$table, $key, $dbAdapter) {
+        array_walk($tablesToDelete, function (string &$table, $key, MysqlAdapter $dbAdapter): void {
             $table = $dbAdapter->quoteIdentifierTable($table);
         }, $adapter);
 
         $tablesToDelete = join(', ', $tablesToDelete);
 
         if ($tablesToDelete !== '') {
-            $connection->exec('DROP TABLE ' . $tablesToDelete . ' ;');
+            $connection->exec("DROP TABLE $tablesToDelete ;");
 
-            $output->writeln(sprintf('Table' . $tablePlural . ' <info><comment>%s</comment> has been dropped.</info>', $tablesToDelete));
+            $output->writeln("Table$tablePlural <info><comment>$tablesToDelete</comment> has been dropped.</info>");
         } else {
             $output->writeln('<info>No tables have been dropped</info>');
         }

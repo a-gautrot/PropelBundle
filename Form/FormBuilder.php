@@ -35,8 +35,8 @@ class FormBuilder
         $formTypeContent = file_get_contents(__DIR__ . '/../Resources/skeleton/FormType.php');
 
         $formTypeContent = str_replace('##NAMESPACE##', $bundle->getNamespace() . str_replace('/', '\\', $formTypeNamespace), $formTypeContent);
-        $formTypeContent = str_replace('##CLASS##', $modelName . 'Type', $formTypeContent);
-        $formTypeContent = str_replace('##FQCN##', sprintf('%s\%s', $table->getNamespace(), $modelName), $formTypeContent);
+        $formTypeContent = str_replace('##CLASS##', "{$modelName}Type", $formTypeContent);
+        $formTypeContent = str_replace('##FQCN##', "{$table->getNamespace()}\\$modelName", $formTypeContent);
         $formTypeContent = str_replace('##TYPE_NAME##', strtolower($modelName), $formTypeContent);
         return str_replace('##BUILD_CODE##', $this->buildFormFields($table), $formTypeContent);
     }
@@ -57,13 +57,14 @@ class FormBuilder
             }
             $name = $column->getPhpName();
 
-            // Use foreignKey table name, so the TypeGuesser gets it right 
+            // Use foreignKey table name, so the TypeGuesser gets it right
             if ($column->isForeignKey()) {
                 /** @var ForeignKey $foreignKey */
                 $foreignKey = current($column->getForeignKeys());
                 $name = $foreignKey->getForeignTable()->getPhpName();
             }
-            $buildCode .= sprintf("\n        \$builder->add('%s');", lcfirst($name));
+            $fieldName = lcfirst($name);
+            $buildCode .= "\n        \$builder->add('$fieldName');";
         }
 
         return $buildCode;

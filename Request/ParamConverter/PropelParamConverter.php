@@ -78,7 +78,7 @@ class PropelParamConverter implements ParamConverterInterface
     public function apply(Request $request, ParamConverter $configuration): bool
     {
         $class = $configuration->getClass();
-        $classQuery = $class . 'Query';
+        $classQuery = "{$class}Query";
         $classTableMap = $class::TABLE_MAP;
         $this->pk = 'id';
         $this->hasWith = false;
@@ -86,7 +86,7 @@ class PropelParamConverter implements ParamConverterInterface
         $this->exclude = [];
 
         if (!class_exists($classQuery)) {
-            throw new Exception(sprintf('The %s Query class does not exist', $classQuery));
+            throw new Exception("The $classQuery Query class does not exist");
         }
 
         $tableMap = new $classTableMap();
@@ -155,7 +155,7 @@ class PropelParamConverter implements ParamConverterInterface
         }
 
         if ($object === null && $configuration->isOptional() === false) {
-            throw new NotFoundHttpException(sprintf('%s object not found.', $configuration->getClass()));
+            throw new NotFoundHttpException("{$configuration->getClass()} object not found.");
         }
 
         $request->attributes->set($configuration->getName(), $object);
@@ -185,9 +185,9 @@ class PropelParamConverter implements ParamConverterInterface
                     $query->joinWith($with[0], $this->getValidJoin($with));
                     $this->hasWith = true;
                 } else {
-                    throw new Exception(sprintf('ParamConverter : "with" parameter "%s" is invalid,
-                            only string relation name (e.g. "Book") or an array with two keys (e.g. {"Book", "LEFT_JOIN"}) are allowed',
-                        var_export($with, true)));
+                    $invalidWith = var_export($with, true);
+                    throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
+                            only string relation name (e.g. \"Book\") or an array with two keys (e.g. {\"Book\", \"LEFT_JOIN\"}) are allowed");
                 }
             } else {
                 $query->joinWith($with);
@@ -217,9 +217,9 @@ class PropelParamConverter implements ParamConverterInterface
             case 'INNER':
                 return Criteria::INNER_JOIN;
             default:
-                throw new Exception(sprintf('ParamConverter : "with" parameter "%s" is invalid,
-                only "left", "right" or "inner" are allowed for join option',
-                    var_export($with, true)));
+                $invalidWith = var_export($with, true);
+                throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
+                only \"left\", \"right\" or \"inner\" are allowed for join option");
         }
     }
 
@@ -258,7 +258,7 @@ class PropelParamConverter implements ParamConverterInterface
      *
      * @throws Exception
      */
-    protected function findOneBy($classQuery, Request $request)
+    protected function findOneBy(string $classQuery, Request $request)
     {
         $query = $this->getQuery($classQuery);
         $hasCriteria = false;

@@ -47,20 +47,20 @@ class YamlDataLoader extends AbstractDataLoader
     {
         if (strpos($file, "\n") === false && is_file($file)) {
             if (is_readable($file) === false) {
-                throw new ParseException(sprintf('Unable to parse "%s" as the file is not readable.', $file));
+                throw new ParseException("Unable to parse \"$file\" as the file is not readable.");
             }
 
             if ($this->faker !== null) {
                 $generator = $this->faker;
-                $faker = function ($type) use ($generator) {
+                $faker = function (string $type) use ($generator): void {
                     $args = func_get_args();
                     array_shift($args);
 
                     echo Yaml::dump(call_user_func_array([$generator, $type], $args)) . "\n";
                 };
             } else {
-                $faker = function ($text) {
-                    echo $text . "\n";
+                $faker = function ($text): void {
+                    echo "$text\n";
                 };
             }
 

@@ -51,8 +51,8 @@ class ModelBuildCommand extends WrappedCommand
      */
     protected function getSubCommandArguments(InputInterface $input): array
     {
-        $outputDir = $this->getKernel()->getProjectDir() . '/';
+        $outputDir = "{$this->getKernel()->getProjectDir()}/";
 
-        return ['--output-dir' => $outputDir,];
+        return ['--output-dir' => $outputDir];
     }
 }

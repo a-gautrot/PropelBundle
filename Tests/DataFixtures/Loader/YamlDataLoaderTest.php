@@ -279,7 +279,7 @@ YAML;
 
         $con = SchemaBuilder::buildSchema($schema);
         $crossTable = YamlManyToManyBookAuthorQuery::create()->getTableMap()->getName();
-        $fixtures = str_replace('table_book_authors:', $crossTable . 's:', $fixtures);
+        $fixtures = str_replace('table_book_authors:', "{$crossTable}s:", $fixtures);
         $filename = $this->getTempFile($fixtures);
 
         $loader = new YamlDataLoader(__DIR__ . '/../../Fixtures/DataFixtures/Loader', []);
@@ -369,7 +369,7 @@ YAML;
 
         $con = SchemaBuilder::buildSchema($schema);
         $crossTable = YamlManyToManyMultipleFilesBookAuthorQuery::create()->getTableMap()->getName();
-        $fixtures2 = str_replace('table_book_author_multiples:', $crossTable . 's:', $fixtures2);
+        $fixtures2 = str_replace('table_book_author_multiples:', "{$crossTable}s:", $fixtures2);
         $filename1 = $this->getTempFile($fixtures1);
         $filename2 = $this->getTempFile($fixtures2);
 

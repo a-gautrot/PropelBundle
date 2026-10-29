@@ -35,7 +35,7 @@ class UniqueObjectValidator extends ConstraintValidator
         /** @var UniqueObject $constraint */
         $fields = (array)$constraint->fields;
         $class = get_class($value);
-        $queryClass = $class . 'Query';
+        $queryClass = "{$class}Query";
         $tableMapClass = $class::TABLE_MAP;
         $classFields = $tableMapClass::getFieldnames(TableMap::TYPE_FIELDNAME);
 
@@ -65,11 +65,8 @@ class UniqueObjectValidator extends ConstraintValidator
             $fieldParts = [];
 
             foreach ($fields as $fieldName) {
-                $fieldParts[] = sprintf(
-                    '%s "%s"',
-                    $tableMapClass::translateFieldname($fieldName, TableMap::TYPE_FIELDNAME, TableMap::TYPE_PHPNAME),
-                    $value->getByName($fieldName, TableMap::TYPE_FIELDNAME)
-                );
+                $fieldPhpName = $tableMapClass::translateFieldname($fieldName, TableMap::TYPE_FIELDNAME, TableMap::TYPE_PHPNAME);
+                $fieldParts[] = "$fieldPhpName \"{$value->getByName($fieldName, TableMap::TYPE_FIELDNAME)}\"";
             }
 
             $this->context->buildViolation($constraint->message)

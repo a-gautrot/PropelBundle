@@ -78,7 +78,7 @@ class TranslationCollectionFormListener implements EventSubscriberInterface
         $rootData = $form->getRoot()->getData();
         $foundData = false;
 
-        $addFunction = 'add' . $dataClass;
+        $addFunction = "add$dataClass";
 
         //add a database row for every needed language
         foreach ($this->languages as $lang) {

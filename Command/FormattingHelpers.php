@@ -56,7 +56,7 @@ trait FormattingHelpers
      */
     protected function writeNewFile(OutputInterface $output, string $filename): void
     {
-        $output->writeln('>>  <info>File+</info>    ' . $filename);
+        $output->writeln(">>  <info>File+</info>    $filename");
     }
 
     /**
@@ -65,7 +65,7 @@ trait FormattingHelpers
      */
     protected function writeNewDirectory(OutputInterface $output, string $directory): void
     {
-        $output->writeln('>>  <info>Dir+</info>     ' . $directory);
+        $output->writeln(">>  <info>Dir+</info>     $directory");
     }
 
     /**
@@ -82,7 +82,7 @@ trait FormattingHelpers
         $this->writeSection($output, [
             '[Propel] Error',
             '',
-            'An error has occurred during the "' . $taskName . '" task process.' . $moreText
+            "An error has occurred during the \"$taskName\" task process.$moreText"
         ], 'fg=white;bg=red');
     }
 

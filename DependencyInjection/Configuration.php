@@ -40,7 +40,7 @@ class Configuration extends PropelConfiguration
     public function __construct(bool $debug, string $kernelDir)
     {
         $this->debug = $debug;
-        $this->defaultDir = $kernelDir . '/propel';
+        $this->defaultDir = "$kernelDir/propel";
         $this->kernelDir = $kernelDir;
     }
 
@@ -52,17 +52,18 @@ class Configuration extends PropelConfiguration
     {
         $node
             ->children()
-            ->arrayNode('paths')
-            ->addDefaultsIfNotSet()
-            ->children()
-            ->scalarNode('schemaDir')->defaultValue($this->defaultDir)->end()
-            ->scalarNode('sqlDir')->defaultValue($this->defaultDir . '/sql')->end()
-            ->scalarNode('migrationDir')->defaultValue($this->defaultDir . '/migrations')->end()
-            ->scalarNode('composerDir')->defaultNull()->end()
-            ->scalarNode('loaderScriptDir')->defaultValue($this->kernelDir . '/generated-conf')->end()
+                ->arrayNode('paths')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('schemaDir')->defaultValue($this->defaultDir)->end()
+                        ->scalarNode('sqlDir')->defaultValue("$this->defaultDir/sql")->end()
+                        ->scalarNode('migrationDir')->defaultValue("$this->defaultDir/migrations")->end()
+                        ->scalarNode('composerDir')->defaultNull()->end()
+                        ->scalarNode('loaderScriptDir')->defaultValue("$this->kernelDir/generated-conf")->end()
+                    ->end()
+                ->end()
             ->end()
-            ->end()
-            ->end();
+        ;
     }
 
     /**
@@ -147,20 +148,20 @@ class Configuration extends PropelConfiguration
 
         $node
             ->children()
-            ->arrayNode('database')
-            ->isRequired()
-            ->addDefaultsIfNotSet()
-            ->children()
-            ->arrayNode('connections')
-            ->isRequired()
-            ->validate()
-            ->always()
-            ->then(function ($connections) {
-                foreach ($connections as $name => $connection) {
-                    if (strpos($name, '.') !== false) {
-                        throw new InvalidArgumentException('Dots are not allowed in connection names');
-                    }
-                }
+                ->arrayNode('database')
+                    ->isRequired()
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->arrayNode('connections')
+                            ->isRequired()
+                            ->validate()
+                            ->always()
+                                ->then(function(array $connections): array {
+                                    foreach ($connections as $name => $connection) {
+                                        if (str_contains($name, '.')) {
+                                            throw new \InvalidArgumentException('Dots are not allowed in connection names');
+                                        }
+                                    }
 
                                     return $connections;
                                 })
@@ -178,7 +179,9 @@ class Configuration extends PropelConfiguration
                                         ->cannotBeEmpty()
                                         ->beforeNormalization()
                                             ->ifString()
-                                            ->then(function ($v) { return preg_replace('/^pdo_/', '', strtolower($v)); })
+                                            ->then(function (string $v): ?string {
+                                                return preg_replace('/^pdo_/', '', strtolower($v));
+                                            })
                                         ->end()
                                         ->validate()
                                             ->ifNotInArray($validAdapters)
@@ -190,7 +193,9 @@ class Configuration extends PropelConfiguration
                                         ->cannotBeEmpty()
                                         ->beforeNormalization()
                                             ->ifString()
-                                            ->then(function ($v) { return preg_replace('/^pdo_/', '', $v); })
+                                            ->then(function (string $v): ?string {
+                                                return preg_replace('/^pdo_/', '', $v);
+                                            })
                                         ->end()
                                     ->end()
                                     ->scalarNode('user')->isRequired()->end()
@@ -231,7 +236,9 @@ class Configuration extends PropelConfiguration
                                                 ->scalarNode('dsn')
                                                     ->beforeNormalization()
                                                     ->ifString()
-                                                    ->then(function ($v) { return preg_replace('/^pdo_/', '', $v); })
+                                                    ->then(function (string $v): ?string {
+                                                        return preg_replace('/^pdo_/', '', $v);
+                                                    })
                                                     ->end()
                                                 ->end()
                                             ->end()

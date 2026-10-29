@@ -719,11 +719,9 @@ abstract class Book implements ActiveRecordInterface
             $modifiedColumns[':p' . $index++] = 'AUTHOR_ID';
         }
 
-        $sql = sprintf(
-            'INSERT INTO book (%s) VALUES (%s)',
-            implode(', ', $modifiedColumns),
-            implode(', ', array_keys($modifiedColumns))
-        );
+        $columns = implode(', ', $modifiedColumns);
+        $placeholders = implode(', ', array_keys($modifiedColumns));
+        $sql = "INSERT INTO book ($columns) VALUES ($placeholders)";
 
         try {
             $stmt = $con->prepare($sql);
@@ -746,7 +744,7 @@ abstract class Book implements ActiveRecordInterface
             $stmt->execute();
         } catch (Exception $e) {
             Propel::log($e->getMessage(), Propel::LOG_ERR);
-            throw new PropelException(sprintf('Unable to execute INSERT statement [%s]', $sql), 0, $e);
+            throw new PropelException("Unable to execute INSERT statement [$sql]", 0, $e);
         }
 
         try {
@@ -1159,7 +1157,7 @@ abstract class Book implements ActiveRecordInterface
             return $this->exportTo($format, $includeLazyLoadColumns);
         }
 
-        throw new BadMethodCallException(sprintf('Call to undefined method: %s.', $name));
+        throw new BadMethodCallException("Call to undefined method: $name.");
     }
 
     /**
@@ -1184,7 +1182,7 @@ abstract class Book implements ActiveRecordInterface
     public function getVirtualColumn(string $name)
     {
         if (!$this->hasVirtualColumn($name)) {
-            throw new PropelException(sprintf('Cannot get value of inexistent virtual column %s.', $name));
+            throw new PropelException("Cannot get value of inexistent virtual column $name.");
         }
 
         return $this->virtualColumns[$name];

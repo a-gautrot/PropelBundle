@@ -37,6 +37,7 @@
   },
   "require": {
     "php": ">=7.4",
+    "ext-json": "*",
     "ext-simplexml": "*",
     "propel/propel": "~2.0.0-beta4",
     "sensio/framework-extra-bundle": "^6.2",
@@ -58,7 +59,6 @@
   },
   "require-dev": {
     "ext-dom": "*",
-    "ext-json": "*",
     "ext-libxml": "*",
     "ext-pdo": "*",
     "ext-pdo_sqlite": "*",

@@ -62,7 +62,7 @@ trait BundleTrait
             if (in_array($bundleName, $bundleNames) || empty(trim($bundleName)) || $bundleName == AppBundle::NAME) {
                 break;
             }
-            $output->writeln(sprintf('<bg=red>Bundle "%s" does not exist.</bg>', $bundleName));
+            $output->writeln("<bg=red>Bundle \"$bundleName\" does not exist.</bg>");
         } while (true);
 
         if (empty($bundleName) || $bundleName === AppBundle::NAME) {

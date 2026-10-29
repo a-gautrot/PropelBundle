@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
 * This file is part of the Symfony package.
 *
 * (c) Fabien Potencier <fabien@symfony.com>
@@ -31,12 +31,12 @@ class PropelExtension extends AbstractExtension
     /**
      * @var PropertyAccessorInterface
      */
-    protected $propertyAccessor;
+    protected PropertyAccessorInterface $propertyAccessor;
 
     /**
      * @var ChoiceListFactoryInterface
      */
-    protected $choiceListFactory;
+    protected ChoiceListFactoryInterface $choiceListFactory;
 
     /**
      * PropelExtension constructor.

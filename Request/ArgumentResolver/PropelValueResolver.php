@@ -91,7 +91,7 @@ class PropelValueResolver implements ArgumentValueResolverInterface
             return [$existing];
         }
 
-        $classQuery = $class . 'Query';
+        $classQuery = "{$class}Query";
         $classTableMap = $class::TABLE_MAP;
         $this->pk = 'id';
         $this->filters = [];
@@ -99,7 +99,7 @@ class PropelValueResolver implements ArgumentValueResolverInterface
         $this->hasWith = false;
 
         if (!class_exists($classQuery)) {
-            throw new Exception(sprintf('The %s Query class does not exist', $classQuery));
+            throw new Exception("The $classQuery Query class does not exist");
         }
 
         $tableMap = new $classTableMap();
@@ -168,7 +168,7 @@ class PropelValueResolver implements ArgumentValueResolverInterface
         }
 
         if ($object === null && !$argument->isNullable()) {
-            throw new NotFoundHttpException(sprintf('%s object not found.', $class));
+            throw new NotFoundHttpException("$class object not found.");
         }
 
         $request->attributes->set($argument->getName(), $object);
@@ -195,9 +195,9 @@ class PropelValueResolver implements ArgumentValueResolverInterface
                     $query->joinWith($with[0], $this->getValidJoin($with));
                     $this->hasWith = true;
                 } else {
-                    throw new Exception(sprintf('ParamConverter : "with" parameter "%s" is invalid,
-                            only string relation name (e.g. "Book") or an array with two keys (e.g. {"Book", "LEFT_JOIN"}) are allowed',
-                        var_export($with, true)));
+                    $invalidWith = var_export($with, true);
+                    throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
+                            only string relation name (e.g. \"Book\") or an array with two keys (e.g. {\"Book\", \"LEFT_JOIN\"}) are allowed");
                 }
             } else {
                 $query->joinWith($with);
@@ -227,9 +227,9 @@ class PropelValueResolver implements ArgumentValueResolverInterface
             case 'INNER':
                 return Criteria::INNER_JOIN;
             default:
-                throw new Exception(sprintf('ParamConverter : "with" parameter "%s" is invalid,
-                only "left", "right" or "inner" are allowed for join option',
-                    var_export($with, true)));
+                $invalidWith = var_export($with, true);
+                throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
+                only \"left\", \"right\" or \"inner\" are allowed for join option");
         }
     }
 

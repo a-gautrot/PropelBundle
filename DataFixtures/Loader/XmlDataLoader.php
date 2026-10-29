@@ -43,8 +43,8 @@ class XmlDataLoader extends AbstractDataLoader
                 // First make a valid key which is the Ns (Namespace) attribute
                 // + the element name (the class name)
                 foreach ($value->attributes() as $subkey => $subvalue) {
-                    if ((string) $subkey === 'Namespace') {
-                        $key = $subvalue . '\\' . $key;
+                    if ($subkey === 'Namespace') {
+                        $key = "$subvalue\\$key";
                         break;
                     }
                 }

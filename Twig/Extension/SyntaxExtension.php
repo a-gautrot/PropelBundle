@@ -44,12 +44,12 @@ class SyntaxExtension extends AbstractExtension
     /**
      * Format a byte count into a human-readable representation.
      *
-     * @param int $bytes Byte count to convert. Can be negative.
+     * @param int|float $bytes Byte count to convert. Can be negative.
      * @param int $precision How many decimals to include.
      *
      * @return string
      */
-    public function formatMemory(int $bytes, int $precision = 3): string
+    public function formatMemory($bytes, int $precision = 3): string
     {
         $absBytes = abs($bytes);
         $sign = ($bytes == $absBytes) ? 1 : -1;

@@ -60,7 +60,7 @@ class SchemaLocator
 
         $schemas = $this->locateFromBundles($bundles);
 
-        $path = $this->configuration['paths']['schemaDir'] . '/schema.xml';
+        $path = "{$this->configuration['paths']['schemaDir']}/schema.xml";
 
         if (file_exists($path)) {
             $schema = new SplFileInfo($path);
@@ -94,7 +94,7 @@ class SchemaLocator
     public function locateFromBundle(BundleInterface $bundle): array
     {
         // no bundle/bundle
-        $dir = ($bundle->getName() === AppBundle::NAME) ? $bundle->getPath() . '/config' : $bundle->getPath() . '/Resources/config';
+        $dir = ($bundle->getName() === AppBundle::NAME) ? "{$bundle->getPath()}/config" : "{$bundle->getPath()}/Resources/config";
 
         $finalSchemas = [];
 
@@ -132,11 +132,10 @@ class SchemaLocator
             $schema->getRealPath()
         );
 
-        //
         if ($bundle->getName() == AppBundle::NAME) {
-            return sprintf('%s/config/%s', $bundle->getPath(), $schemaPath);
+            return "{$bundle->getPath()}/config/$schemaPath";
         }
 
-        return sprintf('@%s/Resources/config/%s', $bundle->getName(), $schemaPath);
+        return "@{$bundle->getName()}/Resources/config/$schemaPath";
     }
 }

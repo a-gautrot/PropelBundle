@@ -54,11 +54,11 @@ class UniqueObject extends Constraint
             throw new UnexpectedTypeException($this->fields, 'array');
         }
 
-        if (0 === count($this->fields)) {
+        if (empty($this->fields)) {
             throw new ConstraintDefinitionException("At least one field must be specified.");
         }
 
-        if (null !== $this->errorPath && !is_string($this->errorPath)) {
+        if ($this->errorPath !== null && !is_string($this->errorPath)) {
             throw new UnexpectedTypeException($this->errorPath, 'string or null');
         }
     }

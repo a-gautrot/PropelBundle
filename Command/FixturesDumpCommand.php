@@ -56,7 +56,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $fixtureDir = $input->getOption('dir') ?: $this->defaultFixturesDir;
-        $path = realpath($this->getKernel()->getProjectDir() . '/') . '/' . $fixtureDir;
+        $path = realpath("{$this->getKernel()->getProjectDir()}/") . '/' . $fixtureDir;
 
         if (!file_exists($path)) {
             $output->writeln("<info>The $path folder does not exists.</info>");
@@ -65,11 +65,11 @@ EOT
                 $fs->mkdir($path);
                 $this->writeNewDirectory($output, $path);
             } else {
-                throw new IOException(sprintf('Unable to find the %s folder', $path));
+                throw new IOException("Unable to find the $path folder");
             }
         }
 
-        $filename = $path . '/fixtures_' . time() . '.yml';
+        $filename = "$path/fixtures_" . time() . '.yml';
         $dumper = $this->getContainer()->get('propel.dumper.yaml');
 
         $dumper->dump($filename, $input->getOption('connection'));
