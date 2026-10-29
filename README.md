@@ -26,9 +26,9 @@ For Symfony 5.4, if you are using PHP 7.2 or 7.3, you **must** upgrade to PHP 7.
 
 ```shell
 composer require propel/propel "~2.0"
-composer require gautrot/propel-bundle "~7.1" # (or newer/older tag/release)
+composer require a-gautrot/propel-bundle "~7.1" # (or newer/older tag/release)
 # or
-composer require gautrot/propel-bundle "7.1.x-dev"
+composer require a-gautrot/propel-bundle "7.1.x-dev"
 ```
 
 #### composer.json
@@ -39,7 +39,7 @@ Stable release:
 {
   "require": {
     "propel/propel": "~2.0",
-    "gautrot/propel-bundle": "~7.1"
+    "a-gautrot/propel-bundle": "~7.1"
   }
 }
 ```
@@ -50,7 +50,7 @@ Nightly release:
 {
   "require": {
     "propel/propel": "~2.0",
-    "gautrot/propel-bundle": "7.1.x-dev"
+    "a-gautrot/propel-bundle": "7.1.x-dev"
   }
 }
 ```
