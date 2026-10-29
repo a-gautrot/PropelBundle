@@ -1,13 +1,13 @@
 {
-  "name": "gautrot/propel-bundle",
+  "name": "a-gautrot/propel-bundle",
   "description": "Integration of Propel in Symfony",
+  "type": "symfony-bundle",
+  "license": "MIT",
   "keywords": [
     "propel",
     "orm",
     "persistence"
   ],
-  "type": "symfony-bundle",
-  "license": "MIT",
   "authors": [
     {
       "name": "William Durand",
@@ -37,6 +37,7 @@
   },
   "require": {
     "php": ">=8.2",
+    "ext-json": "*",
     "ext-dom": "*",
     "ext-pdo": "*",
     "ext-simplexml": "*",
@@ -58,7 +59,6 @@
     "symfony/yaml": "^7.4.11"
   },
   "require-dev": {
-    "ext-json": "*",
     "ext-libxml": "*",
     "fakerphp/faker": "^1.0",
     "mikey179/vfsstream": "^1.6",

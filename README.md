@@ -2,10 +2,10 @@
 
 ---
 
-[![Latest stable version](https://img.shields.io/packagist/v/gautrot/propel-bundle)](https://packagist.org/packages/gautrot/propel-bundle)
+[![Latest stable version](https://img.shields.io/packagist/v/a-gautrot/propel-bundle)](https://packagist.org/packages/a-gautrot/propel-bundle)
 ![Minimum PHP version](https://img.shields.io/badge/php-%3E%3D%207.4-8892BF.svg)
-[![GitHub Actions workflow status](https://img.shields.io/github/actions/workflow/status/Gautrot/PropelBundle/ci.yml?branch=dev&label=GitHub%20Actions%20-%20CI%20branch%20dev)](https://github.com/Gautrot/PropelBundle/actions/workflows/ci.yml)
-[![Codecov (dev)](https://img.shields.io/codecov/c/github/gautrot/PropelBundle/dev)](https://codecov.io/gh/gautrot/PropelBundle/tree/dev)
+[![GitHub Actions workflow status](https://img.shields.io/github/actions/workflow/status/a-gautrot/PropelBundle/ci.yml?branch=dev&label=GitHub%20Actions%20-%20CI%20branch%20dev)](https://github.com/a-gautrot/PropelBundle/actions/workflows/ci.yml)
+[![Codecov (dev)](https://img.shields.io/codecov/c/github/a-gautrot/PropelBundle/dev)](https://codecov.io/gh/a-gautrot/PropelBundle/tree/dev)
 
 **PropelBundle** is the official implementation of [Propel](https://www.propelorm.org/) in Symfony.
 
@@ -13,12 +13,12 @@
 
 ### Minimum requirements
 
-| [Symfony](https://symfony.com/)                             | [PHP](https://www.php.net/)                    | [Propel](https://propelorm.org/)                                     | PropelBundle                                                                 |
-|-------------------------------------------------------------|------------------------------------------------|----------------------------------------------------------------------|------------------------------------------------------------------------------|
-| **[8.4](https://symfony.com/releases/8.4)** (Currently 8.1) | [8.4](https://www.php.net/releases/8.4/en.php) | [2.0.0](https://github.com/propelorm/Propel2/tree/2.0.0)             | **[8.0](https://github.com/Gautrot/PropelBundle/tree/8.0)** (In development) |
-| **[7.4](https://symfony.com/releases/7.4)**                 | [8.2](https://www.php.net/releases/8.2/en.php) | [2.0.0](https://github.com/propelorm/Propel2/tree/2.0.0)             | **[7.1](https://github.com/Gautrot/PropelBundle/tree/7.1)**                  |
-| **[6.4](https://symfony.com/releases/6.4)**                 | [8.1](https://www.php.net/releases/8.1/en.php) | [2.0.0](https://github.com/propelorm/Propel2/tree/2.0.0)             | **[6.1](https://github.com/Gautrot/PropelBundle/tree/6.1)** (LTS)            |
-| **[5.4](https://symfony.com/releases/5.4)**                 | 7.4                                            | [2.0.0-beta4](https://github.com/propelorm/Propel2/tree/2.0.0-beta4) | **[5.2](https://github.com/Gautrot/PropelBundle/tree/5.2)** (Extended LTS)   |
+| [Symfony](https://symfony.com/)                             | [PHP](https://www.php.net/)                    | [Propel](https://propelorm.org/)                                     | PropelBundle                                                                   |
+|-------------------------------------------------------------|------------------------------------------------|----------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| **[8.4](https://symfony.com/releases/8.4)** (Currently 8.1) | [8.4](https://www.php.net/releases/8.4/en.php) | [2.0.0](https://github.com/propelorm/Propel2/tree/2.0.0)             | **[8.0](https://github.com/a-gautrot/PropelBundle/tree/8.0)** (In development) |
+| **[7.4](https://symfony.com/releases/7.4)**                 | [8.2](https://www.php.net/releases/8.2/en.php) | [2.0.0](https://github.com/propelorm/Propel2/tree/2.0.0)             | **[7.1](https://github.com/a-gautrot/PropelBundle/tree/7.1)**                  |
+| **[6.4](https://symfony.com/releases/6.4)**                 | [8.1](https://www.php.net/releases/8.1/en.php) | [2.0.0](https://github.com/propelorm/Propel2/tree/2.0.0)             | **[6.1](https://github.com/a-gautrot/PropelBundle/tree/6.1)** (LTS)            |
+| **[5.4](https://symfony.com/releases/5.4)**                 | 7.4                                            | [2.0.0-beta4](https://github.com/propelorm/Propel2/tree/2.0.0-beta4) | **[5.2](https://github.com/a-gautrot/PropelBundle/tree/5.2)** (Extended LTS)   |
 
 For Symfony 5.4, if you are using PHP 7.2 or 7.3, you **must** upgrade to PHP 7.4 at least.
 
@@ -86,9 +86,9 @@ Nightly release:
 
 * Added support for Symfony 7.4
     * Removed support for Symfony 6 and 7.0 to 7.3
-        * LTS for Symfony 6.4 was migrated to a new branch: [6.1](https://github.com/Gautrot/PropelBundle/tree/6.1)
+        * LTS for Symfony 6.4 was migrated to a new branch: [6.1](https://github.com/a-gautrot/PropelBundle/tree/6.1)
         * Extended LTS for Symfony 5.4 was migrated to a new
-          branch: [5.2](https://github.com/Gautrot/PropelBundle/tree/5.2)
+          branch: [5.2](https://github.com/a-gautrot/PropelBundle/tree/5.2)
 * Added support for PHP 8.4 and 8.5
     * Removed support for PHP 8.0 and 8.1 in branch `7.1`
     * Removed support for PHP 8.0 in branch `6.1`
