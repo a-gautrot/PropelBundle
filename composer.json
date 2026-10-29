@@ -1,13 +1,13 @@
 {
   "name": "a-gautrot/propel-bundle",
   "description": "Integration of Propel in Symfony",
+  "type": "symfony-bundle",
+  "license": "MIT",
   "keywords": [
     "propel",
     "orm",
     "persistence"
   ],
-  "type": "symfony-bundle",
-  "license": "MIT",
   "authors": [
     {
       "name": "William Durand",
