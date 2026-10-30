@@ -10,9 +10,13 @@
 
 namespace Propel\Bundle\PropelBundle\DataFixtures;
 
+use LogicException;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Map\DatabaseMap;
+use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Propel;
+use RuntimeException;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -52,6 +56,9 @@ abstract class AbstractDataHandler
      * Load Map builders.
      *
      * @param string|null $connectionName A connection name.
+     * @return void
+     * @throws LogicException
+     * @throws DirectoryNotFoundException
      */
     protected function loadMapBuilders(?string $connectionName = null): void
     {
@@ -60,6 +67,7 @@ abstract class AbstractDataHandler
         }
 
         $this->dbMap = Propel::getDatabaseMap($connectionName);
+        $connectionName = $this->dbMap->getName();
         if (count($this->dbMap->getTables()) === 0) {
             $finder = new Finder();
             $files = $finder
@@ -70,13 +78,27 @@ abstract class AbstractDataHandler
                 ->exclude('Tests');
 
             foreach ($files as $file) {
-                $class = $this->guessFullClassName($file->getRelativePath(), basename($file, '.php'));
+                $class = $this->guessFullClassName($file->getRelativePath(), $file->getBasename('.php'));
 
-                if ($class !== null && $this->isInDatabase($class, $connectionName)) {
+                if ($class !== null && is_subclass_of($class, TableMap::class)
+                    && $this->isInDatabase($class, $connectionName)) {
                     $this->dbMap->addTableFromMapClass($class);
                 }
             }
         }
+    }
+
+    /**
+     * @return DatabaseMap
+     * @throws RuntimeException
+     */
+    protected function getDatabaseMap(): DatabaseMap
+    {
+        if ($this->dbMap === null) {
+            throw new RuntimeException('The database map has not been loaded.');
+        }
+
+        return $this->dbMap;
     }
 
     /**
@@ -90,8 +112,8 @@ abstract class AbstractDataHandler
     {
         $searchPath = [];
 
-        if (!empty($this->datasources['database']['connections'][$connectionName]['model_paths'])) {
-            $modelPaths = $this->datasources['database']['connections'][$connectionName]['model_paths'];
+        $modelPaths = $this->datasources['database']['connections'][$connectionName]['model_paths'] ?? [];
+        if (is_array($modelPaths) && $modelPaths !== []) {
             foreach ($modelPaths as $modelPath) {
                 $searchPath[] = "{$this->getRootDir()}/$modelPath";
             }
@@ -132,7 +154,6 @@ abstract class AbstractDataHandler
 
         $array = array_reverse($array);
         while ($ns = array_pop($array)) {
-
             $class = "$ns\\$shortClassName";
             if (class_exists($class)) {
                 return $class;
@@ -153,5 +174,18 @@ abstract class AbstractDataHandler
     protected function isInDatabase(string $class, string $connectionName): bool
     {
         return constant("$class::DATABASE_NAME") === $connectionName;
+    }
+
+    /**
+     * @return ConnectionInterface
+     * @throws RuntimeException
+     */
+    protected function getConnection(): ConnectionInterface
+    {
+        if ($this->con === null) {
+            throw new RuntimeException('The fixture connection has not been initialized.');
+        }
+
+        return $this->con;
     }
 }

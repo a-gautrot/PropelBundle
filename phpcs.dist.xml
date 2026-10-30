@@ -1,10 +1,12 @@
 <?xml version="1.0"?>
 <ruleset name="PropelBundle">
-    <description>PSR-2 coding standard for PropelBundle sources.</description>
+    <description>PSR-2 coding standard for PropelBundle</description>
     <file>.</file>
     <arg name="extensions" value="php"/>
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/Tests/*</exclude-pattern>
     <exclude-pattern>*/Resources/*</exclude-pattern>
     <rule ref="PSR2"/>
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+    <rule ref="Generic.ControlStructures.DisallowYodaConditions"/>
 </ruleset>

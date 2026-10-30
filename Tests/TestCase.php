@@ -11,6 +11,7 @@
 namespace Propel\Bundle\PropelBundle\Tests;
 
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Propel;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -39,7 +40,8 @@ class TestCase extends BaseTestCase
 
     /**
      * load propel database maps
-     * @param array $databaseMapsArray
+     * @param list<class-string<TableMap>> $databaseMapsArray
+     * @return void
      */
     protected function loadDatabaseMap(array $databaseMapsArray): void
     {

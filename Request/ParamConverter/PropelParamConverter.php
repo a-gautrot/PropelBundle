@@ -4,6 +4,7 @@ namespace Propel\Bundle\PropelBundle\Request\ParamConverter;
 
 use Exception;
 use LogicException;
+use Override;
 use Propel\Bundle\PropelBundle\Util\PropelInflector;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
@@ -25,6 +26,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  *
  * @author     Jérémie Augustin <jeremie.augustin@pixel-cookers.com>
+ * @api
  */
 class PropelParamConverter implements ValueResolverInterface
 {
@@ -50,7 +52,7 @@ class PropelParamConverter implements ValueResolverInterface
      * list of with option use to hydrate related object
      * @var array<string|array<array-key, string>>
      */
-    protected array $withs;
+    protected array $withs = [];
 
     /**
      * name of method use to call a query method
@@ -69,10 +71,11 @@ class PropelParamConverter implements ValueResolverInterface
      *
      * @return iterable<ActiveRecordInterface|null>
      *
+     * @throws Exception
      * @throws LogicException
      * @throws NotFoundHttpException
-     * @throws Exception
      */
+    #[Override]
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
         if (!$this->supports($argument)) {
@@ -80,6 +83,9 @@ class PropelParamConverter implements ValueResolverInterface
         }
 
         $class = $argument->getType();
+        if ($class === null || !is_a($class, ActiveRecordInterface::class, true)) {
+            return [];
+        }
         $existing = $request->attributes->get($argument->getName());
         if ($existing instanceof $class) {
             return [$existing];
@@ -164,6 +170,9 @@ class PropelParamConverter implements ValueResolverInterface
         if ($object === null && !$argument->isNullable()) {
             throw new NotFoundHttpException("$class object not found.");
         }
+        if ($object !== null && !$object instanceof ActiveRecordInterface) {
+            throw new LogicException('The query must return a Propel model or null.');
+        }
 
         $request->attributes->set($argument->getName(), $object);
 
@@ -178,7 +187,7 @@ class PropelParamConverter implements ValueResolverInterface
     public function supports(ArgumentMetadata $argument): bool
     {
         $classname = $argument->getType();
-        if (!$classname) {
+        if ($classname === null || $classname === '') {
             return false;
         }
 
@@ -188,7 +197,7 @@ class PropelParamConverter implements ValueResolverInterface
 
         // Propel Class?
         $class = new ReflectionClass($classname);
-        if ($class->implementsInterface('\Propel\Runtime\ActiveRecord\ActiveRecordInterface')) {
+        if ($class->implementsInterface(ActiveRecordInterface::class)) {
             return true;
         }
 
@@ -206,6 +215,9 @@ class PropelParamConverter implements ValueResolverInterface
      */
     protected function getQuery(string $classQuery): ModelCriteria
     {
+        if (!is_a($classQuery, ModelCriteria::class, true)) {
+            throw new LogicException('The query class must extend ModelCriteria.');
+        }
         $query = $classQuery::create();
 
         foreach ($this->withs as $with) {
@@ -285,6 +297,7 @@ class PropelParamConverter implements ValueResolverInterface
      *
      * @return ActiveRecordInterface|false|null
      *
+     * @psalm-suppress PossiblyUnusedParam Kept for compatibility with overriding resolvers.
      * @throws Exception
      */
     protected function findOneBy(string $classQuery, Request $request): ActiveRecordInterface|false|null

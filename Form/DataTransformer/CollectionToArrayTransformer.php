@@ -11,6 +11,7 @@
 
 namespace Propel\Bundle\PropelBundle\Form\DataTransformer;
 
+use Override;
 use Propel\Runtime\Collection\ObjectCollection;
 use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
@@ -22,14 +23,17 @@ use Symfony\Component\Form\Exception\TransformationFailedException;
  * @author Pierre-Yves Lebecq <py.lebecq@gmail.com>
  *
  * @implements DataTransformerInterface<ObjectCollection, array>
+ * @api
  */
 class CollectionToArrayTransformer implements DataTransformerInterface
 {
     /**
      * @param mixed $value
      *
-     * @return array
+     * @return array<array-key, mixed>
+     * @throws TransformationFailedException
      */
+    #[Override]
     public function transform(mixed $value): array
     {
         if ($value === null) {
@@ -44,10 +48,12 @@ class CollectionToArrayTransformer implements DataTransformerInterface
     }
 
     /**
-     * @param array|string|null $value
+     * @param mixed $value
      *
      * @return ObjectCollection
+     * @throws TransformationFailedException
      */
+    #[Override]
     public function reverseTransform(mixed $value): ObjectCollection
     {
         $collection = new ObjectCollection();

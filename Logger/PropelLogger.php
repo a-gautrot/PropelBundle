@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Logger;
 
+use Override;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 use Stringable;
@@ -19,6 +20,7 @@ use Symfony\Component\VarDumper\Caster\TraceStub;
 /**
  * # PropelLogger
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class PropelLogger implements LoggerInterface
 {
@@ -59,8 +61,10 @@ class PropelLogger implements LoggerInterface
      *
      * @param mixed $level
      * @param string|Stringable $message
-     * @param array $context
+     * @param array<array-key, mixed> $context
+     * @return void
      */
+    #[Override]
     public function log(mixed $level, string|Stringable $message, array $context = []): void
     {
         if ($this->logger === null) {

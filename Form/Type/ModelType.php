@@ -11,18 +11,23 @@
 
 namespace Propel\Bundle\PropelBundle\Form\Type;
 
+use InvalidArgumentException;
+use Override;
 use PDO;
 use Propel\Bundle\PropelBundle\Form\ChoiceList\PropelChoiceLoader;
 use Propel\Bundle\PropelBundle\Form\DataTransformer\CollectionToArrayTransformer;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\Map\ColumnMap;
+use Stringable;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
 use Symfony\Component\Form\ChoiceList\Factory\DefaultChoiceListFactory;
 use Symfony\Component\Form\ChoiceList\Factory\PropertyAccessDecorator;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
+use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -54,6 +59,9 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
  *      ;
  *   }
  * </code>
+ * @api
+ * @template TData
+ * @extends AbstractType<TData>
  */
 class ModelType extends AbstractType
 {
@@ -85,11 +93,15 @@ class ModelType extends AbstractType
      *
      * @return string The string representation of the object.
      *
+     * @throws InvalidArgumentException
      * @internal This method is public to be usable as callback. It should not
      *           be used in user code.
      */
     public static function createChoiceLabel(object $choice): string
     {
+        if (!$choice instanceof Stringable) {
+            throw new InvalidArgumentException('A choice must implement __toString() or define a label property.');
+        }
         return (string)$choice;
     }
 
@@ -106,6 +118,7 @@ class ModelType extends AbstractType
      *                           ID here.
      *
      * @return string The field name.
+     * @psalm-suppress PossiblyUnusedParam The form callback signature includes the choice and key.
      *
      * @internal This method is public to be usable as callback. It should not
      *           be used in user code.
@@ -116,10 +129,11 @@ class ModelType extends AbstractType
     }
 
     /**
-     * @param FormBuilderInterface $builder
-     * @param array $options
+     * @param FormBuilderInterface<TData|null> $builder
+     * @param array<array-key, mixed> $options
      * @return void
      */
+    #[Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if ($options['multiple']) {
@@ -131,13 +145,15 @@ class ModelType extends AbstractType
     /**
      * @param OptionsResolver $resolver
      * @return void
+     * @throws AccessException
+     * @throws UndefinedOptionsException
      */
+    #[Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $choiceLoader = function (Options $options): ?PropelChoiceLoader {
             // Unless the choices are given explicitly, load them on demand
             if ($options['choices'] === null) {
-
                 return new PropelChoiceLoader(
                     $this->choiceListFactory,
                     $options['class'],
@@ -154,9 +170,9 @@ class ModelType extends AbstractType
             /** @var ModelCriteria $query */
             $query = $options['query'];
             if ($options['index_property']) {
-                $identifier = [$query->getTableMap()->getColumn($options['index_property'])];
+                $identifier = [$query->getTableMapOrFail()->getColumn($options['index_property'])];
             } else {
-                $identifier = $query->getTableMap()->getPrimaryKeys();
+                $identifier = $query->getTableMapOrFail()->getPrimaryKeys();
             }
             /** @var ColumnMap $firstIdentifier */
             $firstIdentifier = current($identifier);
@@ -171,9 +187,9 @@ class ModelType extends AbstractType
             /** @var ModelCriteria $query */
             $query = $options['query'];
             if ($options['index_property']) {
-                $identifier = [$query->getTableMap()->getColumn($options['index_property'])];
+                $identifier = [$query->getTableMapOrFail()->getColumn($options['index_property'])];
             } else {
-                $identifier = $query->getTableMap()->getPrimaryKeys();
+                $identifier = $query->getTableMapOrFail()->getPrimaryKeys();
             }
             /** @var ColumnMap $firstIdentifier */
             $firstIdentifier = current($identifier);
@@ -216,7 +232,7 @@ class ModelType extends AbstractType
                     $choiceLabel = function (object $choice) use ($valueProperty, $query): mixed {
                         $getter = 'get' . ucfirst($valueProperty);
                         if (!method_exists($choice, $getter)) {
-                            $getter = 'get' . ucfirst($query->getTableMap()->getColumn($valueProperty)->getPhpName());
+                            $getter = 'get' . ucfirst($query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName());
                         }
 
                         return call_user_func([$choice, $getter]);
@@ -249,6 +265,7 @@ class ModelType extends AbstractType
     /**
      * @return string
      */
+    #[Override]
     public function getBlockPrefix(): string
     {
         return 'model';
@@ -257,6 +274,7 @@ class ModelType extends AbstractType
     /**
      * @return string|null
      */
+    #[Override]
     public function getParent(): ?string
     {
         return 'Symfony\Component\Form\Extension\Core\Type\ChoiceType';

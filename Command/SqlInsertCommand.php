@@ -10,21 +10,33 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use JsonException;
+use LogicException;
+use Override;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 
 /**
  * # SqlInsertCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class SqlInsertCommand extends WrappedCommand
 {
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -37,7 +49,9 @@ class SqlInsertCommand extends WrappedCommand
 
     /**
      * @return Command
+     * @throws \Symfony\Component\Console\Exception\LogicException
      */
+    #[Override]
     protected function createSubCommandInstance(): Command
     {
         return new \Propel\Generator\Command\SqlInsertCommand();
@@ -48,7 +62,15 @@ class SqlInsertCommand extends WrappedCommand
      * @param OutputInterface $output
      * @return int
      * @throws ExceptionInterface
+     * @throws JsonException
+     * @throws LogicException
+     * @throws RuntimeException
+     * @throws ParameterNotFoundException
+     * @throws ServiceNotFoundException
+     * @throws IOException
+     * @throws DirectoryNotFoundException
      */
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('force')) {
@@ -61,8 +83,11 @@ class SqlInsertCommand extends WrappedCommand
 
     /**
      * @param InputInterface $input
-     * @return array
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException
+     * @throws ParameterNotFoundException
      */
+    #[Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $config = $this->getConfig();

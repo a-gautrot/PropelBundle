@@ -12,10 +12,12 @@ namespace Propel\Bundle\PropelBundle\DataFixtures\Loader;
 
 use Exception;
 use InvalidArgumentException;
+use Override;
 use Propel\Bundle\PropelBundle\DataFixtures\AbstractDataHandler;
 use Propel\Bundle\PropelBundle\Util\PropelInflector;
 use Propel\Generator\Model\PropelTypes;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
+use Propel\Runtime\Exception\LogicException;
 use Propel\Runtime\Map\Exception\TableNotFoundException;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Propel;
@@ -42,11 +44,14 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
     protected array $object_references = [];
 
     /**
-     * @param array $files
+     * @param string[] $files
      * @param string $connectionName
      * @return int
      * @throws ReflectionException
+     * @throws Exception
+     * @throws RuntimeException
      */
+    #[Override]
     public function load(array $files, string $connectionName): int
     {
         $nbFiles = 0;
@@ -56,7 +61,7 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
         $this->con = Propel::getConnection($connectionName);
 
         try {
-            $this->con->beginTransaction();
+            $this->getConnection()->beginTransaction();
 
             $datas = [];
             foreach ($files as $file) {
@@ -71,9 +76,9 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
             $this->deleteCurrentData($datas);
             $this->loadDataFromArray($datas);
 
-            $this->con->commit();
+            $this->getConnection()->commit();
         } catch (Exception $e) {
-            $this->con->rollBack();
+            $this->getConnection()->rollBack();
             throw $e;
         }
 
@@ -85,15 +90,16 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
      *
      * @param string $file A filename.
      *
-     * @return array<string, array<string, array<string, mixed>>>
+     * @return array<string, mixed>
      */
     abstract protected function transformDataToArray(string $file): array;
 
     /**
      * Deletes current data.
      *
-     * @param array<string, array<string, array<string, mixed>>>|null $data The data to delete
+     * @param array<string, mixed>|null $data The data to delete
      *
+     * @return void
      * @throws ReflectionException
      */
     protected function deleteCurrentData(?array $data = null): void
@@ -115,17 +121,25 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
      *
      * @param string $class Class name to delete
      *
+     * @return void
      * @throws ReflectionException
+     * @throws InvalidArgumentException
+     * @throws TableNotFoundException
+     * @throws RuntimeException
      */
     protected function deleteClassData(string $class): void
     {
-        $tableMap = $this->dbMap->getTable(constant(constant("$class::TABLE_MAP") . '::TABLE_NAME'));
+        if (!class_exists($class)) {
+            throw new InvalidArgumentException("Unknown class \"$class\".");
+        }
+        $tableMap = $this->getDatabaseMap()->getTable(constant(constant("$class::TABLE_MAP") . '::TABLE_NAME'));
         $tableMap->doDeleteAll($this->con);
 
         $this->deletedClasses[] = $class;
 
         // Remove ancestors data
-        if (($parentClass = get_parent_class(get_parent_class($class))) !== false) {
+        $baseClass = get_parent_class($class);
+        if ($baseClass !== false && ($parentClass = get_parent_class($baseClass)) !== false) {
             $reflectionClass = new ReflectionClass($parentClass);
             if (!$reflectionClass->isAbstract()) {
                 $this->deleteClassData($parentClass);
@@ -136,8 +150,9 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
     /**
      * Loads the data using the generated data model.
      *
-     * @param array<string, array<string, array<string, mixed>>>|null $data The data to be loaded
+     * @param array<string, mixed>|null $data The data to be loaded
      *
+     * @return void
      * @throws ReflectionException
      */
     protected function loadDataFromArray(?array $data = null): void
@@ -157,7 +172,7 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
             if ($class[0] == '\\') {
                 $class = substr($class, 1);
             }
-            $tableMap = $this->dbMap->getTable(constant(constant("$class::TABLE_MAP") . '::TABLE_NAME'));
+            $tableMap = $this->getDatabaseMap()->getTable(constant(constant("$class::TABLE_MAP") . '::TABLE_NAME'));
             $column_names = $tableMap->getFieldnames(TableMap::TYPE_PHPNAME);
 
             foreach ($datas as $key => $values) {
@@ -219,18 +234,17 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
                         }
 
                         if ($column->isForeignKey() && $value !== null) {
-                            $relatedTable = $this->dbMap->getTable($column->getRelatedTableName());
+                            $relatedTable = $this->getDatabaseMap()->getTable($column->getRelatedTableName());
                             if (isset($this->object_references[$this->cleanObjectRef("{$relatedTable->getClassname()}_$value")])) {
                                 $value = $this
                                     ->object_references[$this->cleanObjectRef("{$relatedTable->getClassname()}_$value")]
                                     ->getByName($column->getRelatedName(), TableMap::TYPE_COLNAME);
                             } else {
-                                $relatedClass = $this->cleanObjectRef($relatedTable->getClassName());
+                                $relatedClass = $this->cleanObjectRef($relatedTable->getClassNameOrFail());
                                 if (isset($data[$relatedClass]) || isset($data["\\$relatedClass"])) {
                                     throw new InvalidArgumentException(
                                         "The object \"$value\" from class \"{$relatedTable->getClassname()}\" is not defined in your data file."
                                     );
-
                                 }
                             }
                         }
@@ -238,7 +252,7 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
 
                     if (($pos = array_search($name, $column_names)) !== false) {
                         $obj->setByPosition($pos, $value);
-                    } elseif (is_callable([$obj, $method = 'set' . ucfirst(PropelInflector::camelize($name))])) {
+                    } elseif (is_callable([$obj, $method = 'set' . ucfirst(PropelInflector::camelize($name) ?? '')])) {
                         $obj->$method($value);
                     } else {
                         throw new InvalidArgumentException("Column \"$name\" does not exist for class \"$class\".");
@@ -258,25 +272,41 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
      * @param ActiveRecordInterface $obj A Propel object
      * @param string $middleTableName The middle table name
      * @param string[] $values An array of values
+     * @return void
+     * @throws InvalidArgumentException
+     * @throws LogicException
+     * @throws TableNotFoundException
+     * @throws RuntimeException
      */
     protected function loadManyToMany(ActiveRecordInterface $obj, string $middleTableName, array $values): void
     {
-        $middleTable = $this->dbMap->getTable($middleTableName);
-        $middleClass = $middleTable->getClassname();
+        $middleTable = $this->getDatabaseMap()->getTable($middleTableName);
+        $middleClass = $middleTable->getClassNameOrFail();
+        if (!class_exists($middleClass)) {
+            throw new InvalidArgumentException("Unknown class \"$middleClass\".");
+        }
         $tableName = constant(constant(get_class($obj) . '::TABLE_MAP') . '::TABLE_NAME');
 
         foreach ($middleTable->getColumns() as $column) {
             if ($column->isForeignKey()) {
                 if ($tableName !== $column->getRelatedTableName()) {
-                    $relatedClass = $this->dbMap->getTable($column->getRelatedTableName())->getClassname();
-                    $relatedSetter = "set{$column->getRelation()->getName()}";
+                    $relatedClass = $this->getDatabaseMap()->getTable($column->getRelatedTableName())->getClassname();
+                    $relation = $column->getRelation();
+                    if ($relation === null) {
+                        throw new RuntimeException('The foreign key relation is not defined.');
+                    }
+                    $relatedSetter = "set{$relation->getName()}";
                 } else {
-                    $setter = "set{$column->getRelation()->getName()}";
+                    $relation = $column->getRelation();
+                    if ($relation === null) {
+                        throw new RuntimeException('The foreign key relation is not defined.');
+                    }
+                    $setter = "set{$relation->getName()}";
                 }
             }
         }
 
-        if (!isset($relatedClass)) {
+        if (!isset($relatedClass, $setter, $relatedSetter)) {
             $objectClass = get_class($obj);
             throw new InvalidArgumentException("Unable to find the many-to-many relationship for object \"$objectClass\".");
         }
@@ -295,6 +325,10 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
         }
     }
 
+    /**
+     * @param string $ref
+     * @return string
+     */
     protected function cleanObjectRef(string $ref): string
     {
         return $ref[0] === '\\' ? substr($ref, 1) : $ref;
@@ -307,10 +341,16 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
      * @param string $key Key identifying specified object
      * @param ActiveRecordInterface $obj A Propel object
      *
+     * @return void
      * @throws ReflectionException
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     protected function saveParentReference(string $class, string $key, ActiveRecordInterface $obj): void
     {
+        if (!class_exists($class)) {
+            throw new InvalidArgumentException("Unknown class \"$class\".");
+        }
         if (!method_exists($obj, 'getPrimaryKey')) {
             return;
         }
@@ -318,11 +358,14 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
         $this->object_references[$this->cleanObjectRef("{$class}_$key")] = $obj;
 
         // Get parent (schema ancestor) of parent (Propel base class) in case of inheritance
-        if (($parentClass = get_parent_class(get_parent_class($class))) !== false) {
-
+        $baseClass = get_parent_class($class);
+        if ($baseClass !== false && ($parentClass = get_parent_class($baseClass)) !== false) {
             $reflectionClass = new ReflectionClass($parentClass);
             if (!$reflectionClass->isAbstract()) {
                 $parentObj = new $parentClass();
+                if (!$parentObj instanceof ActiveRecordInterface) {
+                    throw new RuntimeException('The parent model must implement ActiveRecordInterface.');
+                }
                 $parentObj->fromArray($obj->toArray());
                 $this->saveParentReference($parentClass, $key, $parentObj);
             }

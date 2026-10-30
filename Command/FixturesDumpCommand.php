@@ -10,9 +10,14 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Override;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -20,6 +25,7 @@ use Symfony\Component\Filesystem\Filesystem;
  * # FixturesDumpCommand
  *
  * @author William DURAND <william.durand1@gmail.com>
+ * @api
  */
 class FixturesDumpCommand extends AbstractCommand
 {
@@ -29,8 +35,11 @@ class FixturesDumpCommand extends AbstractCommand
     protected string $defaultFixturesDir = 'propel/fixtures';
 
     /**
-     * @see Command
+     * @return void
+     * @throws InvalidArgumentException
+     * @see \Symfony\Component\Console\Command\Command
      */
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -52,11 +61,21 @@ EOT
 
     /**
      * {@inheritdoc}
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws \RuntimeException
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     * @throws ServiceCircularReferenceException
+     * @throws ServiceNotFoundException
+     * @throws IOException
      */
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $fixtureDir = $input->getOption('dir') ?: $this->defaultFixturesDir;
-        $path = realpath("{$this->getKernel()->getProjectDir()}/") . '/' . $fixtureDir;
+        $path = $this->getKernel()->getProjectDir() . '/' . $fixtureDir;
 
         if (!file_exists($path)) {
             $output->writeln("<info>The $path folder does not exists.</info>");

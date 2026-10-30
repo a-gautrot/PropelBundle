@@ -11,6 +11,7 @@
 
 namespace Propel\Bundle\PropelBundle\Form\EventListener;
 
+use Override;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormEvent;
@@ -21,6 +22,7 @@ use Symfony\Component\Form\FormEvents;
  * Event Listener class for propel_translation
  *
  * @author Patrick Kaufmann
+ * @api
  */
 class TranslationFormListener implements EventSubscriberInterface
 {
@@ -44,8 +46,9 @@ class TranslationFormListener implements EventSubscriberInterface
     }
 
     /**
-     * @return array[]
+     * @return array<string, array{string, int}>
      */
+    #[Override]
     public static function getSubscribedEvents(): array
     {
         return [

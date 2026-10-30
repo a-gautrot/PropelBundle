@@ -11,17 +11,21 @@
 
 namespace Propel\Bundle\PropelBundle\DependencyInjection\Security\UserProvider;
 
+use InvalidArgumentException;
+use Override;
 use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\UserProvider\UserProviderFactoryInterface;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\ParentNodeDefinitionInterface;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Exception\BadMethodCallException;
 
 /**
  * # PropelFactory
  * PropelFactory creates services for Propel user provider.
  *
  * @author William Durand <william.durand1@gmail.com>
+ * @api
  */
 class PropelFactory implements UserProviderFactoryInterface
 {
@@ -47,8 +51,11 @@ class PropelFactory implements UserProviderFactoryInterface
     /**
      * @param ContainerBuilder $container
      * @param string $id
-     * @param array<string, mixed> $config
+     * @param array<array-key, mixed> $config
+     * @return void
+     * @throws BadMethodCallException
      */
+    #[Override]
     public function create(ContainerBuilder $container, string $id, array $config): void
     {
         $container
@@ -60,6 +67,7 @@ class PropelFactory implements UserProviderFactoryInterface
     /**
      * @return string
      */
+    #[Override]
     public function getKey(): string
     {
         return $this->key;
@@ -68,10 +76,16 @@ class PropelFactory implements UserProviderFactoryInterface
     /**
      * @param NodeDefinition $builder
      * @return void
+     * @throws InvalidArgumentException
+     * @psalm-suppress PossiblyNullReference Symfony's end() returns the configured parent builder.
+     * @psalm-suppress UndefinedInterfaceMethod Symfony's fluent builder loses the concrete parent type at end().
      */
+    #[Override]
     public function addConfiguration(NodeDefinition $builder): void
     {
-        /** @var ParentNodeDefinitionInterface $builder */
+        if (!$builder instanceof ParentNodeDefinitionInterface) {
+            throw new InvalidArgumentException('The user provider configuration must support child nodes.');
+        }
         $builder
             ->children()
             ->scalarNode('class')->isRequired()->cannotBeEmpty()->end()

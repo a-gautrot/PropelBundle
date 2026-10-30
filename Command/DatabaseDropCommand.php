@@ -10,9 +10,13 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Override;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
+use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ServiceContainer\StandardServiceContainer;
+use RuntimeException;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -22,12 +26,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Useful to drop a database.
  *
  * @author William DURAND
+ * @api
  */
 class DatabaseDropCommand extends AbstractCommand
 {
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -51,7 +58,12 @@ EOT
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
+     * @throws \InvalidArgumentException
+     * @throws ConnectionException
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
      */
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$input->getOption('force')) {
@@ -95,6 +107,9 @@ EOT
 
 
         $statement = $connection->prepare($query);
+        if ($statement === false) {
+            throw new RuntimeException('Cannot prepare the database query.');
+        }
         $statement->execute();
 
         $output->writeln("<info>Database <comment>$dbName</comment> has been dropped.</info>");

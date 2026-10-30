@@ -10,20 +10,27 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Override;
 use Propel\Generator\Command\MigrationDiffCommand as BaseMigrationCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
 
 /**
  * # MigrationDiffCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class MigrationDiffCommand extends WrappedCommand
 {
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
@@ -42,7 +49,9 @@ class MigrationDiffCommand extends WrappedCommand
 
     /**
      * @return Command
+     * @throws LogicException
      */
+    #[Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseMigrationCommand();
@@ -50,8 +59,11 @@ class MigrationDiffCommand extends WrappedCommand
 
     /**
      * @param InputInterface $input
-     * @return array
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException
+     * @throws ParameterNotFoundException
      */
+    #[Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $config = $this->getConfig();

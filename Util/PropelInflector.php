@@ -15,6 +15,7 @@ namespace Propel\Bundle\PropelBundle\Util;
  * The Propel Inflector class provides methods for inflecting text.
  *
  * @author William Durand <william.durand1@gmail.com>
+ * @api
  */
 class PropelInflector
 {
@@ -27,7 +28,7 @@ class PropelInflector
      */
     public static function camelize(?string $word): ?string
     {
-        if (empty($word)) {
+        if ($word === null || $word === '') {
             return $word;
         }
 

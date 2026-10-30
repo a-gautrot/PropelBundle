@@ -38,8 +38,9 @@
   "require": {
     "php": ">=8.1",
     "ext-json": "*",
+    "ext-pdo": "*",
     "ext-simplexml": "*",
-    "propel/propel": "^2.0",
+    "propel/propel": "~2.0",
     "psr/log": "^3.0",
     "symfony/cache": "^6.4.38",
     "symfony/config": "^6.4",
@@ -60,7 +61,6 @@
   "require-dev": {
     "ext-dom": "*",
     "ext-libxml": "*",
-    "ext-pdo": "*",
     "ext-pdo_sqlite": "*",
     "fakerphp/faker": "^1.24",
     "mikey179/vfsstream": "^1.6.12",

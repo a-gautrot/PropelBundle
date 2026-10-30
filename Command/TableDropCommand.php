@@ -11,9 +11,12 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException;
+use Override;
 use PDO;
 use Propel\Runtime\Adapter\Pdo\MysqlAdapter;
+use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
+use RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -22,6 +25,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * # TableDropCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class TableDropCommand extends AbstractCommand
 {
@@ -29,7 +33,9 @@ class TableDropCommand extends AbstractCommand
 
     /**
      * @return void
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
      */
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -44,7 +50,11 @@ class TableDropCommand extends AbstractCommand
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
+     * @throws ConnectionException
+     * @throws RuntimeException
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
      */
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $connection = Propel::getConnection($input->getOption('connection'));
@@ -83,13 +93,16 @@ class TableDropCommand extends AbstractCommand
         }
 
         $showStatement = $connection->prepare('SHOW TABLES;');
+        if ($showStatement === false) {
+            throw new RuntimeException('Cannot list the database tables.');
+        }
         $showStatement->execute();
 
         $allTables = $showStatement->fetchAll(PDO::FETCH_COLUMN);
 
         if ($nbTable) {
             foreach ($tablesToDelete as $tableToDelete) {
-                if (!array_search($tableToDelete, $allTables)) {
+                if (!in_array($tableToDelete, $allTables, true)) {
                     throw new InvalidArgumentException("Table $tableToDelete doesn't exist in the database.");
                 }
             }

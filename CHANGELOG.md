@@ -4,11 +4,11 @@
 
 <!-- TOC -->
 
+* [6.1.1](#611)
 * [6.1.0](#610)
     * [6.1.0.1](#6101)
     * [6.1.0.2](#6102)
     * [6.1.0.3](#6103)
-    * [6.1.0.4](#6104)
 
 <!-- TOC -->
 
@@ -39,9 +39,12 @@
 * Updated `composer.json`
 * Removed more deprecated content
 
-### 6.1.0.4
+## 6.1.1
 
+* Updated `composer.json`
 * Updated the project's source code
-  * Updated `composer.json`
-  * Optimized the lib with gitattributes
+    * Trimmed the package with gitattributes
+    * Updated with support from PHPStan, Psalm, and PHPCS
 * Added deprecation warnings for XML schemas
+* Fixed fixture path validation, SQL result handling, and static type declarations
+* Fixed UTs for its Book schema

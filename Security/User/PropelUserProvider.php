@@ -11,6 +11,10 @@
 
 namespace Propel\Bundle\PropelBundle\Security\User;
 
+use LogicException;
+use Override;
+use Propel\Runtime\ActiveQuery\ModelCriteria;
+use Propel\Runtime\Exception\PropelException;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -21,6 +25,8 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  * Provides easy to use provisioning for Propel model users.
  *
  * @author William DURAND <william.durand1@gmail.com>
+ * @api
+ * @implements UserProviderInterface<UserInterface>
  */
 class PropelUserProvider implements UserProviderInterface
 {
@@ -61,16 +67,26 @@ class PropelUserProvider implements UserProviderInterface
     /**
      * @param string $identifier
      * @return UserInterface
+     * @throws LogicException
+     * @throws PropelException
+     * @throws UserNotFoundException
      */
+    #[Override]
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
         $queryClass = $this->queryClass;
+        if (!is_a($queryClass, ModelCriteria::class, true)) {
+            throw new LogicException('The user query class must extend ModelCriteria.');
+        }
         $query = $queryClass::create();
 
         if ($this->property !== null) {
             $filter = 'filterBy' . ucfirst($this->property);
             $query->$filter($identifier);
         } else {
+            if (!method_exists($query, 'filterByUsername')) {
+                throw new LogicException('The user query must define filterByUsername() or configure a property.');
+            }
             $query->filterByUsername($identifier);
         }
 
@@ -87,6 +103,7 @@ class PropelUserProvider implements UserProviderInterface
      * @param UserInterface $user
      * @return UserInterface
      */
+    #[Override]
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof $this->class) {
@@ -95,7 +112,10 @@ class PropelUserProvider implements UserProviderInterface
         }
 
         $queryClass = $this->queryClass;
-
+        if (!is_a($queryClass, ModelCriteria::class, true)
+            || !method_exists($user, 'getPrimaryKey')) {
+            throw new UnsupportedUserException('The user must be a Propel model with a primary key.');
+        }
         return $queryClass::create()->findPk($user->getPrimaryKey());
     }
 
@@ -103,6 +123,7 @@ class PropelUserProvider implements UserProviderInterface
      * @param string $class
      * @return bool
      */
+    #[Override]
     public function supportsClass(string $class): bool
     {
         return $class === $this->class;

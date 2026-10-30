@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\DataCollector;
 
+use Override;
 use Propel\Bundle\PropelBundle\Logger\PropelLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,6 +24,7 @@ use Throwable;
  * The Propel Data Collector class collects information.
  *
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class PropelDataCollector extends DataCollector
 {
@@ -45,6 +47,7 @@ class PropelDataCollector extends DataCollector
      * @param Throwable|null $exception
      * @return void
      */
+    #[Override]
     public function collect(Request $request, Response $response, ?Throwable $exception = null): void
     {
         $this->data = [
@@ -66,7 +69,7 @@ class PropelDataCollector extends DataCollector
     /**
      * Returns queries.
      *
-     * @return Data<int, array{sql: string, connection: string, time: int|float, memory: int, trace: TraceStub}> Queries
+     * @return Data Queries
      */
     public function getQueries(): Data
     {
@@ -88,6 +91,7 @@ class PropelDataCollector extends DataCollector
      *
      * @return string The collector name.
      */
+    #[Override]
     public function getName(): string
     {
         return 'propel';
@@ -110,7 +114,7 @@ class PropelDataCollector extends DataCollector
      */
     public function getTime(): float|int
     {
-        $time = 0;
+        $time = 0.0;
         foreach ($this->data['queries'] as $query) {
             $time += (float)$query['time'];
         }
@@ -121,6 +125,7 @@ class PropelDataCollector extends DataCollector
     /**
      * @return void
      */
+    #[Override]
     public function reset(): void
     {
         $this->data = [];

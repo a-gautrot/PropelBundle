@@ -11,9 +11,12 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException;
+use Override;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
+use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ServiceContainer\StandardServiceContainer;
+use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,12 +26,16 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Useful to create a database.
  *
  * @author William DURAND
+ * @api
  */
 class DatabaseCreateCommand extends AbstractCommand
 {
     /**
-     * @see Command
+     * @return void
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     * @see \Symfony\Component\Console\Command\Command
      */
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -38,10 +45,16 @@ class DatabaseCreateCommand extends AbstractCommand
     }
 
     /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
      * @throws InvalidArgumentException When the target directory does not exist
-     * @see Command
+     * @throws ConnectionException
+     * @throws RuntimeException
+     * @see \Symfony\Component\Console\Command\Command
      *
      */
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $connectionName = $input->getOption('connection') ?: $this->getDefaultConnection();
@@ -67,6 +80,9 @@ class DatabaseCreateCommand extends AbstractCommand
         $connection = Propel::getConnection($connectionName);
 
         $statement = $connection->prepare($query);
+        if ($statement === false) {
+            throw new RuntimeException('Cannot prepare the database query.');
+        }
         $statement->execute();
 
         $output->writeln("<info>Database <comment>$dbName</comment> has been created.</info>");

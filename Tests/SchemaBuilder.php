@@ -23,7 +23,7 @@ final class SchemaBuilder
 {
     /**
      * @param string $schema
-     * @param array|null $classTargets
+     * @param list<string>|null $classTargets
      * @return ConnectionWrapper
      * @throws Exception
      */

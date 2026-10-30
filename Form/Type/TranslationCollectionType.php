@@ -11,10 +11,12 @@
 
 namespace Propel\Bundle\PropelBundle\Form\Type;
 
+use Override;
 use Propel\Bundle\PropelBundle\Form\EventListener\TranslationCollectionFormListener;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -23,14 +25,19 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  * form type for i18n-columns in propel
  *
  * @author Patrick Kaufmann
+ * @api
+ * @template TData
+ * @extends AbstractType<TData>
  */
 class TranslationCollectionType extends AbstractType
 {
     /**
-     * @param FormBuilderInterface $builder
-     * @param array $options
+     * @param FormBuilderInterface<TData|null> $builder
+     * @param array<array-key, mixed> $options
      * @return void
+     * @throws MissingOptionsException
      */
+    #[Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if (!isset($options['entry_options']['data_class'])) {
@@ -47,7 +54,9 @@ class TranslationCollectionType extends AbstractType
     /**
      * @param OptionsResolver $resolver
      * @return void
+     * @throws AccessException
      */
+    #[Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired(['languages']);
@@ -66,6 +75,7 @@ class TranslationCollectionType extends AbstractType
     /**
      * @return string|null
      */
+    #[Override]
     public function getParent(): ?string
     {
         return CollectionType::class;
@@ -82,6 +92,7 @@ class TranslationCollectionType extends AbstractType
     /**
      * @return string
      */
+    #[Override]
     public function getBlockPrefix(): string
     {
         return 'propel_translation_collection';

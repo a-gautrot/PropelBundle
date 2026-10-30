@@ -11,9 +11,11 @@
 namespace Propel\Bundle\PropelBundle\Controller;
 
 use Exception;
+use InvalidArgumentException;
 use PDO;
 use Propel\Bundle\PropelBundle\DataCollector\PropelDataCollector;
 use Propel\Runtime\Propel;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
@@ -23,6 +25,7 @@ use Symfony\Component\HttpKernel\Profiler\Profiler;
  * PanelController is designed to display information in the Propel Panel.
  *
  * @author William DURAND <william.durand1@gmail.com>
+ * @api
  */
 class PanelController extends AbstractController
 {
@@ -51,12 +54,19 @@ class PanelController extends AbstractController
      *
      * @param Profiler|null $profiler
      * @return Response A Response instance
+     * @throws InvalidArgumentException
      */
     public function explainAction(string $token, string $connection, int $query, ?Profiler $profiler): Response
     {
+        if ($profiler === null) {
+            return new Response('The profiler is unavailable.');
+        }
         $profiler->disable();
 
         $profile = $profiler->loadProfile($token);
+        if ($profile === null) {
+            return new Response('This profile does not exist.');
+        }
 
         /** @var PropelDataCollector $propelDataCollector */
         $propelDataCollector = $profile->getCollector('propel');
@@ -71,8 +81,12 @@ class PanelController extends AbstractController
 
         try {
             $dataFetcher = $con->query("EXPLAIN {$queries[$query]['sql']}");
+            if ($dataFetcher === false) {
+                throw new RuntimeException('The query could not be explained.');
+            }
             $results = [];
-            while ($results[] = $dataFetcher->fetch(PDO::FETCH_ASSOC)) ;
+            while ($results[] = $dataFetcher->fetch(PDO::FETCH_ASSOC)) {
+            }
         } catch (Exception $e) {
             return new Response('<div class="error">This query cannot be explained.</div>');
         }

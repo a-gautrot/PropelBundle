@@ -164,7 +164,7 @@ class PropelBundleTest extends TestCase
 
     /**
      * initialize PropelBundle with given configuration
-     * @param array $configuration propel configuration parameters
+     * @param array<string, mixed> $configuration propel configuration parameters
      * @param mixed $logger
      * @return ContainerBuilder
      */

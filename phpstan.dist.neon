@@ -3,6 +3,8 @@ includes:
 
 parameters:
   level: 6
+  stubFiles:
+    - Resources/phpstan/propel.stub
   paths:
     - ./
   excludePaths:

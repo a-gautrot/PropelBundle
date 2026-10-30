@@ -11,32 +11,44 @@
 namespace Propel\Bundle\PropelBundle;
 
 use Exception;
+use Override;
 use Propel\Bundle\PropelBundle\DependencyInjection\Security\UserProvider\PropelFactory;
 use Propel\Runtime\Connection\ConnectionManagerPrimaryReplica;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ServiceContainer\StandardServiceContainer;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\DependencyInjection\SecurityExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Exception\LogicException;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
+use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
  * # PropelBundle
  *
  * @author William DURAND <william.durand1@gmail.com>
+ * @api
  */
 class PropelBundle extends Bundle
 {
     /**
      * @return void
      */
+    #[Override]
     public function boot(): void
     {
+        if ($this->container === null) {
+            return;
+        }
+
         try {
             $this->configureConnections();
 
-            if ($this->container->getParameter('propel.logging')) {
+            if ($this->container->getParameter('propel.logging') === true) {
                 $this->configureLogging();
             }
         } catch (Exception $e) {
@@ -45,11 +57,21 @@ class PropelBundle extends Bundle
 
     /**
      * @return void
+     * @throws \LogicException
+     * @throws ParameterNotFoundException
      */
     protected function configureConnections(): void
     {
+        if ($this->container === null) {
+            throw new \LogicException('The bundle container has not been set.');
+        }
+
+        /** @var array{runtime: array{defaultConnection?: string}, database: array{connections: array<string, array<string, mixed>>}, paths: array{loaderScriptDir: string}} $config Validated by DependencyInjection\Configuration. */
         $config = $this->container->getParameter('propel.configuration');
-        $defaultConnection = !empty($config['runtime']['defaultConnection']) ? $config['runtime']['defaultConnection'] : key($config['database']['connections']);
+        $defaultConnection = $config['runtime']['defaultConnection'] ?? key($config['database']['connections']);
+        if ($defaultConnection === null) {
+            throw new \LogicException('No Propel connection is configured.');
+        }
 
         /** @var StandardServiceContainer $serviceContainer */
         $serviceContainer = Propel::getServiceContainer();
@@ -82,6 +104,7 @@ class PropelBundle extends Bundle
 
             // load database maps
             if (file_exists("{$config['paths']['loaderScriptDir']}/loadDatabase.php") && is_readable("{$config['paths']['loaderScriptDir']}/loadDatabase.php")) {
+                /** @psalm-suppress UnresolvableInclude The path comes from the validated application configuration. */
                 require_once("{$config['paths']['loaderScriptDir']}/loadDatabase.php");
             }
         }
@@ -89,12 +112,23 @@ class PropelBundle extends Bundle
 
     /**
      * @return void
+     * @throws \LogicException
+     * @throws ServiceCircularReferenceException
+     * @throws ServiceNotFoundException
      */
     protected function configureLogging(): void
     {
+        if ($this->container === null) {
+            throw new \LogicException('The bundle container has not been set.');
+        }
+
         /** @var StandardServiceContainer $serviceContainer */
         $serviceContainer = Propel::getServiceContainer();
-        $serviceContainer->setLogger('defaultLogger', $this->container->get('propel.logger'));
+        $logger = $this->container->get('propel.logger');
+        if (!$logger instanceof LoggerInterface) {
+            throw new \LogicException('The propel.logger service must implement LoggerInterface.');
+        }
+        $serviceContainer->setLogger('defaultLogger', $logger);
 
         foreach ($serviceContainer->getConnectionManagers() as $manager) {
             /** @var ConnectionWrapper $connection */
@@ -110,7 +144,9 @@ class PropelBundle extends Bundle
     /**
      * @param ContainerBuilder $container
      * @return void
+     * @throws LogicException
      */
+    #[Override]
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);

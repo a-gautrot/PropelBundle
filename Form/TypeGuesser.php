@@ -11,9 +11,11 @@
 
 namespace Propel\Bundle\PropelBundle\Form;
 
+use Override;
 use Propel\Bundle\PropelBundle\Form\Type\ModelType;
 use Propel\Generator\Model\PropelTypes;
 use Propel\Runtime\Map\ColumnMap;
+use Propel\Runtime\Map\Exception\ColumnNotFoundException;
 use Propel\Runtime\Map\RelationMap;
 use Propel\Runtime\Map\TableMap;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -35,6 +37,7 @@ use Symfony\Component\Form\Guess\ValueGuess;
  * Propel Type guesser.
  *
  * @author Fabien Potencier <fabien@symfony.com>
+ * @api
  */
 class TypeGuesser implements FormTypeGuesserInterface
 {
@@ -47,7 +50,9 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @param string $class
      * @param string $property
      * @return TypeGuess|null
+     * @throws ColumnNotFoundException
      */
+    #[Override]
     public function guessType(string $class, string $property): ?TypeGuess
     {
         if (!$table = $this->getTable($class)) {
@@ -135,7 +140,7 @@ class TypeGuesser implements FormTypeGuesserInterface
      */
     protected function getTable(string $class): ?TableMap
     {
-        if (isset($this->cache[$class])) {
+        if (isset($this->cache[$class]) && $this->cache[$class] instanceof TableMap) {
             return $this->cache[$class];
         }
 
@@ -153,11 +158,13 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @param string $property
      *
      * @return ColumnMap|null
+     * @throws ColumnNotFoundException
      */
     protected function getColumn(string $class, string $property): ?ColumnMap
     {
-        if (isset($this->cache["$class::$property"])) {
-            return $this->cache["$class::$property"];
+        $cached = $this->cache["$class::$property"] ?? null;
+        if ($cached instanceof ColumnMap) {
+            return $cached;
         }
 
         $table = $this->getTable($class);
@@ -173,7 +180,9 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @param string $class
      * @param string $property
      * @return ValueGuess|null
+     * @throws ColumnNotFoundException
      */
+    #[Override]
     public function guessRequired(string $class, string $property): ?ValueGuess
     {
         if ($column = $this->getColumn($class, $property)) {
@@ -187,7 +196,9 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @param string $class
      * @param string $property
      * @return ValueGuess|null
+     * @throws ColumnNotFoundException
      */
+    #[Override]
     public function guessMaxLength(string $class, string $property): ?ValueGuess
     {
         if ($column = $this->getColumn($class, $property)) {
@@ -210,7 +221,9 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @param string $class
      * @param string $property
      * @return ValueGuess|null
+     * @throws ColumnNotFoundException
      */
+    #[Override]
     public function guessPattern(string $class, string $property): ?ValueGuess
     {
         if ($column = $this->getColumn($class, $property)) {

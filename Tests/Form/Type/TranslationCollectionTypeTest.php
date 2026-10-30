@@ -19,6 +19,7 @@ use Propel\Bundle\PropelBundle\Tests\Fixtures\TranslatableItemI18n;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\FormExtensionInterface;
 use Symfony\Component\Form\Test\TypeTestCase;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
@@ -176,7 +177,7 @@ class TranslationCollectionTypeTest extends TypeTestCase
     }
 
     /**
-     * @return array
+     * @return FormExtensionInterface[]
      */
     protected function getExtensions(): array
     {

@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Twig\Extension;
 
+use Override;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
@@ -19,12 +20,14 @@ use Twig\TwigFilter;
  * @package PropelBundle
  * @subpackage Extension
  * @author William DURAND <william.durand1@gmail.com>
+ * @api
  */
 class SyntaxExtension extends AbstractExtension
 {
     /**
-     * @return array
+     * @return TwigFilter[]
      */
+    #[Override]
     public function getFilters(): array
     {
         return [
@@ -51,16 +54,16 @@ class SyntaxExtension extends AbstractExtension
      */
     public function formatMemory(int|float $bytes, int $precision = 3): string
     {
-        $absBytes = abs($bytes);
-        $sign = ($bytes == $absBytes) ? 1 : -1;
+        $absBytes = abs((float)$bytes);
+        $sign = ($bytes == $absBytes) ? 1.0 : -1.0;
         $suffix = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         $total = count($suffix);
 
-        for ($i = 0; $absBytes > 1024 && $i < $total; $i++) {
-            $absBytes /= 1024;
+        for ($i = 0; $absBytes > 1024 && $i < $total - 1; $i++) {
+            $absBytes /= 1024.0;
         }
 
-        return self::toPrecision($sign * $absBytes, $precision) . ' ' . $suffix[$i];
+        return self::toPrecision($sign * $absBytes, $precision) . ' ' . ($suffix[$i] ?? 'YB');
     }
 
     /**
@@ -73,12 +76,13 @@ class SyntaxExtension extends AbstractExtension
      */
     public static function toPrecision(int|float $number, int $significantFigures = 3): string
     {
-        if ($number === 0) {
+        $number = (float)$number;
+        if ($number === 0.0) {
             return '0';
         }
 
-        $significantDecimals = (int)floor($significantFigures - log10(abs($number)));
-        $magnitude = pow(10, $significantDecimals);
+        $significantDecimals = (int)floor((float)$significantFigures - log10(abs($number)));
+        $magnitude = pow(10.0, $significantDecimals);
         $shifted = round($number * $magnitude);
 
         return number_format($shifted / $magnitude, $significantDecimals);
@@ -146,6 +150,6 @@ class SyntaxExtension extends AbstractExtension
             '<span class="SQLComment">\\1</span>',
             '<span class="SQLName">\\1</span>',
             '<span class="SQLName">\\1</span>',
-        ], $sql);
+        ], $sql) ?? $sql;
     }
 }
