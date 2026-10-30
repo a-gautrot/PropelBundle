@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -20,12 +20,12 @@ use Propel\Runtime\Connection\ConnectionInterface;
 class TranslatableItem implements ActiveRecordInterface
 {
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $id;
 
     /**
-     * @var mixed|array
+     * @var mixed
      */
     private mixed $currentTranslations;
 
@@ -66,7 +66,7 @@ class TranslatableItem implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getPrimaryKey(): mixed
     {
@@ -74,7 +74,7 @@ class TranslatableItem implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getId(): mixed
     {
@@ -181,7 +181,7 @@ class TranslatableItem implements ActiveRecordInterface
     /**
      * @param mixed $locale
      * @param ConnectionInterface|null $con
-     * @return mixed|TranslatableItemI18n
+     * @return mixed
      */
     public function getTranslation(mixed $locale = 'de', ?ConnectionInterface $con = null): mixed
     {

@@ -61,7 +61,7 @@ class PropelLogger implements LoggerInterface
      * @param string|Stringable $message
      * @param array $context
      */
-    public function log(mixed $level, mixed $message, array $context = []): void
+    public function log(mixed $level, string|Stringable $message, array $context = []): void
     {
         if ($this->logger === null) {
             return;

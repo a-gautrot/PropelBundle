@@ -2,19 +2,19 @@
 
 namespace Propel\Bundle\PropelBundle\Tests\Request\ParamConverter;
 
-use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Exception;
 use LogicException;
 use Propel\Bundle\PropelBundle\Request\ParamConverter\PropelParamConverter;
+use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book;
 use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
 use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Propel;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -26,7 +26,7 @@ class PropelParamConverterTest extends TestCase
     /**
      * @var ConnectionWrapper|null $con
      */
-    protected mixed $con = null;
+    protected ?ConnectionWrapper $con = null;
 
     /**
      * @return void

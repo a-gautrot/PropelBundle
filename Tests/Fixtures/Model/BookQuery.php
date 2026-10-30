@@ -97,15 +97,13 @@ class BookQuery extends BaseBookQuery
         if ($this->bySlug) {
             $book = new Book();
             $book->setId(1);
-            $book->setName('My Book');
-            $book->setSlug('my-book');
+            $book->setTitle('My Book');
 
             return $book;
         } elseif ($this->byAuthorSlug) {
             $book = new Book();
             $book->setId(2);
-            $book->setName('My Kewl Book');
-            $book->setSlug('my-kewl-book');
+            $book->setTitle('My Kewl Book');
 
             return $book;
         }

@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -32,10 +32,6 @@ class ItemQuery extends TableMap
         'is_active' => PropelTypes::BOOLEAN,
         'enabled' => PropelTypes::BOOLEAN_EMU,
         'updated_at' => PropelTypes::TIMESTAMP,
-
-        'updated_at' => PropelTypes::TIMESTAMP,
-        'updated_at' => PropelTypes::TIMESTAMP,
-        'updated_at' => PropelTypes::TIMESTAMP,
     ];
 
     /**
@@ -60,32 +56,32 @@ class ItemQuery extends TableMap
 
     /**
      * Method from the TableMap API
-     * @param string $column
+     * @param string $name
      * @param bool $normalize
      * @return ColumnMap
      */
-    public function getColumn(string $column, bool $normalize = true): ColumnMap
+    public function getColumn(string $name, bool $normalize = true): ColumnMap
     {
-        if ($this->hasColumn($column)) {
-            $map = new ColumnMap($column, $this, ucfirst($column), $this->map[$column]);
+        if ($this->hasColumn($name)) {
+            $map = new ColumnMap($name, $this, ucfirst($name), $this->map[$name]);
             $map->setSize($map->isText() ? 255 : 0);
-            $map->setNotNull($column === 'id');
+            $map->setNotNull($name === 'id');
 
             return $map;
         }
 
-        return parent::getColumn($column, $normalize);
+        return parent::getColumn($name, $normalize);
     }
 
     /**
      * Method from the TableMap API
-     * @param mixed $column
+     * @param mixed $name
      * @param bool $normalize
      * @return bool
      */
-    public function hasColumn(mixed $column, bool $normalize = true): bool
+    public function hasColumn(mixed $name, bool $normalize = true): bool
     {
-        return in_array($column, array_keys($this->map));
+        return in_array($name, array_keys($this->map));
     }
 
     /**

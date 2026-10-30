@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -20,22 +20,22 @@ use Propel\Runtime\Connection\ConnectionInterface;
 class Item implements ActiveRecordInterface
 {
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $id;
 
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $value;
 
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $groupName;
 
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $price;
 
@@ -54,7 +54,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getValue(): mixed
     {
@@ -62,7 +62,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getGroupName(): mixed
     {
@@ -70,7 +70,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getPrice(): mixed
     {
@@ -78,7 +78,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getPrimaryKey(): mixed
     {
@@ -86,7 +86,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getId(): mixed
     {

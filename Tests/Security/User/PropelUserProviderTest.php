@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Tests\Security\User;
 
+use Exception;
 use Propel\Bundle\PropelBundle\Security\User\PropelUserProvider;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\User;
 use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
@@ -32,12 +33,13 @@ class PropelUserProviderTest extends TestCase
 
     /**
      * @return void
+     * @throws Exception
      */
     public function setUp(): void
     {
         // ensure build is called only once
         if (empty($this::$con)) {
-            $schema = <<<SCHEMA
+            $schema = <<<XML
     <database name="users" defaultIdMethod="native" namespace="Propel\\Bundle\\PropelBundle\\Tests\\Fixtures\\Model">
         <table name="user">
             <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
@@ -49,7 +51,7 @@ class PropelUserProviderTest extends TestCase
             <column name="roles" type="array" />
         </table>
     </database>
-    SCHEMA;
+    XML;
 
             $classTargets = ['tablemap', 'object', 'query', /*'objectstub',*/
                 'querystub'];
