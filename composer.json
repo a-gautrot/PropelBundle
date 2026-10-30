@@ -61,20 +61,20 @@
     "ext-libxml": "*",
     "ext-pdo": "*",
     "ext-pdo_sqlite": "*",
-    "fakerphp/faker": "^1.0",
+    "fakerphp/faker": "^1.24",
     "mikey179/vfsstream": "^1.6.12",
     "phpstan/extension-installer": "^1.4",
     "phpstan/phpstan": "^2.0",
     "phpstan/phpstan-deprecation-rules": "^2.0",
     "phpstan/phpstan-symfony": "^2.0",
     "phpunit/phpunit": ">=10.5.62",
-    "squizlabs/php_codesniffer": "@stable",
+    "squizlabs/php_codesniffer": "^4.0.1",
     "symfony/form": "^6.4",
     "symfony/profiler-pack": "^1.0.4",
     "symfony/stopwatch": "^6.4",
     "symfony/web-profiler-bundle": "^6.4",
     "twig/twig": "^3.26",
-    "vimeo/psalm": "@stable"
+    "vimeo/psalm": "^6.0"
   },
   "config": {
     "allow-plugins": {
