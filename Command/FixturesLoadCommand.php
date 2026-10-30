@@ -82,7 +82,7 @@ class FixturesLoadCommand extends AbstractCommand
     {
         $this
             ->setName('propel:fixtures:load')
-            ->setDescription('Load XML, SQL and/or YAML fixtures')
+            ->setDescription('Load XML, SQL and/or YAML fixtures.')
             ->setHelp(<<<EOT
 The <info>propel:fixtures:load</info> loads <info>XML</info>, <info>SQL</info> and/or <info>YAML</info> fixtures.
 
@@ -126,18 +126,38 @@ YAML fixtures are:
 </comment>
 EOT
             )
-            ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to load fixtures from')
+            ->addArgument(
+                'bundle',
+                InputArgument::OPTIONAL,
+                'The bundle to load fixtures from.'
+            )
             ->addOption(
                 'dir',
                 'd',
                 InputOption::VALUE_OPTIONAL,
-                'The directory where XML, SQL and/or YAML fixtures files are located',
+                'The directory where XML, SQL and/or YAML fixtures files are located.',
                 $this->defaultFixturesDir
             )
-            ->addOption('xml', '', InputOption::VALUE_NONE, 'Load XML fixtures')
-            ->addOption('sql', '', InputOption::VALUE_NONE, 'Load SQL fixtures')
-            ->addOption('yml', '', InputOption::VALUE_NONE, 'Load YAML fixtures')
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a connection to use');
+            ->addOption(
+                'xml',
+                mode: InputOption::VALUE_NONE,
+                description: 'Load XML fixtures.'
+            )
+            ->addOption(
+                'sql',
+                mode: InputOption::VALUE_NONE,
+                description: 'Load SQL fixtures.'
+            )
+            ->addOption(
+                'yml',
+                mode: InputOption::VALUE_NONE,
+                description: 'Load YAML fixtures.'
+            )
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Set this parameter to define a connection to use.'
+            );
     }
 
     /**

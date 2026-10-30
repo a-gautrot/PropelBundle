@@ -57,11 +57,7 @@ class FormGenerateCommand extends AbstractCommand
     {
         $this
             ->setName('propel:form:generate')
-            ->setDescription('Generate Form types stubs based on the schema.xml')
-            ->addOption('force', 'f', InputOption::VALUE_NONE, 'Overwrite existing Form types')
-            ->addOption('platform', null, InputOption::VALUE_REQUIRED, 'The platform')
-            ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to use to generate Form types (Ex: @AcmeDemoBundle)')
-            ->addArgument('models', InputArgument::IS_ARRAY, 'Model classes to generate Form Types from')
+            ->setDescription('Generate Form types stubs based on the schema.xml.')
             ->setHelp(<<<EOT
 The <info>%command.name%</info> command allows you to quickly generate Form Type stubs for a given bundle.
 
@@ -69,6 +65,27 @@ The <info>%command.name%</info> command allows you to quickly generate Form Type
 
 The <info>--force</info> parameter allows you to overwrite existing files.
 EOT
+            )
+            ->addArgument(
+                'bundle',
+                InputArgument::OPTIONAL,
+                'The bundle to use to generate Form types (Ex: @AcmeDemoBundle).'
+            )
+            ->addArgument(
+                'models',
+                InputArgument::IS_ARRAY,
+                'Model classes to generate Form Types from.'
+            )
+            ->addOption(
+                'force',
+                'f',
+                InputOption::VALUE_NONE,
+                'Overwrite existing Form types.'
+            )
+            ->addOption(
+                'platform',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The platform.'
             );
     }
 

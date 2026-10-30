@@ -37,13 +37,27 @@ class BuildCommand extends Command
     {
         $this
             ->setName('propel:build')
-            ->setDescription('Hub for Propel build commands (Model classes, SQL)')
-            ->setDefinition([
-                new InputOption('classes', '', InputOption::VALUE_NONE, 'Build only classes'),
-                new InputOption('sql', '', InputOption::VALUE_NONE, 'Build only SQL'),
-                new InputOption('insert-sql', '', InputOption::VALUE_NONE, 'Build all and insert SQL'),
-                new InputOption('connection', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ]);
+            ->setDescription('Hub for Propel build commands (Model classes, SQL).')
+            ->addOption(
+                'classes',
+                mode: InputOption::VALUE_NONE,
+                description: 'Build only classes.'
+            )
+            ->addOption(
+                'sql',
+                mode: InputOption::VALUE_NONE,
+                description: 'Build only SQL.'
+            )
+            ->addOption(
+                'insert-sql',
+                mode: InputOption::VALUE_NONE,
+                description: 'Build all and insert SQL.'
+            )
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore.'
+            );
     }
 
     /**

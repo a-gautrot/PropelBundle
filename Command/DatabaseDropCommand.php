@@ -52,8 +52,14 @@ The <info>--connection</info> parameter allows you to change the connection to u
 The default connection is the active connection (propel.dbal.default_connection).
 EOT
             )
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action.');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore.')
+            ->addOption('force',
+                mode: InputOption::VALUE_NONE,
+                description: 'Set this parameter to execute this action.'
+            );
     }
 
     /**

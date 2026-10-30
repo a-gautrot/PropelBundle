@@ -37,12 +37,31 @@ class MigrationUpCommand extends WrappedCommand
 
         $this
             ->setName('propel:migration:up')
-            ->setDescription('Execute (only one) next migration')
-            ->addOption('connection', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('migration-table', null, InputOption::VALUE_OPTIONAL, 'Migration table name (if none given, the configured table is used)', null)
-            ->addOption('output-dir', null, InputOption::VALUE_OPTIONAL, 'The output directory')
-            ->addOption('fake', null, InputOption::VALUE_NONE, 'Does not touch the actual schema, but marks next migration as executed.')
-            ->addOption('force', null, InputOption::VALUE_NONE, 'Continues with the migration even when errors occur.');
+            ->setDescription('Execute (only one) next migration.')
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'migration-table',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Migration table name (if none given, the configured table is used)'
+            )
+            ->addOption(
+                'output-dir',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'The output directory.')
+            ->addOption(
+                'fake',
+                mode: InputOption::VALUE_NONE,
+                description: 'Does not touch the actual schema, but marks next migration as executed.'
+            )
+            ->addOption(
+                'force',
+                mode: InputOption::VALUE_NONE,
+                description: 'Continues with the migration even when errors occur.'
+            );
     }
 
     /**

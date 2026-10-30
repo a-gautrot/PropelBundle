@@ -43,9 +43,21 @@ class TableDropCommand extends AbstractCommand
         $this
             ->setName('propel:table:drop')
             ->setDescription('Drop a given table or all tables in the database.')
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action.')
-            ->addArgument('table', InputArgument::IS_ARRAY, 'Set this parameter to défine which table to delete (default all the table in the database.');
+            ->addArgument(
+                'table',
+                InputArgument::IS_ARRAY,
+                'Set this parameter to définie which table to delete (default all the table in the database.'
+            )
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'force',
+                mode: InputOption::VALUE_NONE,
+                description: 'Set this parameter to execute this action.'
+            );
     }
 
     /**

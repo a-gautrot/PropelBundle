@@ -36,8 +36,13 @@ class GraphvizGenerateCommand extends WrappedCommand
 
         $this
             ->setName('propel:graphviz:generate')
-            ->setDescription('Generate Graphviz files (.dot)')
-            ->addOption('output-dir', null, InputOption::VALUE_REQUIRED, 'The output directory', BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY);
+            ->setDescription('Generate Graphviz files (.dot).')
+            ->addOption(
+                'output-dir',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The output directory.',
+                default: BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY
+            );
     }
 
     /**

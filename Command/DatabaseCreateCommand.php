@@ -43,7 +43,11 @@ class DatabaseCreateCommand extends AbstractCommand
         $this
             ->setName('propel:database:create')
             ->setDescription('Create a given database or the default one.')
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a connection to use');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Set this parameter to define a connection to use.'
+            );
     }
 
     /**

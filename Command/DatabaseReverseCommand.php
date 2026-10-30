@@ -38,11 +38,30 @@ class DatabaseReverseCommand extends WrappedCommand
 
         $this
             ->setName('propel:database:reverse')
-            ->setDescription('Reverse-engineer a XML schema file based on given database')
-            ->addArgument('connection', InputArgument::REQUIRED, 'Connection to use. Example: "default"')
-            ->addOption('output-dir', null, InputOption::VALUE_REQUIRED, 'The output directory', BaseDatabaseReverseCommand::DEFAULT_OUTPUT_DIRECTORY)
-            ->addOption('database-name', null, InputOption::VALUE_REQUIRED, 'The database name to reverse', BaseDatabaseReverseCommand::DEFAULT_DATABASE_NAME)
-            ->addOption('schema-name', null, InputOption::VALUE_REQUIRED, 'The schema name to generate', BaseDatabaseReverseCommand::DEFAULT_SCHEMA_NAME);
+            ->setDescription('Reverse-engineer a XML schema file based on given database.')
+            ->addArgument(
+                'connection',
+                InputArgument::REQUIRED,
+                'Connection to use. Example: "default".'
+            )
+            ->addOption(
+                'output-dir',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The output directory.',
+                default: BaseDatabaseReverseCommand::DEFAULT_OUTPUT_DIRECTORY
+            )
+            ->addOption(
+                'database-name',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The database name to reverse.',
+                default: BaseDatabaseReverseCommand::DEFAULT_DATABASE_NAME
+            )
+            ->addOption(
+                'schema-name',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The schema name to generate.',
+                default: BaseDatabaseReverseCommand::DEFAULT_SCHEMA_NAME
+            );
     }
 
     /**

@@ -57,8 +57,16 @@ The <info>--dir</info> parameter allows you to change the output directory.
 The default connection is the active connection (propel.dbal.default_connection).
 EOT
             )
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a connection to use')
-            ->addOption('dir', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a fixture directory');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Set this parameter to define a connection to use.'
+            )
+            ->addOption(
+                'dir',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Set this parameter to define a fixture directory.'
+            );
     }
 
     /**
