@@ -42,7 +42,6 @@
     "ext-simplexml": "*",
     "propel/propel": "~2.0.0-beta4",
     "sensio/framework-extra-bundle": "^6.2",
-    "symfony/cache": "~5.4.52",
     "symfony/config": "~5.4.19",
     "symfony/console": "~5.4.19",
     "symfony/dependency-injection": "~5.4.42",
@@ -50,16 +49,13 @@
     "symfony/http-foundation": "~5.4.54",
     "symfony/http-kernel": "~5.4.20",
     "symfony/polyfill-php80": "^1.16",
-    "symfony/routing": "~5.4.53",
     "symfony/security-bundle": "~5.4.20",
     "symfony/security-core": "~5.4.19",
-    "symfony/security-http": "~5.4.53",
-    "symfony/translation": "~5.4.42",
     "symfony/validator": "~5.4.43",
-    "symfony/var-exporter": "~5.4.19",
     "symfony/yaml": "~5.4.54"
   },
   "conflict": {
+    "symfony/cache": "<5.4.52||>=6.0",
     "symfony/clock": "<5.4||>=6.0",
     "symfony/error-handler": "<5.4||>=6.0",
     "symfony/event-dispatcher": "<5.4||>=6.0",
@@ -69,12 +65,16 @@
     "symfony/password-hasher": "<5.4||>=6.0",
     "symfony/property-access": "<5.4||>=6.0",
     "symfony/property-info": "<5.4||>=6.0",
+    "symfony/routing": "<5.4.53||>=6.0",
     "symfony/security-csrf": "<5.4||>=6.0",
     "symfony/security-guard": "<5.4||>=6.0",
+    "symfony/security-http": "<5.4.53||>=6.0",
     "symfony/string": "<5.4||>=6.0",
+    "symfony/translation": "<5.4.42||>=6.0",
     "symfony/twig-bridge": "<5.4.31||>=6.0",
     "symfony/twig-bundle": "<5.4||>=6.0",
-    "symfony/var-dumper": "<5.4||>=6.0"
+    "symfony/var-dumper": "<5.4||>=6.0",
+    "symfony/var-exporter": "<5.4.19||>=6.0"
   },
   "require-dev": {
     "ext-dom": "*",
