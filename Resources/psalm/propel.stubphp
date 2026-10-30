@@ -1,0 +1,50 @@
+<?php
+
+// Common methods supplied by Propel's generated base models and table maps.
+// These are absent from the runtime interfaces shipped by Propel 2.
+namespace Propel\Runtime\ActiveRecord {
+    /**
+     * @method mixed getByName(string $name, string $type = 'phpName')
+     * @method mixed getPrimaryKey()
+     * @method void fromArray(array $data, string $keyType = 'phpName')
+     * @method bool equals(?object $other)
+     * @method void setByPosition(int $position, mixed $value)
+     * @method int save(?\Propel\Runtime\Connection\ConnectionInterface $connection = null)
+     * @method array toArray(string $keyType = 'phpName', bool $includeLazyLoadColumns = true, array $alreadyDumpedObjects = [], bool $includeForeignObjects = false)
+     */
+    interface ActiveRecordInterface
+    {
+        public function isPrimaryKeyNull(): bool;
+    }
+}
+
+namespace Propel\Runtime\Map {
+    class TableMap
+    {
+        public static function doDeleteAll(?\Propel\Runtime\Connection\ConnectionInterface $connection = null): int {}
+
+        /** @return list<string> */
+        public static function getFieldnames(string $type = 'phpName'): array {}
+    }
+}
+
+namespace Propel\Runtime\ActiveQuery {
+    /**
+     * @method $this filterByPrimaryKey(mixed $key)
+     */
+    class ModelCriteria
+    {
+        public static function create(?string $modelAlias = null, ?self $criteria = null): static {}
+    }
+}
+
+namespace Propel\Runtime\Collection {
+    /**
+     * @template T
+     * @implements \ArrayAccess<int|string, T>
+     * @implements \IteratorAggregate<int|string, T>
+     */
+    class Collection implements \ArrayAccess, \IteratorAggregate, \Countable, \Serializable
+    {
+    }
+}
