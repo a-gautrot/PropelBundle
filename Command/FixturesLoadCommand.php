@@ -365,7 +365,7 @@ EOT
      * @throws ServiceCircularReferenceException
      * @throws ServiceNotFoundException
      */
-    protected function loadFixtures(InputInterface $input, OutputInterface $output, ?string $type = null): int|bool|null
+    protected function loadFixtures(InputInterface $input, OutputInterface $output, ?string $type = null)
     {
         if ($type === null) {
             return null;

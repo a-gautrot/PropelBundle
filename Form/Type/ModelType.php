@@ -191,7 +191,7 @@ class ModelType extends AbstractType
             /** @var ColumnMap $firstIdentifier */
             $firstIdentifier = current($identifier);
             if (count($identifier) === 1 && in_array($firstIdentifier->getPdoType(), [PDO::PARAM_BOOL, PDO::PARAM_INT, PDO::PARAM_STR])) {
-                return function (mixed $object) use ($firstIdentifier): mixed {
+                return function ($object) use ($firstIdentifier) {
                     if ($object) {
                         return call_user_func([$object, 'get' . ucfirst($firstIdentifier->getPhpName())]);
                     }
@@ -201,7 +201,7 @@ class ModelType extends AbstractType
             return null;
         };
 
-        $queryNormalizer = function (Options $options, mixed $query): mixed {
+        $queryNormalizer = function (Options $options, $query) {
             if ($query === null) {
                 $queryClass = "{$options['class']}Query";
                 if (!class_exists($queryClass)) {
@@ -217,7 +217,7 @@ class ModelType extends AbstractType
             return $query;
         };
 
-        $choiceLabelNormalizer = function (Options $options, mixed $choiceLabel): mixed {
+        $choiceLabelNormalizer = function (Options $options, $choiceLabel) {
             if ($choiceLabel === null) {
                 if ($options['property'] == null) {
                     $choiceLabel = [__CLASS__, 'createChoiceLabel'];
@@ -226,7 +226,7 @@ class ModelType extends AbstractType
                     /** @var ModelCriteria $query */
                     $query = $options['query'];
 
-                    $choiceLabel = function (object $choice) use ($valueProperty, $query): mixed {
+                    $choiceLabel = function (object $choice) use ($valueProperty, $query) {
                         $getter = 'get' . ucfirst($valueProperty);
                         if (!method_exists($choice, $getter)) {
                             $getter = 'get' . ucfirst($query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName());

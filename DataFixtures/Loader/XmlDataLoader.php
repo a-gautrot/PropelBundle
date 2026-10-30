@@ -36,7 +36,7 @@ class XmlDataLoader extends AbstractDataLoader
      * @param SimpleXMLElement|false $xml
      * @return array<string, array<string, array<string, string>>>
      */
-    protected function simpleXmlToArray(SimpleXMLElement|false $xml): array
+    protected function simpleXmlToArray($xml): array
     {
         $array = [];
         if ($xml instanceof SimpleXMLElement) {

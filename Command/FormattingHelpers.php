@@ -108,7 +108,7 @@ trait FormattingHelpers
      * @throws RuntimeException
      * @throws InvalidArgumentException
      */
-    protected function writeSection(OutputInterface $output, string|array $text, string $style = 'bg=blue;fg=white'): void
+    protected function writeSection(OutputInterface $output, $text, string $style = 'bg=blue;fg=white'): void
     {
         /** @var FormatterHelper $formatter */
         $formatter = $this->getRequiredHelperSet()->get('formatter');
