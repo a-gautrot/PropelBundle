@@ -74,6 +74,7 @@
     "symfony/profiler-pack": "^1.0.4",
     "symfony/stopwatch": "^5.4.19",
     "symfony/twig-bridge": "^5.4.31",
+    "symfony/twig-bundle": "^5.4.19",
     "symfony/web-profiler-bundle": "^5.4",
     "twig/twig": "<=3.19||^3.26",
     "vimeo/psalm": ">=0.3"
