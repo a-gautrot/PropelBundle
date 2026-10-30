@@ -53,7 +53,6 @@ class PropelExtension extends AbstractExtension
         $this->choiceListFactory = $choiceListFactory ?: new PropertyAccessDecorator(new DefaultChoiceListFactory(), $this->propertyAccessor);
     }
 
-
     /**
      * @return FormTypeInterface<mixed>[]
      */
@@ -66,7 +65,6 @@ class PropelExtension extends AbstractExtension
             new Type\TranslationType()
         ];
     }
-
 
     /**
      * @return FormTypeGuesserInterface|null

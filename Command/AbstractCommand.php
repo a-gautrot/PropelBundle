@@ -19,6 +19,7 @@ use ReflectionClass;
 use RuntimeException;
 use SplFileInfo;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Console\Application as SymfonyConsoleApplication;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
@@ -132,10 +133,10 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * @return \Symfony\Component\Console\Application
+     * @return SymfonyConsoleApplication
      * @throws RuntimeException
      */
-    protected function getRequiredApplication(): \Symfony\Component\Console\Application
+    protected function getRequiredApplication(): SymfonyConsoleApplication
     {
         $application = $this->getApplication();
         if ($application === null) {

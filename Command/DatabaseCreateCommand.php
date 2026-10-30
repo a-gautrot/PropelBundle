@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException;
 use Override;
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
 use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
@@ -65,7 +66,7 @@ class DatabaseCreateCommand extends AbstractCommand
         if ($dbName === null) {
             $output->writeln('<error>No database name found.</error>');
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         } else {
             $query = "CREATE DATABASE $dbName;";
         }
@@ -89,7 +90,7 @@ class DatabaseCreateCommand extends AbstractCommand
         $output->writeln("<info>Database <comment>$dbName</comment> has been created.</info>");
 
         // s 5.1 expect integer to be returned. Introduces Command::SUCCESS and Command::FAILURE constants
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 
     /**

@@ -14,6 +14,7 @@ use ArrayIterator;
 use InvalidArgumentException;
 use LogicException;
 use Override;
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException;
 use SplFileInfo;
 use Symfony\Component\Config\FileLocatorInterface;
@@ -167,7 +168,7 @@ EOT
                 "The fixtures directory \"$this->absoluteFixturesPath\" does not exist."
             ], 'fg=white;bg=red');
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         }
 
         $noOptions = !$input->getOption('xml') && !$input->getOption('sql') && !$input->getOption('yml');
@@ -190,7 +191,7 @@ EOT
             }
         }
 
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 
     /**

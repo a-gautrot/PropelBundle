@@ -11,6 +11,7 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use Override;
+use Propel\Generator\Command\SqlBuildCommand as PropelSqlBuildCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException;
@@ -49,7 +50,7 @@ class SqlBuildCommand extends WrappedCommand
     #[Override]
     protected function createSubCommandInstance(): Command
     {
-        return new \Propel\Generator\Command\SqlBuildCommand();
+        return new PropelSqlBuildCommand();
     }
 
     /**

@@ -11,6 +11,7 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use Override;
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException as BaseRuntimeException;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
@@ -96,6 +97,6 @@ EOT
 
         $this->writeNewFile($output, $filename);
 
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 }

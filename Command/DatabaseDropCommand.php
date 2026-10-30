@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException as BaseInvalidArgumentException;
 use Override;
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
 use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
@@ -70,7 +71,7 @@ EOT
         if (!$input->getOption('force')) {
             $output->writeln('<error>You have to use the "--force" option to drop the database.</error>');
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         }
 
         if ($this->getKernel()->getEnvironment() === 'prod') {
@@ -92,7 +93,7 @@ EOT
         if ($dbName === null) {
             $output->writeln('<error>No database name found.</error>');
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         } else {
             $query = "DROP DATABASE $dbName;";
         }
@@ -115,7 +116,7 @@ EOT
 
         $output->writeln("<info>Database <comment>$dbName</comment> has been dropped.</info>");
 
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 
     /**

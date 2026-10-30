@@ -16,6 +16,7 @@ use JsonException;
 use LogicException as BaseLogicException;
 use Override;
 use Propel\Bundle\PropelBundle\Form\FormBuilder;
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Generator\Config\GeneratorConfig;
 use Propel\Generator\Manager\ModelManager;
 use Propel\Generator\Model\Database;
@@ -97,7 +98,7 @@ EOT
         if (!$schemas) {
             $output->writeln("No <comment>*schemas.xml</comment> files found in bundle <comment>{$bundle->getName()}</comment>.");
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         }
 
         $manager = $this->getModelManager($input, $schemas);
@@ -108,7 +109,7 @@ EOT
             }
         }
 
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 
     /**

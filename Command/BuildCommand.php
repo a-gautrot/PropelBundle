@@ -11,6 +11,7 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use Override;
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
@@ -92,6 +93,6 @@ class BuildCommand extends Command
             $cmd->run($in, $output);
         }
 
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 }

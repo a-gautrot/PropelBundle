@@ -13,6 +13,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 use JsonException;
 use LogicException;
 use Override;
+use Propel\Generator\Command\SqlInsertCommand as PropelSqlInsertCommand;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
@@ -55,7 +56,7 @@ class SqlInsertCommand extends WrappedCommand
     #[Override]
     protected function createSubCommandInstance(): Command
     {
-        return new \Propel\Generator\Command\SqlInsertCommand();
+        return new PropelSqlInsertCommand();
     }
 
     /**
