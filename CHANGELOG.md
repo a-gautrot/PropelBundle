@@ -45,7 +45,7 @@
 * Updated `composer.json`
 * Updated the project's source code
     * Trimmed the package with gitattributes
-    * Updated with support from PHPStan, Psalm, and PHPCS
+    * Updated with support from Rector, PHPStan, Psalm, and PHPCS
 * Added a way to migrate from Sensio to Symfony
 * Added deprecation warnings for XML schemas
 * Fixed fixture path validation, SQL result handling, and static type declarations

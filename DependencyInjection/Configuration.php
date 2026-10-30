@@ -12,6 +12,9 @@ namespace Propel\Bundle\PropelBundle\DependencyInjection;
 
 use InvalidArgumentException;
 use Propel\Common\Config\PropelConfiguration;
+use Propel\Runtime\Connection\ConnectionWrapper;
+use Propel\Runtime\Connection\DebugPDO;
+use Propel\Runtime\Util\Profiler;
 use RuntimeException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
@@ -66,8 +69,7 @@ class Configuration extends PropelConfiguration
                         ->scalarNode('loaderScriptDir')->defaultValue($this->kernelDir . '/generated-conf')->end()
                     ->end()
                 ->end()
-            ->end()
-        ;
+            ->end();
     }
 
     /**
@@ -181,15 +183,13 @@ class Configuration extends PropelConfiguration
                             ->fixXmlConfig('slave')
                             ->fixXmlConfig('model_path')
                                 ->children()
-                                    ->scalarNode('classname')->defaultValue($this->debug ? '\Propel\Runtime\Connection\DebugPDO' : '\Propel\Runtime\Connection\ConnectionWrapper')->end()
+                                    ->scalarNode('classname')->defaultValue($this->debug ? DebugPDO::class : ConnectionWrapper::class)->end()
                                     ->scalarNode('adapter')
                                         ->isRequired()
                                         ->cannotBeEmpty()
                                         ->beforeNormalization()
                                             ->ifString()
-                                            ->then(function (string $v): ?string {
-                                                return preg_replace('/^pdo_/', '', strtolower($v));
-                                            })
+                                            ->then(fn(string $v): ?string => preg_replace('/^pdo_/', '', strtolower($v)))
                                         ->end()
                                         ->validate()
                                             ->ifNotInArray($validAdapters)
@@ -201,9 +201,7 @@ class Configuration extends PropelConfiguration
                                         ->cannotBeEmpty()
                                         ->beforeNormalization()
                                             ->ifString()
-                                            ->then(function (string $v): ?string {
-                                                return preg_replace('/^pdo_/', '', $v);
-                                            })
+                                            ->then(fn(string $v): ?string => preg_replace('/^pdo_/', '', $v))
                                         ->end()
                                     ->end()
                                     ->scalarNode('user')->isRequired()->end()
@@ -244,9 +242,7 @@ class Configuration extends PropelConfiguration
                                                 ->scalarNode('dsn')
                                                     ->beforeNormalization()
                                                     ->ifString()
-                                                    ->then(function (string $v): ?string {
-                                                        return preg_replace('/^pdo_/', '', $v);
-                                                    })
+                                                    ->then(fn(string $v): ?string => preg_replace('/^pdo_/', '', $v))
                                                     ->end()
                                                 ->end()
                                             ->end()
@@ -283,7 +279,6 @@ class Configuration extends PropelConfiguration
                         ->end() //adapters
                     ->end()
                 ->end() //database
-            ->end()
-        ;
+            ->end();
     }
 }

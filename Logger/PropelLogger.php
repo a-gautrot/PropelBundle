@@ -10,7 +10,6 @@
 
 namespace Propel\Bundle\PropelBundle\Logger;
 
-use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 use Stringable;

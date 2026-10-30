@@ -13,9 +13,7 @@ $configuration = $legacy ? 'phpunit-legacy.dist.xml' : 'phpunit.dist.xml';
 
 $arguments = array_slice($_SERVER['argv'], 1);
 if ($legacy) {
-    $arguments = array_values(array_filter($arguments, static function (string $argument): bool {
-        return !in_array($argument, ['--display-deprecations', '--display-phpunit-deprecations'], true);
-    }));
+    $arguments = array_values(array_filter($arguments, static fn(string $argument): bool => !in_array($argument, ['--display-deprecations', '--display-phpunit-deprecations'], true)));
 }
 
 $_SERVER['argv'] = array_merge(

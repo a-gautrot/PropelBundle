@@ -205,7 +205,7 @@ abstract class AbstractCommand extends Command
 
         $finalSchemas = $this->getFinalSchemas($kernel, $this->bundle);
         foreach ($finalSchemas as $schema) {
-            list($bundle, $finalSchema) = $schema;
+            [$bundle, $finalSchema] = $schema;
 
             if ($bundle) {
                 $file = $cacheDir . DIRECTORY_SEPARATOR . 'bundle-' . $bundle->getName() . '-' . $finalSchema->getBaseName();
@@ -587,12 +587,8 @@ abstract class AbstractCommand extends Command
     {
         preg_match('#(dbname|Database)=(\w+)#', $dsn, $matches);
 
-        if (isset($matches[2])) {
-            return $matches[2];
-        }
-
         // e.g. SQLite
-        return null;
+        return $matches[2] ?? null;
     }
 
     /**

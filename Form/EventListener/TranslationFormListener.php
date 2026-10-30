@@ -73,9 +73,7 @@ class TranslationFormListener implements EventSubscriberInterface
                 $column = $options;
                 $options = [];
             }
-            if ($options === null) {
-                $options = [];
-            }
+            $options ??= [];
 
             $type = TextType::class;
             if (array_key_exists('type', $options)) {

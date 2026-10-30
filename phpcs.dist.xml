@@ -13,7 +13,7 @@
         <exclude name="Squiz.Strings.DoubleQuoteUsage.NotRequired"/>
     </rule>
     <rule ref="Generic.PHP.ForbiddenFunctions">
-        <message>Use concatenation with the dot operator instead of %s().</message>
+        <message>Use concatenation with the dot operator instead of %s()</message>
         <properties>
             <property name="forbiddenFunctions" type="array">
                 <element key="sprintf" value="string concatenation"/>

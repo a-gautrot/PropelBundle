@@ -115,7 +115,7 @@ class TableDropCommand extends AbstractCommand
             $table = $dbAdapter->quoteIdentifierTable($table);
         }, $adapter);
 
-        $tablesToDelete = join(', ', $tablesToDelete);
+        $tablesToDelete = implode(', ', $tablesToDelete);
 
         if ($tablesToDelete !== '') {
             $connection->exec("DROP TABLE $tablesToDelete ;");

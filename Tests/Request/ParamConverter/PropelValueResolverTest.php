@@ -7,8 +7,10 @@ use LogicException;
 use Propel\Bundle\PropelBundle\Request\ArgumentResolver\PropelValueResolver;
 use Propel\Bundle\PropelBundle\Request\ParamConverter\PropelParamConverter;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book;
+use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Map\BookTableMap;
 use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
 use Propel\Bundle\PropelBundle\Tests\TestCase;
+use Propel\Runtime\Collection\ObjectCollection;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Propel;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
@@ -41,7 +43,7 @@ class PropelValueResolverTest extends TestCase
         // @fixme: some tests fail if instance pooling is disabled...
         //Propel::disableInstancePooling();
 
-        $this->loadDatabaseMap(['Propel\\Bundle\\PropelBundle\\Tests\\Fixtures\\Model\\Map\\BookTableMap']);
+        $this->loadDatabaseMap([BookTableMap::class]);
     }
 
     /**
@@ -63,13 +65,13 @@ class PropelValueResolverTest extends TestCase
     {
         $paramConverter = new PropelValueResolver();
 
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null);
         $this->assertTrue($paramConverter->supports(new Request(), $argument), 'param converter should support propel class');
 
         $argument = new ArgumentMetadata('fakeClass', 'fakeClass', false, false, null);
         $this->assertFalse($paramConverter->supports(new Request(), $argument), 'param converter should not support wrong class');
 
-        $argument = new ArgumentMetadata('test', 'Propel\Bundle\PropelBundle\Tests\TestCase', false, false, null);
+        $argument = new ArgumentMetadata('test', TestCase::class, false, false, null);
         $this->assertFalse($paramConverter->supports(new Request(), $argument), 'param converter should not support wrong class');
     }
 
@@ -257,12 +259,12 @@ XML;
     {
         $paramConverter = new PropelValueResolver();
         $request = new Request([], [], ['id' => 1, 'book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null);
 
         $paramConverter->resolve($request, $argument);
 
         $this->assertInstanceOf(
-            'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+            Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"'
         );
     }
@@ -275,7 +277,7 @@ XML;
     {
         $paramConverter = new PropelValueResolver();
         $request = new Request([], [], ['id' => 2, 'book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null);
 
         $this->expectException(NotFoundHttpException::class);
 
@@ -290,9 +292,9 @@ XML;
     {
         $paramConverter = new PropelValueResolver();
         $request = new Request([], [], ['slug' => 'my-book', 'book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null);
         $paramConverter->resolve($request, $argument);
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -304,10 +306,10 @@ XML;
     {
         $paramConverter = new PropelValueResolver();
         $request = new Request([], [], ['author_slug' => 'my-author', 'slug' => 'my-kewl-book', 'book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null);
 
         $paramConverter->resolve($request, $argument);
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -319,7 +321,7 @@ XML;
     {
         $paramConverter = new PropelValueResolver();
         $request = new Request([], [], ['slug' => 'my-foo', 'book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null);
 
         $this->expectException(NotFoundHttpException::class);
 
@@ -335,9 +337,9 @@ XML;
         $paramConverter = new PropelValueResolver();
         $request = new Request([], [], ['slug' => 'my-book', 'name' => 'foo', 'book' => null]);
         $request->attributes->set('propel_converter', ['book' => ['exclude' => ['name']]]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null, false);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null, false);
         $paramConverter->resolve($request, $argument);
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -350,13 +352,13 @@ XML;
         $paramConverter = new PropelValueResolver();
         $request = new Request([], [], ['slug' => 'my-book', 'name' => 'foo', 'book' => null]);
         $request->attributes->set('propel_converter', ['book' => ['exclude' => ['name', 'slug']]]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null, false);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null, false);
 
         $this->expectException(LogicException::class);
 
         $paramConverter->resolve($request, $argument);
 
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -369,13 +371,13 @@ XML;
         $paramConverter = new PropelValueResolver();
         $request = new Request([], [], ['id' => '1234', 'book' => null]);
         $request->attributes->set('propel_converter', ['book' => ['exclude' => ['id']]]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null, false);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null, false);
 
         $this->expectException(LogicException::class);
 
         $paramConverter->resolve($request, $argument);
 
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -387,7 +389,7 @@ XML;
     {
         $paramConverter = new PropelValueResolver();
         $request = new Request([], [], ['book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null);
 
         $this->expectException(LogicException::class);
 
@@ -402,7 +404,7 @@ XML;
     {
         $paramConverter = new PropelValueResolver();
         $request = new Request([], [], ['book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null, true);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null, true);
         $this->assertSame([null], $paramConverter->resolve($request, $argument));
 
         $this->assertNull($request->attributes->get('book'),
@@ -418,9 +420,9 @@ XML;
         $paramConverter = new PropelValueResolver();
         $request = new Request([], [], ['toto' => 1, 'book' => null]);
         $request->attributes->set('propel_converter', ['book' => ['mapping' => ['toto' => 'id']]]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null, false);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null, false);
         $paramConverter->resolve($request, $argument);
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -433,9 +435,9 @@ XML;
         $paramConverter = new PropelValueResolver();
         $request = new Request([], [], ['slugParam_special' => 'my-book', 'book' => null]);
         $request->attributes->set('propel_converter', ['book' => ['mapping' => ['slugParam_special' => 'slug']]]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null, false);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null, false);
         $paramConverter->resolve($request, $argument);
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -494,7 +496,7 @@ XML;
         $this->assertEquals($nb + 1, $this->con->getQueryCount(), 'only one query to get the author');
 
         $books = $author->getMyBooks();
-        $this->assertInstanceOf('\Propel\Runtime\Collection\ObjectCollection', $books);
+        $this->assertInstanceOf(ObjectCollection::class, $books);
         $this->assertCount(2, $books, 'Author should have two books');
 
         $this->assertEquals($nb + 1, $this->con->getQueryCount(), 'no new query to get the books');
@@ -522,7 +524,7 @@ XML;
         $this->assertEquals($nb + 1, $this->con->getQueryCount(), 'only one query to get the book');
 
         $books = $author->getMyBooks();
-        $this->assertInstanceOf('\Propel\Runtime\Collection\ObjectCollection', $books);
+        $this->assertInstanceOf(ObjectCollection::class, $books);
         $this->assertCount(2, $books, 'Author should have two books');
 
         $this->assertEquals($nb + 1, $this->con->getQueryCount(), 'no new query to get the books');
@@ -559,6 +561,7 @@ XML;
         $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor', $author,
             'param "author" should be an instance of "Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor"');
     }
+
     /**
      * @return void
      * @throws Exception

@@ -14,6 +14,7 @@ namespace Propel\Bundle\PropelBundle\Tests\Form;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Propel\Bundle\PropelBundle\Form\Type\ModelType;
 use Propel\Bundle\PropelBundle\Form\TypeGuesser;
+use Propel\Bundle\PropelBundle\Tests\Fixtures\Item;
 use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -30,7 +31,7 @@ class TypeGuesserTest extends TestCase
     /**
      *
      */
-    const CLASS_NAME = 'Propel\Bundle\PropelBundle\Tests\Fixtures\Item';
+    const CLASS_NAME = Item::class;
 
     /**
      *

@@ -16,6 +16,7 @@ use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Propel\Runtime\Collection\ObjectCollection;
 use stdClass;
 use Symfony\Component\Form\Exception\TransformationFailedException;
+use Symfony\Component\Form\Form;
 
 /**
  * # CollectionToArrayTransformerTest
@@ -131,7 +132,7 @@ class CollectionToArrayTransformerTest extends TestCase
      */
     protected function setUp(): void
     {
-        if (!class_exists('Symfony\Component\Form\Form')) {
+        if (!class_exists(Form::class)) {
             $this->markTestSkipped('The "Form" component is not available');
         }
 

@@ -138,7 +138,7 @@ class PropelValueResolver implements ArgumentValueResolverInterface
                 }
             }
         } else {
-            $this->exclude = isset($options['exclude']) ? $options['exclude'] : [];
+            $this->exclude = $options['exclude'] ?? [];
             $this->filters = $request->attributes->all();
         }
 
@@ -185,6 +185,26 @@ class PropelValueResolver implements ArgumentValueResolverInterface
         $request->attributes->set($argument->getName(), $object);
 
         return [$object];
+    }
+
+    /**
+     * @param Request $request
+     * @param ArgumentMetadata $argument
+     *
+     * @return bool
+     */
+    public function supports(Request $request, ArgumentMetadata $argument): bool
+    {
+        $classname = $argument->getType();
+        if ($classname === null || $classname === '') {
+            return false;
+        }
+
+        if (!class_exists($classname)) {
+            return false;
+        }
+
+        return is_a($classname, ActiveRecordInterface::class, true);
     }
 
     /**
@@ -313,25 +333,5 @@ class PropelValueResolver implements ArgumentValueResolverInterface
         } else {
             return $query->find()->getFirst();
         }
-    }
-
-    /**
-     * @param Request $request
-     * @param ArgumentMetadata $argument
-     *
-     * @return bool
-     */
-    public function supports(Request $request, ArgumentMetadata $argument): bool
-    {
-        $classname = $argument->getType();
-        if ($classname === null || $classname === '') {
-            return false;
-        }
-
-        if (!class_exists($classname)) {
-            return false;
-        }
-
-        return is_a($classname, ActiveRecordInterface::class, true);
     }
 }

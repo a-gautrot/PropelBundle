@@ -75,7 +75,7 @@ class SqlInsertCommand extends WrappedCommand
             return parent::execute($input, $output);
         } else {
             $output->writeln('<error>You have to use --force to execute all SQL statements.</error>');
-            return 1;
+            return Command::FAILURE;
         }
     }
 

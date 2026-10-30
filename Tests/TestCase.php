@@ -33,7 +33,7 @@ class TestCase extends BaseTestCase
         ]));
 
         $container->setParameter('propel.configuration', []);
-        $container->setDefinition('propel', new Definition('Propel\Runtime\Propel'));
+        $container->setDefinition('propel', new Definition(Propel::class));
 
         return $container;
     }

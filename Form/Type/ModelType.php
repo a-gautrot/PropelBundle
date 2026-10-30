@@ -22,6 +22,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
 use Symfony\Component\Form\ChoiceList\Factory\DefaultChoiceListFactory;
 use Symfony\Component\Form\ChoiceList\Factory\PropertyAccessDecorator;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
@@ -174,7 +175,7 @@ class ModelType extends AbstractType
             /** @var ColumnMap $firstIdentifier */
             $firstIdentifier = current($identifier);
             if (count($identifier) === 1 && $firstIdentifier->getPdoType() === PDO::PARAM_INT) {
-                return [__CLASS__, 'createChoiceName'];
+                return [self::class, 'createChoiceName'];
             }
             return null;
         };
@@ -220,7 +221,7 @@ class ModelType extends AbstractType
         $choiceLabelNormalizer = function (Options $options, $choiceLabel) {
             if ($choiceLabel === null) {
                 if ($options['property'] == null) {
-                    $choiceLabel = [__CLASS__, 'createChoiceLabel'];
+                    $choiceLabel = [self::class, 'createChoiceLabel'];
                 } else {
                     $valueProperty = $options['property'];
                     /** @var ModelCriteria $query */
@@ -256,7 +257,7 @@ class ModelType extends AbstractType
         $resolver->setRequired(['class']);
         $resolver->setNormalizer('query', $queryNormalizer);
         $resolver->setNormalizer('choice_label', $choiceLabelNormalizer);
-        $resolver->setAllowedTypes('query', ['null', 'Propel\Runtime\ActiveQuery\ModelCriteria']);
+        $resolver->setAllowedTypes('query', ['null', ModelCriteria::class]);
     }
 
     /**
@@ -272,6 +273,6 @@ class ModelType extends AbstractType
      */
     public function getParent(): ?string
     {
-        return 'Symfony\Component\Form\Extension\Core\Type\ChoiceType';
+        return ChoiceType::class;
     }
 }
