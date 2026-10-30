@@ -6,7 +6,7 @@ services:
       MYSQL_ROOT_PASSWORD: bundle_test
       MYSQL_DATABASE: propel_bundle
     ports:
-      - "33382:3306"
+      - "33381:3306"
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-pbundle_test" ]
       interval: 5s
