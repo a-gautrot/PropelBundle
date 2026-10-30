@@ -17,6 +17,7 @@ use Propel\Runtime\Adapter\Pdo\MysqlAdapter;
 use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
 use RuntimeException;
+use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -33,7 +34,7 @@ class TableDropCommand extends AbstractCommand
 
     /**
      * @return void
-     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     * @throws ConsoleInvalidArgumentException
      */
     #[Override]
     protected function configure(): void
@@ -52,7 +53,7 @@ class TableDropCommand extends AbstractCommand
      * @return int
      * @throws ConnectionException
      * @throws RuntimeException
-     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     * @throws ConsoleInvalidArgumentException
      */
     #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int

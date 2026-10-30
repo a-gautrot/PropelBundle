@@ -17,7 +17,7 @@ defaults:
     shell: bash
 
 env:
-  SYMFONY_REQUIRE: '6.4'
+  SYMFONY_REQUIRE: '6.4.*'
 
 jobs:
   sqlite:
@@ -90,7 +90,7 @@ jobs:
         run: composer u -n --prefer-dist --no-progress --prefer-lowest --prefer-stable
 
       - run: composer validate --strict
-      - run: composer test
+      - run: composer test -- --display-deprecations --display-phpunit-deprecations
 
   mysql:
     name: "Test Suite (MySQL, ${{ matrix.os }}, PHP ${{ matrix.php-version }})"
@@ -155,7 +155,7 @@ jobs:
           user: ci
 
       - name: Run MySQL tests
-        run: composer test
+        run: composer test -- --display-deprecations --display-phpunit-deprecations
         env:
           TEST_DSN: mysql:host=127.0.0.1;port=${{ runner.os == 'Linux' && '33381' || '3306' }};dbname=propel_bundle
           TEST_USER: ${{ runner.os == 'Linux' && 'root' || 'ci' }}
@@ -228,7 +228,7 @@ jobs:
           user: ci
 
       - name: Run MariaDB tests
-        run: composer test
+        run: composer test -- --display-deprecations --display-phpunit-deprecations
         env:
           TEST_DSN: mysql:host=127.0.0.1;port=${{ runner.os == 'Linux' && '33382' || '3306' }};dbname=propel_bundle
           TEST_USER: ${{ runner.os == 'Linux' && 'root' || 'ci' }}
@@ -301,7 +301,7 @@ jobs:
           user: ci
 
       - name: Run PostgreSQL tests
-        run: composer test
+        run: composer test -- --display-deprecations --display-phpunit-deprecations
         env:
           TEST_DSN: pgsql:host=127.0.0.1;port=${{ runner.os == 'Linux' && '35453' || '5432' }};dbname=propel_bundle
           TEST_USER: ${{ runner.os == 'Linux' && 'postgres' || 'ci' }}
@@ -345,7 +345,7 @@ jobs:
           composer u -n --prefer-dist --no-progress --prefer-stable
 
       - run: composer validate --strict
-      - run: composer test:coverage
+      - run: composer test:coverage -- --display-deprecations --display-phpunit-deprecations
         env:
           XDEBUG_MODE: coverage
 

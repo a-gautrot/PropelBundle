@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use RuntimeException;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\RuntimeException as ConsoleRuntimeException;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -37,7 +38,7 @@ trait FormattingHelpers
      * @return bool true if the user has confirmed, false otherwise
      * @throws RuntimeException
      * @throws InvalidArgumentException
-     * @throws \Symfony\Component\Console\Exception\RuntimeException
+     * @throws ConsoleRuntimeException
      */
     protected function askConfirmation(InputInterface $input, OutputInterface $output, string $question, bool $default = true): bool
     {

@@ -18,6 +18,8 @@ use RuntimeException;
 use SplFileInfo;
 use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\Console\Exception\ExceptionInterface;
+use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException as ConsoleLogicException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -61,7 +63,7 @@ class FixturesLoadCommand extends AbstractCommand
     /**
      * @param ContainerInterface $container
      * @param string|null $name
-     * @throws \Symfony\Component\Console\Exception\LogicException
+     * @throws ConsoleLogicException
      */
     public function __construct(ContainerInterface $container, ?string $name = null)
     {
@@ -71,7 +73,7 @@ class FixturesLoadCommand extends AbstractCommand
 
     /**
      * @return void
-     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     * @throws ConsoleInvalidArgumentException
      * @see \Symfony\Component\Console\Command\Command
      */
     #[Override]
@@ -361,7 +363,7 @@ EOT
      *
      * @return bool|int|null
      * @throws LogicException
-     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     * @throws ConsoleInvalidArgumentException
      * @throws ServiceCircularReferenceException
      * @throws ServiceNotFoundException
      */

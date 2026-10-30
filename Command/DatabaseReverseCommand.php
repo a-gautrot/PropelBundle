@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use InvalidArgumentException as BaseInvalidArgumentException;
 use Override;
 use Propel\Generator\Command\DatabaseReverseCommand as BaseDatabaseReverseCommand;
 use Symfony\Component\Console\Command\Command;
@@ -57,7 +58,7 @@ class DatabaseReverseCommand extends WrappedCommand
     /**
      * @param InputInterface $input
      * @return array<string, mixed>
-     * @throws \InvalidArgumentException
+     * @throws BaseInvalidArgumentException
      * @throws InvalidArgumentException
      */
     #[Override]

@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use InvalidArgumentException as BaseInvalidArgumentException;
 use Override;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
 use Propel\Runtime\Connection\Exception\ConnectionException;
@@ -58,7 +59,7 @@ EOT
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
-     * @throws \InvalidArgumentException
+     * @throws BaseInvalidArgumentException
      * @throws ConnectionException
      * @throws RuntimeException
      * @throws InvalidArgumentException

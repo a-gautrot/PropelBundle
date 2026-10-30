@@ -21,6 +21,8 @@ use SplFileInfo;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
+use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException as ConsoleLogicException;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -69,7 +71,7 @@ abstract class AbstractCommand extends Command
     /**
      * @param ContainerInterface $container
      * @param string|null $name
-     * @throws \Symfony\Component\Console\Exception\LogicException
+     * @throws ConsoleLogicException
      */
     public function __construct(ContainerInterface $container, ?string $name = null)
     {
@@ -83,7 +85,7 @@ abstract class AbstractCommand extends Command
      * @param OutputInterface $output
      * @return void
      * @throws RuntimeException
-     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     * @throws ConsoleInvalidArgumentException
      * @throws ServiceCircularReferenceException
      * @throws ServiceNotFoundException
      */

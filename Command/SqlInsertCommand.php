@@ -17,6 +17,7 @@ use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException as ConsoleLogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -49,7 +50,7 @@ class SqlInsertCommand extends WrappedCommand
 
     /**
      * @return Command
-     * @throws \Symfony\Component\Console\Exception\LogicException
+     * @throws ConsoleLogicException
      */
     #[Override]
     protected function createSubCommandInstance(): Command

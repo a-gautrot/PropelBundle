@@ -17,6 +17,7 @@ use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ServiceContainer\StandardServiceContainer;
 use RuntimeException;
+use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -32,7 +33,7 @@ class DatabaseCreateCommand extends AbstractCommand
 {
     /**
      * @return void
-     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     * @throws ConsoleInvalidArgumentException
      * @see \Symfony\Component\Console\Command\Command
      */
     #[Override]

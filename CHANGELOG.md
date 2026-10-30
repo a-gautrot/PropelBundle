@@ -47,4 +47,6 @@
     * Updated with support from PHPStan, Psalm, and PHPCS
 * Added deprecation warnings for XML schemas
 * Fixed fixture path validation, SQL result handling, and static type declarations
-* Fixed UTs for its Book schema
+* Updated unit tests
+    * Now uses Docker for some UTs
+    * Fixed UTs for its Book schema

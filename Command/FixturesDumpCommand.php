@@ -11,6 +11,7 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use Override;
+use RuntimeException as BaseRuntimeException;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -64,7 +65,7 @@ EOT
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
-     * @throws \RuntimeException
+     * @throws BaseRuntimeException
      * @throws InvalidArgumentException
      * @throws RuntimeException
      * @throws ServiceCircularReferenceException

@@ -11,7 +11,9 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use App\AppBundle;
+use InvalidArgumentException as BaseInvalidArgumentException;
 use JsonException;
+use LogicException as BaseLogicException;
 use Override;
 use Propel\Bundle\PropelBundle\Form\FormBuilder;
 use Propel\Generator\Config\GeneratorConfig;
@@ -73,9 +75,9 @@ EOT
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
-     * @throws \InvalidArgumentException
+     * @throws BaseInvalidArgumentException
      * @throws JsonException
-     * @throws \LogicException
+     * @throws BaseLogicException
      * @throws RuntimeException
      * @throws InvalidArgumentException
      * @throws LogicException
