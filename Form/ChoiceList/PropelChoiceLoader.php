@@ -31,18 +31,6 @@ use Symfony\Component\Form\ChoiceList\Loader\ChoiceLoaderInterface;
 class PropelChoiceLoader implements ChoiceLoaderInterface
 {
     /**
-     * @var ChoiceListFactoryInterface
-     */
-    protected ChoiceListFactoryInterface $factory;
-    /**
-     * @var string
-     */
-    protected string $class;
-    /**
-     * @var ModelCriteria
-     */
-    protected ModelCriteria $query;
-    /**
      * The fields of which the identifier of the underlying class consists
      *
      * This property should only be accessed through identifier.
@@ -64,16 +52,13 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
      * PropelChoiceListLoader constructor.
      * @param ChoiceListFactoryInterface $factory
      * @param string $class
-     * @param ModelCriteria $queryObject
+     * @param ModelCriteria $query
      * @param string|null $useAsIdentifier
      * @throws LogicException
      * @throws ColumnNotFoundException
      */
-    public function __construct(ChoiceListFactoryInterface $factory, string $class, ModelCriteria $queryObject, ?string $useAsIdentifier = null)
+    public function __construct(protected ChoiceListFactoryInterface $factory, protected string $class, protected ModelCriteria $query, ?string $useAsIdentifier = null)
     {
-        $this->factory = $factory;
-        $this->class = $class;
-        $this->query = $queryObject;
         if ($useAsIdentifier !== null && $useAsIdentifier !== '') {
             $this->identifier = [$this->query->getTableMapOrFail()->getColumn($useAsIdentifier)];
         } else {

@@ -18,6 +18,7 @@ use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ServiceContainer\StandardServiceContainer;
 use RuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -30,6 +31,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author William DURAND
  * @api
  */
+#[AsCommand(name: 'propel:database:create', description: 'Create a given database or the default one.')]
 class DatabaseCreateCommand extends AbstractCommand
 {
     /**
@@ -41,13 +43,7 @@ class DatabaseCreateCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
-            ->setName('propel:database:create')
-            ->setDescription('Create a given database or the default one.')
-            ->addOption(
-                'connection',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'Set this parameter to define a connection to use.'
-            );
+            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Set this parameter to define a connection to use');
     }
 
     /**

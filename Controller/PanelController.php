@@ -87,7 +87,7 @@ class PanelController extends AbstractController
             $results = [];
             while ($results[] = $dataFetcher->fetch(PDO::FETCH_ASSOC)) {
             }
-        } catch (Exception $e) {
+        } catch (Exception) {
             return new Response('<div class="error">This query cannot be explained.</div>');
         }
 

@@ -81,7 +81,7 @@ class PropelUserProviderTest extends TestCase
         $user2->setUsername('user2');
         $user2->save();
 
-        $provider = new PropelUserProvider('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\User', 'username');
+        $provider = new PropelUserProvider(User::class, 'username');
 
         // try to change the user identity
         $user1->setUsername('user2');
@@ -95,7 +95,7 @@ class PropelUserProviderTest extends TestCase
      */
     public function testSupportsClass(): void
     {
-        $class = 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\User';
+        $class = User::class;
 
         $provider = new PropelUserProvider($class, 'username');
 
@@ -112,7 +112,7 @@ class PropelUserProviderTest extends TestCase
         $user1->setUsername('user1');
         $user1->save();
 
-        $provider = new PropelUserProvider('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\User', 'username');
+        $provider = new PropelUserProvider(User::class, 'username');
 
         // existing one
         $this->assertInstanceOf(User::class, $provider->loadUserByIdentifier('user1'));

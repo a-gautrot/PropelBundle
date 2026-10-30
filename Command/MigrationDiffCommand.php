@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use Override;
 use Propel\Generator\Command\MigrationDiffCommand as BaseMigrationCommand;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException;
@@ -24,6 +25,7 @@ use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
+#[AsCommand(name: 'propel:migration:diff', description: 'Generate diff classes')]
 class MigrationDiffCommand extends WrappedCommand
 {
     /**
@@ -36,44 +38,13 @@ class MigrationDiffCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->setName('propel:migration:diff')
-            ->setDescription('Generate diff classes.')
-            ->addOption(
-                'connection',
-                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
-                description: 'Connection to use. Example: default, bookstore.'
-            )
-            ->addOption(
-                'output-dir',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'The output directory.'
-            )
-            ->addOption(
-                'migration-table',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'Migration table name (if none given, the configured table is used).'
-            )
-            ->addOption(
-                'table-renaming',
-                mode: InputOption::VALUE_NONE,
-                description: 'Detect table renaming.'
-            )
-            ->addOption(
-                'editor',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'The text editor to use to open diff files.'
-            )
-            ->addOption(
-                'skip-removed-table',
-                mode: InputOption::VALUE_NONE,
-                description: 'Option to skip removed table from the migration.'
-            )
-            ->addOption(
-                'skip-tables',
-                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
-                description: 'List of excluded tables.',
-                default: []
-            );
+            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
+            ->addOption('output-dir', mode: InputOption::VALUE_OPTIONAL, description: 'The output directory')
+            ->addOption('migration-table', mode: InputOption::VALUE_OPTIONAL, description: 'Migration table name (if none given, the configured table is used)')
+            ->addOption('table-renaming', mode: InputOption::VALUE_NONE, description: 'Detect table renaming')
+            ->addOption('editor', mode: InputOption::VALUE_OPTIONAL, description: 'The text editor to use to open diff files')
+            ->addOption('skip-removed-table', mode: InputOption::VALUE_NONE, description: 'Option to skip removed table from the migration')
+            ->addOption('skip-tables', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'List of excluded tables', default: []);
     }
 
     /**

@@ -18,6 +18,7 @@ use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ServiceContainer\StandardServiceContainer;
 use RuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -30,6 +31,16 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author William DURAND
  * @api
  */
+#[AsCommand(name: 'propel:database:drop', description: 'Drop a given database or the default one.', help: <<<'TXT'
+The <info>propel:database:drop</info> command will drop your database.
+
+  <info>php app/console propel:database:drop</info>
+
+The <info>--force</info> parameter has to be used to actually drop the database.
+The <info>--connection</info> parameter allows you to change the connection to use.
+The default connection is the active connection (propel.dbal.default_connection).
+TXT
+)]
 class DatabaseDropCommand extends AbstractCommand
 {
     /**
@@ -40,26 +51,8 @@ class DatabaseDropCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
-            ->setName('propel:database:drop')
-            ->setDescription('Drop a given database or the default one.')
-            ->setHelp(<<<EOT
-The <info>propel:database:drop</info> command will drop your database.
-
-  <info>php app/console propel:database:drop</info>
-
-The <info>--force</info> parameter has to be used to actually drop the database.
-The <info>--connection</info> parameter allows you to change the connection to use.
-The default connection is the active connection (propel.dbal.default_connection).
-EOT
-            )
-            ->addOption(
-                'connection',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'Connection to use. Example: default, bookstore.')
-            ->addOption('force',
-                mode: InputOption::VALUE_NONE,
-                description: 'Set this parameter to execute this action.'
-            );
+            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
+            ->addOption('force', mode: InputOption::VALUE_NONE, description: 'Set this parameter to execute this action.');
     }
 
     /**
@@ -83,7 +76,7 @@ EOT
         if ($this->getKernel()->getEnvironment() === 'prod') {
             $this->writeSection($output, 'WARNING: you are about to drop a database in production !', 'bg=red;fg=white');
 
-            if ($this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', false) === false) {
+            if ($this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', default: false) === false) {
                 $output->writeln('Aborted, nice decision !');
 
                 // s 5.1 expect integer to be returned

@@ -22,31 +22,19 @@ class TranslatableItem implements ActiveRecordInterface
     /**
      * @var mixed
      */
-    private mixed $id;
+    private readonly mixed $groupName;
 
     /**
      * @var mixed
      */
-    private mixed $currentTranslations;
-
-    /**
-     * @var mixed
-     */
-    private mixed $groupName;
-
-    /**
-     * @var mixed
-     */
-    private mixed $price;
+    private readonly mixed $price;
 
     /**
      * @param mixed $id
-     * @param mixed $translations
+     * @param mixed $currentTranslations
      */
-    public function __construct(mixed $id = null, mixed $translations = [])
+    public function __construct(private mixed $id = null, private mixed $currentTranslations = [])
     {
-        $this->id = $id;
-        $this->currentTranslations = $translations;
     }
 
     /**
@@ -82,21 +70,21 @@ class TranslatableItem implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed $id
-     * @return void
-     */
-    public function setId(mixed $id = null): void
-    {
-        $this->id = $id;
-    }
-
-    /**
      * @param mixed $primaryKey
      * @return void
      */
     public function setPrimaryKey(mixed $primaryKey = null): void
     {
         $this->setId($primaryKey);
+    }
+
+    /**
+     * @param mixed $id
+     * @return void
+     */
+    public function setId(mixed $id = null): void
+    {
+        $this->id = $id;
     }
 
     /**

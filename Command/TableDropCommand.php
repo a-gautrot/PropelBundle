@@ -18,6 +18,7 @@ use Propel\Runtime\Adapter\Pdo\MysqlAdapter;
 use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
 use RuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,6 +30,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
+#[AsCommand(name: 'propel:table:drop', description: 'Drop a given table or all tables in the database.')]
 class TableDropCommand extends AbstractCommand
 {
     use FormattingHelpers;
@@ -41,23 +43,9 @@ class TableDropCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
-            ->setName('propel:table:drop')
-            ->setDescription('Drop a given table or all tables in the database.')
-            ->addArgument(
-                'table',
-                InputArgument::IS_ARRAY,
-                'Set this parameter to définie which table to delete (default all the table in the database.'
-            )
-            ->addOption(
-                'connection',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'Connection to use. Example: default, bookstore'
-            )
-            ->addOption(
-                'force',
-                mode: InputOption::VALUE_NONE,
-                description: 'Set this parameter to execute this action.'
-            );
+            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
+            ->addOption('force', mode: InputOption::VALUE_NONE, description: 'Set this parameter to execute this action.')
+            ->addArgument('table', InputArgument::IS_ARRAY, 'Set this parameter to défine which table to delete (default all the table in the database.');
     }
 
     /**
@@ -99,7 +87,7 @@ class TableDropCommand extends AbstractCommand
                 'bg=red;fg=white'
             );
 
-            if ($this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', false) === false) {
+            if ($this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', default: false) === false) {
                 $output->writeln('<info>Aborted, nice decision !</info>');
 
                 return -2;
@@ -116,7 +104,7 @@ class TableDropCommand extends AbstractCommand
 
         if ($nbTable) {
             foreach ($tablesToDelete as $tableToDelete) {
-                if (!in_array($tableToDelete, $allTables, true)) {
+                if (!in_array($tableToDelete, $allTables, strict: true)) {
                     throw new InvalidArgumentException("Table $tableToDelete doesn't exist in the database.");
                 }
             }
@@ -130,7 +118,7 @@ class TableDropCommand extends AbstractCommand
             $table = $dbAdapter->quoteIdentifierTable($table);
         }, $adapter);
 
-        $tablesToDelete = join(', ', $tablesToDelete);
+        $tablesToDelete = implode(', ', $tablesToDelete);
 
         if ($tablesToDelete !== '') {
             $connection->exec("DROP TABLE $tablesToDelete ;");

@@ -26,10 +26,6 @@ use Symfony\Component\Finder\Finder;
 abstract class AbstractDataHandler
 {
     /**
-     * @var string
-     */
-    protected string $rootDir;
-    /**
      * @var ConnectionInterface|null
      */
     protected ?ConnectionInterface $con = null;
@@ -37,8 +33,6 @@ abstract class AbstractDataHandler
      * @var DatabaseMap|null
      */
     protected ?DatabaseMap $dbMap = null;
-    /** @var array{database?: array{connections: array<string, array<string, mixed>>}} */
-    protected array $datasources = [];
 
     /**
      * Default constructor
@@ -46,10 +40,8 @@ abstract class AbstractDataHandler
      * @param string $rootDir The root directory.
      * @param array{database?: array{connections: array<string, array<string, mixed>>}} $datasources
      */
-    public function __construct(string $rootDir, array $datasources)
+    public function __construct(protected string $rootDir, protected array $datasources)
     {
-        $this->rootDir = $rootDir;
-        $this->datasources = $datasources;
     }
 
     /**

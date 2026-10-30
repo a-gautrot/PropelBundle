@@ -13,6 +13,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 use Override;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -26,6 +27,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
+#[AsCommand(name: 'propel:build', description: 'Hub for Propel build commands (Model classes, SQL)')]
 class BuildCommand extends Command
 {
     /**
@@ -36,28 +38,12 @@ class BuildCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('propel:build')
-            ->setDescription('Hub for Propel build commands (Model classes, SQL).')
-            ->addOption(
-                'classes',
-                mode: InputOption::VALUE_NONE,
-                description: 'Build only classes.'
-            )
-            ->addOption(
-                'sql',
-                mode: InputOption::VALUE_NONE,
-                description: 'Build only SQL.'
-            )
-            ->addOption(
-                'insert-sql',
-                mode: InputOption::VALUE_NONE,
-                description: 'Build all and insert SQL.'
-            )
-            ->addOption(
-                'connection',
-                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
-                description: 'Connection to use. Example: default, bookstore.'
-            );
+            ->setDefinition([
+                new InputOption('classes', mode: InputOption::VALUE_NONE, description: 'Build only classes'),
+                new InputOption('sql', mode: InputOption::VALUE_NONE, description: 'Build only SQL'),
+                new InputOption('insert-sql', mode: InputOption::VALUE_NONE, description: 'Build all and insert SQL'),
+                new InputOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
+            ]);
     }
 
     /**

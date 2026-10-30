@@ -20,37 +20,13 @@ use Propel\Runtime\Connection\ConnectionInterface;
 class Item implements ActiveRecordInterface
 {
     /**
-     * @var mixed
-     */
-    private mixed $id;
-
-    /**
-     * @var mixed
-     */
-    private mixed $value;
-
-    /**
-     * @var mixed
-     */
-    private mixed $groupName;
-
-    /**
-     * @var mixed
-     */
-    private mixed $price;
-
-    /**
      * @param mixed $id
      * @param mixed $value
      * @param mixed $groupName
      * @param mixed $price
      */
-    public function __construct(mixed $id = null, mixed $value = null, mixed $groupName = null, mixed $price = null)
+    public function __construct(private mixed $id = null, private readonly mixed $value = null, private readonly mixed $groupName = null, private readonly mixed $price = null)
     {
-        $this->id = $id;
-        $this->value = $value;
-        $this->groupName = $groupName;
-        $this->price = $price;
     }
 
     /**
@@ -94,21 +70,21 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed $id
-     * @return void
-     */
-    public function setId(mixed $id = null): void
-    {
-        $this->id = $id;
-    }
-
-    /**
      * @param mixed $primaryKey
      * @return void
      */
     public function setPrimaryKey(mixed $primaryKey = null): void
     {
         $this->setId($primaryKey);
+    }
+
+    /**
+     * @param mixed $id
+     * @return void
+     */
+    public function setId(mixed $id = null): void
+    {
+        $this->id = $id;
     }
 
     /**

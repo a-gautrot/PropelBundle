@@ -40,13 +40,13 @@ class UniqueObjectValidator extends ConstraintValidator
     {
         /** @var UniqueObject $constraint */
         $fields = (array)$constraint->fields;
-        $class = get_class($value);
+        $class = $value::class;
         $queryClass = "{$class}Query";
         if (!is_a($value, ActiveRecordInterface::class)
-            || !is_a($queryClass, ModelCriteria::class, true)) {
+            || !is_a($queryClass, ModelCriteria::class, allow_string: true)) {
             throw new ConstraintDefinitionException('The value must be a Propel model with a query class.');
         }
-        $tableMapClass = get_class($value)::TABLE_MAP;
+        $tableMapClass = $value::class::TABLE_MAP;
         $classFields = $tableMapClass::getFieldnames(TableMap::TYPE_FIELDNAME);
 
         // ensure at least one field is selected

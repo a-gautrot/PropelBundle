@@ -115,7 +115,7 @@ trait FormattingHelpers
 
         $output->writeln([
             '',
-            $formatter->formatBlock($text, $style, true),
+            $formatter->formatBlock($text, $style, large: true),
             '',
         ]);
     }

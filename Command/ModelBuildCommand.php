@@ -13,6 +13,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 use Override;
 use Propel\Generator\Command\ModelBuildCommand as BaseModelBuildCommand;
 use RuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException;
@@ -25,6 +26,7 @@ use Symfony\Component\Console\Input\InputOption;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
+#[AsCommand(name: 'propel:model:build', description: 'Build the model classes based on Propel XML schemas')]
 class ModelBuildCommand extends WrappedCommand
 {
     /**
@@ -37,23 +39,9 @@ class ModelBuildCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->setName('propel:model:build')
-            ->setDescription('Build the model classes based on Propel XML schemas')
-            ->addArgument(
-                'bundle',
-                InputArgument::OPTIONAL,
-                'The bundle to generate model classes from.'
-            )
-            ->addOption(
-                'connection',
-                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
-                description: 'Connection to use. Example: default, bookstore.'
-            )
-            ->addOption(
-                'loader-script-dir',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'Target folder of the database table map loader script. Defaults to paths.loaderScriptDir.'
-            );
+            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
+            ->addOption('loader-script-dir', mode: InputOption::VALUE_OPTIONAL, description: 'Target folder of the database table map loader script. Defaults to paths.loaderScriptDir')
+            ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to generate model classes from');
     }
 
     /**

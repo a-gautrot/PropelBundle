@@ -193,7 +193,7 @@ YAML;
      */
     public function testLoadWithFaker(): void
     {
-        if (!class_exists('Faker\Factory')) {
+        if (!class_exists(Factory::class)) {
             $this->markTestSkipped('Faker is mandatory');
         }
 

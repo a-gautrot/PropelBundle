@@ -18,6 +18,7 @@ use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException;
 use SplFileInfo;
 use Symfony\Component\Config\FileLocatorInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException as ConsoleLogicException;
@@ -41,49 +42,7 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
  * @author William DURAND <william.durand1@gmail.com>
  * @api
  */
-class FixturesLoadCommand extends AbstractCommand
-{
-    /**
-     * Default fixtures directory.
-     * @var string
-     */
-    private string $defaultFixturesDir = 'propel/fixtures';
-
-    /**
-     * Absolute path for fixtures directory
-     * @var string
-     */
-    private string $absoluteFixturesPath = '';
-
-    /**
-     * Filesystem for manipulating files
-     * @var Filesystem
-     */
-    private Filesystem $filesystem;
-
-    /**
-     * @param ContainerInterface $container
-     * @param string|null $name
-     * @throws ConsoleLogicException
-     */
-    public function __construct(ContainerInterface $container, ?string $name = null)
-    {
-        $this->filesystem = new Filesystem();
-        parent::__construct($container, $name);
-    }
-
-    /**
-     * @return void
-     * @throws ConsoleInvalidArgumentException
-     * @see \Symfony\Component\Console\Command\Command
-     */
-    #[Override]
-    protected function configure(): void
-    {
-        $this
-            ->setName('propel:fixtures:load')
-            ->setDescription('Load XML, SQL and/or YAML fixtures.')
-            ->setHelp(<<<EOT
+#[AsCommand(name: 'propel:fixtures:load', description: 'Load XML, SQL and/or YAML fixtures', help: <<<'TXT'
 The <info>propel:fixtures:load</info> loads <info>XML</info>, <info>SQL</info> and/or <info>YAML</info> fixtures.
 
   <info>php app/console propel:fixtures:load</info>
@@ -124,40 +83,60 @@ YAML fixtures are:
             ObjectId: o1
             Description: Hello world !
 </comment>
-EOT
-            )
-            ->addArgument(
-                'bundle',
-                InputArgument::OPTIONAL,
-                'The bundle to load fixtures from.'
-            )
+TXT
+)]
+class FixturesLoadCommand extends AbstractCommand
+{
+    /**
+     * Default fixtures directory.
+     * @var string
+     */
+    private string $defaultFixturesDir = 'propel/fixtures';
+
+    /**
+     * Absolute path for fixtures directory
+     * @var string
+     */
+    private string $absoluteFixturesPath = '';
+
+    /**
+     * Filesystem for manipulating files
+     * @var Filesystem
+     */
+    private readonly Filesystem $filesystem;
+
+    /**
+     * @param ContainerInterface $container
+     * @param string|null $name
+     * @throws ConsoleLogicException
+     */
+    public function __construct(ContainerInterface $container, ?string $name = null)
+    {
+        $this->filesystem = new Filesystem();
+        parent::__construct($container, $name);
+    }
+
+    /**
+     * @return void
+     * @throws ConsoleInvalidArgumentException
+     * @see \Symfony\Component\Console\Command\Command
+     */
+    #[Override]
+    protected function configure(): void
+    {
+        $this
+            ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to load fixtures from')
             ->addOption(
                 'dir',
                 'd',
                 InputOption::VALUE_OPTIONAL,
-                'The directory where XML, SQL and/or YAML fixtures files are located.',
+                'The directory where XML, SQL and/or YAML fixtures files are located',
                 $this->defaultFixturesDir
             )
-            ->addOption(
-                'xml',
-                mode: InputOption::VALUE_NONE,
-                description: 'Load XML fixtures.'
-            )
-            ->addOption(
-                'sql',
-                mode: InputOption::VALUE_NONE,
-                description: 'Load SQL fixtures.'
-            )
-            ->addOption(
-                'yml',
-                mode: InputOption::VALUE_NONE,
-                description: 'Load YAML fixtures.'
-            )
-            ->addOption(
-                'connection',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'Set this parameter to define a connection to use.'
-            );
+            ->addOption('xml', mode: InputOption::VALUE_NONE, description: 'Load XML fixtures')
+            ->addOption('sql', mode: InputOption::VALUE_NONE, description: 'Load SQL fixtures')
+            ->addOption('yml', mode: InputOption::VALUE_NONE, description: 'Load YAML fixtures')
+            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Set this parameter to define a connection to use');
     }
 
     /**
@@ -257,7 +236,7 @@ EOT
             $output->writeln("<info>Loading SQL fixtures from</info> <comment>$data</comment>.");
 
             $sqldbContent .= "{$data->getFilename()}=$connectionName" . PHP_EOL;
-            $this->filesystem->copy($data->getPathname(), "$tmpdir/{$data->getFilename()}", true);
+            $this->filesystem->copy($data->getPathname(), "$tmpdir/{$data->getFilename()}", overwriteNewerFiles: true);
         }
 
         if ($sqldbContent === '') {
@@ -290,11 +269,9 @@ EOT
     protected function getFixtureFiles(string $type = 'sql', ?string $in = null): ArrayIterator|Finder
     {
         $finder = new Finder();
-        $finder->sort(function (SplFileInfo $a, SplFileInfo $b): int {
-            return strcmp($a->getPathname(), $b->getPathname());
-        })->name("*.$type");
+        $finder->sort(fn(SplFileInfo $a, SplFileInfo $b): int => strcmp($a->getPathname(), $b->getPathname()))->name("*.$type");
 
-        $files = $finder->in($in !== null ? $in : $this->absoluteFixturesPath);
+        $files = $finder->in($in ?? $this->absoluteFixturesPath);
 
         if ($this->bundle === null) {
             return $files;
@@ -369,7 +346,7 @@ EOT
         if ($ret === 0) {
             $output->writeln('All SQL statements have been inserted.');
         } else {
-            $this->writeTaskError($output, 'insert-sql', false);
+            $this->writeTaskError($output, 'insert-sql', more: false);
         }
 
         return $ret === 0;

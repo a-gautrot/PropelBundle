@@ -23,6 +23,7 @@ use Propel\Generator\Model\Database;
 use Propel\Generator\Model\Table;
 use RuntimeException;
 use SplFileInfo;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputArgument;
@@ -39,6 +40,14 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
  * @author William DURAND <william.durand1@gmail.com>
  * @api
  */
+#[AsCommand(name: 'propel:form:generate', description: 'Generate Form types stubs based on the schema.xml', help: <<<'TXT'
+The <info>%command.name%</info> command allows you to quickly generate Form Type stubs for a given bundle.
+
+<info>php app/console %command.full_name%</info>
+
+The <info>--force</info> parameter allows you to overwrite existing files.
+TXT
+)]
 class FormGenerateCommand extends AbstractCommand
 {
     /**
@@ -56,37 +65,10 @@ class FormGenerateCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
-            ->setName('propel:form:generate')
-            ->setDescription('Generate Form types stubs based on the schema.xml.')
-            ->setHelp(<<<EOT
-The <info>%command.name%</info> command allows you to quickly generate Form Type stubs for a given bundle.
-
-<info>php app/console %command.full_name%</info>
-
-The <info>--force</info> parameter allows you to overwrite existing files.
-EOT
-            )
-            ->addArgument(
-                'bundle',
-                InputArgument::OPTIONAL,
-                'The bundle to use to generate Form types (Ex: @AcmeDemoBundle).'
-            )
-            ->addArgument(
-                'models',
-                InputArgument::IS_ARRAY,
-                'Model classes to generate Form Types from.'
-            )
-            ->addOption(
-                'force',
-                'f',
-                InputOption::VALUE_NONE,
-                'Overwrite existing Form types.'
-            )
-            ->addOption(
-                'platform',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The platform.'
-            );
+            ->addOption('force', 'f', InputOption::VALUE_NONE, 'Overwrite existing Form types')
+            ->addOption('platform', mode: InputOption::VALUE_REQUIRED, description: 'The platform')
+            ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to use to generate Form types (Ex: @AcmeDemoBundle)')
+            ->addArgument('models', InputArgument::IS_ARRAY, 'Model classes to generate Form Types from');
     }
 
     /**

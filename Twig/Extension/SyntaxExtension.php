@@ -10,9 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Twig\Extension;
 
-use Override;
-use Twig\Extension\AbstractExtension;
-use Twig\TwigFilter;
+use Twig\Attribute\AsTwigFilter;
 
 /**
  * # SyntaxExtension
@@ -22,20 +20,8 @@ use Twig\TwigFilter;
  * @author William DURAND <william.durand1@gmail.com>
  * @api
  */
-class SyntaxExtension extends AbstractExtension
+class SyntaxExtension
 {
-    /**
-     * @return TwigFilter[]
-     */
-    #[Override]
-    public function getFilters(): array
-    {
-        return [
-            new TwigFilter('format_sql', [$this, 'formatSQL'], ['is_safe' => ['html']]),
-            new TwigFilter('format_memory', [$this, 'formatMemory']),
-        ];
-    }
-
     /**
      * @return string
      */
@@ -52,6 +38,7 @@ class SyntaxExtension extends AbstractExtension
      *
      * @return string
      */
+    #[AsTwigFilter(name: 'format_memory')]
     public function formatMemory(int|float $bytes, int $precision = 3): string
     {
         $absBytes = abs((float)$bytes);
@@ -82,7 +69,7 @@ class SyntaxExtension extends AbstractExtension
         }
 
         $significantDecimals = (int)floor((float)$significantFigures - log10(abs($number)));
-        $magnitude = pow(10.0, $significantDecimals);
+        $magnitude = 10.0 ** $significantDecimals;
         $shifted = round($number * $magnitude);
 
         return number_format($shifted / $magnitude, $significantDecimals);
@@ -93,6 +80,7 @@ class SyntaxExtension extends AbstractExtension
      *
      * @return string|string[]
      */
+    #[AsTwigFilter(name: 'format_sql', isSafe: ['html'])]
     public function formatSQL(string|array $sql): string|array
     {
         // list of keywords to prepend a newline in output

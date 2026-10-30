@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use Override;
 use Propel\Generator\Command\MigrationMigrateCommand as BaseMigrationCommand;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException;
@@ -24,6 +25,7 @@ use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
+#[AsCommand(name: 'propel:migration:migrate', description: 'Execute all pending migrations')]
 class MigrationMigrateCommand extends WrappedCommand
 {
     /**
@@ -36,33 +38,11 @@ class MigrationMigrateCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->setName('propel:migration:migrate')
-            ->setDescription('Execute all pending migrations.')
-            ->addOption(
-                'connection',
-                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
-                description: 'Connection to use. Example: default, bookstore.'
-            )
-            ->addOption(
-                'migration-table',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'Migration table name (if none given, the configured table is used).'
-            )
-            ->addOption(
-                'output-dir',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'The output directory'
-            )
-            ->addOption(
-                'fake',
-                mode: InputOption::VALUE_NONE,
-                description: 'Does not touch the actual schema, but marks all migration as executed.'
-            )
-            ->addOption(
-                'force',
-                mode: InputOption::VALUE_NONE,
-                description: 'Continues with the migration even when errors occur.'
-            );
+            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
+            ->addOption('migration-table', mode: InputOption::VALUE_OPTIONAL, description: 'Migration table name (if none given, the configured table is used)')
+            ->addOption('output-dir', mode: InputOption::VALUE_OPTIONAL, description: 'The output directory')
+            ->addOption('fake', mode: InputOption::VALUE_NONE, description: 'Does not touch the actual schema, but marks all migration as executed.')
+            ->addOption('force', mode: InputOption::VALUE_NONE, description: 'Continues with the migration even when errors occur.');
     }
 
     /**

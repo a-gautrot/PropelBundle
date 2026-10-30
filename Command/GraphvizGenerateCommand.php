@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use Override;
 use Propel\Generator\Command\GraphvizGenerateCommand as BaseGraphvizGenerateCommand;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException;
@@ -23,6 +24,7 @@ use Symfony\Component\Console\Input\InputOption;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
+#[AsCommand(name: 'propel:graphviz:generate', description: 'Generate Graphviz files (.dot)')]
 class GraphvizGenerateCommand extends WrappedCommand
 {
     /**
@@ -35,14 +37,7 @@ class GraphvizGenerateCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->setName('propel:graphviz:generate')
-            ->setDescription('Generate Graphviz files (.dot).')
-            ->addOption(
-                'output-dir',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The output directory.',
-                default: BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY
-            );
+            ->addOption('output-dir', mode: InputOption::VALUE_REQUIRED, description: 'The output directory', default: BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY);
     }
 
     /**

@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use Override;
 use Propel\Generator\Command\SqlBuildCommand as PropelSqlBuildCommand;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException;
@@ -24,6 +25,7 @@ use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
+#[AsCommand(name: 'propel:sql:build', description: 'Build SQL files')]
 class SqlBuildCommand extends WrappedCommand
 {
     /**
@@ -36,22 +38,9 @@ class SqlBuildCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->setName('propel:sql:build')
-            ->setDescription('Build SQL files.')
-            ->addOption(
-                'sql-dir',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The SQL files directory.'
-            )
-            ->addOption(
-                'overwrite',
-                mode: InputOption::VALUE_NONE
-            )
-            ->addOption(
-                'connection',
-                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
-                description: 'Connection to use. Example: default, bookstore.'
-            );
+            ->addOption('sql-dir', mode: InputOption::VALUE_REQUIRED, description: 'The SQL files directory')
+            ->addOption('overwrite', mode: InputOption::VALUE_NONE, description: '')
+            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore');
     }
 
     /**

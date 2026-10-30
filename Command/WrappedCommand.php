@@ -39,11 +39,7 @@ abstract class WrappedCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
-            ->addOption(
-                'platform',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'The platform'
-            );
+            ->addOption('platform', mode: InputOption::VALUE_OPTIONAL, description: 'The platform');
     }
 
     /**

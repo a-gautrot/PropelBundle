@@ -48,7 +48,7 @@
 * Updated `composer.json`
 * Updated the project's source code
     * Trimmed the package with gitattributes
-    * Updated with support from PHPStan, Psalm, and PHPCS
+    * Updated with support from Rector, PHPStan, Psalm, and PHPCS
 * Updated unit tests
     * Now uses Docker for some UTs
     * Fixed UTs for its Book schema

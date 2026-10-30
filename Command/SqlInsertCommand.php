@@ -15,6 +15,7 @@ use LogicException;
 use Override;
 use Propel\Generator\Command\SqlInsertCommand as PropelSqlInsertCommand;
 use RuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -32,6 +33,7 @@ use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
+#[AsCommand(name: 'propel:sql:insert', description: 'Insert SQL statements')]
 class SqlInsertCommand extends WrappedCommand
 {
     /**
@@ -42,23 +44,9 @@ class SqlInsertCommand extends WrappedCommand
     protected function configure(): void
     {
         $this
-            ->setName('propel:sql:insert')
-            ->setDescription('Insert SQL statements')
-            ->addOption(
-                'force',
-                mode: InputOption::VALUE_NONE,
-                description: 'Set this parameter to execute this action.'
-            )
-            ->addOption(
-                'sql-dir',
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'The SQL files directory.'
-            )
-            ->addOption(
-                'connection',
-                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
-                description: 'Connection to use. Example: default, bookstore.'
-            );
+            ->addOption('force', mode: InputOption::VALUE_NONE, description: 'Set this parameter to execute this action.')
+            ->addOption('sql-dir', mode: InputOption::VALUE_REQUIRED, description: 'The SQL files directory')
+            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore');
     }
 
     /**
@@ -91,7 +79,7 @@ class SqlInsertCommand extends WrappedCommand
             return parent::execute($input, $output);
         } else {
             $output->writeln('<error>You have to use --force to execute all SQL statements.</error>');
-            return 1;
+            return Command::FAILURE;
         }
     }
 

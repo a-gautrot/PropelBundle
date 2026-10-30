@@ -31,13 +31,6 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 class PropelUserProvider implements UserProviderInterface
 {
     /**
-     * A Model class name.
-     *
-     * @var string
-     */
-    protected string $class;
-
-    /**
      * A Query class name.
      *
      * @var string
@@ -45,23 +38,20 @@ class PropelUserProvider implements UserProviderInterface
     protected string $queryClass;
 
     /**
-     * A property to use to retrieve the user.
-     *
-     * @var string|null
-     */
-    protected ?string $property = null;
-
-    /**
      * Default constructor
      *
      * @param string $class The User model class.
      * @param string|null $property The property to use to retrieve a user.
      */
-    public function __construct(string $class, ?string $property = null)
+    public function __construct(/**
+     * A Model class name.
+     */
+        protected string  $class, /**
+     * A property to use to retrieve the user.
+     */
+        protected ?string $property = null)
     {
-        $this->class = $class;
-        $this->queryClass = "{$class}Query";
-        $this->property = $property;
+        $this->queryClass = "{$this->class}Query";
     }
 
     /**
@@ -75,7 +65,7 @@ class PropelUserProvider implements UserProviderInterface
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
         $queryClass = $this->queryClass;
-        if (!is_a($queryClass, ModelCriteria::class, true)) {
+        if (!is_a($queryClass, ModelCriteria::class, allow_string: true)) {
             throw new LogicException('The user query class must extend ModelCriteria.');
         }
         $query = $queryClass::create();
@@ -107,12 +97,12 @@ class PropelUserProvider implements UserProviderInterface
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof $this->class) {
-            $userClass = get_class($user);
+            $userClass = $user::class;
             throw new UnsupportedUserException("Instances of \"$userClass\" are not supported.");
         }
 
         $queryClass = $this->queryClass;
-        if (!is_a($queryClass, ModelCriteria::class, true)
+        if (!is_a($queryClass, ModelCriteria::class, allow_string: true)
             || !method_exists($user, 'getPrimaryKey')) {
             throw new UnsupportedUserException('The user must be a Propel model with a primary key.');
         }

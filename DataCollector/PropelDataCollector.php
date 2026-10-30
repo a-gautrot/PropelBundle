@@ -29,16 +29,10 @@ use Throwable;
 class PropelDataCollector extends DataCollector
 {
     /**
-     * @var PropelLogger
-     */
-    protected PropelLogger $logger;
-
-    /**
      * @param PropelLogger $logger
      */
-    public function __construct(PropelLogger $logger)
+    public function __construct(protected PropelLogger $logger)
     {
-        $this->logger = $logger;
     }
 
     /**

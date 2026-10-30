@@ -62,10 +62,6 @@ abstract class AbstractCommand extends Command
      * @psalm-suppress PropertyNotSetInConstructor Initialized by Symfony in initialize().
      */
     protected OutputInterface $output;
-    /**
-     * @var ContainerInterface
-     */
-    private ContainerInterface $container;
 
     use FormattingHelpers;
 
@@ -74,10 +70,8 @@ abstract class AbstractCommand extends Command
      * @param string|null $name
      * @throws ConsoleLogicException
      */
-    public function __construct(ContainerInterface $container, ?string $name = null)
+    public function __construct(private ContainerInterface $container, ?string $name = null)
     {
-        $this->container = $container;
-
         parent::__construct($name);
     }
 
@@ -207,7 +201,7 @@ abstract class AbstractCommand extends Command
 
         $finalSchemas = $this->getFinalSchemas($kernel, $this->bundle);
         foreach ($finalSchemas as $schema) {
-            list($bundle, $finalSchema) = $schema;
+            [$bundle, $finalSchema] = $schema;
 
             if ($bundle) {
                 $file = $cacheDir . DIRECTORY_SEPARATOR . 'bundle-' . $bundle->getName() . '-' . $finalSchema->getBaseName();
@@ -215,7 +209,7 @@ abstract class AbstractCommand extends Command
                 $file = $cacheDir . DIRECTORY_SEPARATOR . 'app-' . $finalSchema->getBaseName();
             }
 
-            $filesystem->copy((string)$finalSchema, $file, true);
+            $filesystem->copy((string)$finalSchema, $file, overwriteNewerFiles: true);
 
             // the package needs to be set absolute
             // besides, the automated namespace to package conversion has
@@ -589,12 +583,8 @@ abstract class AbstractCommand extends Command
     {
         preg_match('#(dbname|Database)=(\w+)#', $dsn, $matches);
 
-        if (isset($matches[2])) {
-            return $matches[2];
-        }
-
         // e.g. SQLite
-        return null;
+        return $matches[2] ?? null;
     }
 
     /**
