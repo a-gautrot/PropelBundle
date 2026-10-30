@@ -1,0 +1,34 @@
+<?php
+
+namespace Symfony\Component\Form;
+
+/**
+ * @template TData
+ */
+interface FormTypeInterface
+{
+    /**
+     * @param FormBuilderInterface<TData|null> $builder
+     */
+    public function buildForm(FormBuilderInterface $builder, array $options): void;
+}
+
+/**
+ * @template TData
+ * @implements FormTypeInterface<TData>
+ */
+abstract class AbstractType implements FormTypeInterface
+{
+    /**
+     * @param FormBuilderInterface<TData|null> $builder
+     */
+    public function buildForm(FormBuilderInterface $builder, array $options): void {}
+}
+
+/**
+ * @template TData
+ * @extends \Traversable<string, FormBuilderInterface<mixed>>
+ */
+interface FormBuilderInterface extends \Traversable, \Countable, FormConfigBuilderInterface
+{
+}

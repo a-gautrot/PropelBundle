@@ -11,17 +11,20 @@
 namespace Propel\Bundle\PropelBundle\DataFixtures\Dumper;
 
 /**
+ * # DataDumperInterface
  * Interface that exposes how Propel data dumpers should work.
  *
  * @author William Durand <william.durand1@gmail.com>
+ * @api
  */
 interface DataDumperInterface
 {
     /**
      * Dumps data to fixtures from a given connection.
      *
-     * @param string|null $filename       The file name to write data.
+     * @param string|null $filename The file name to write data.
      * @param string|null $connectionName The Propel connection name.
+     * @return void
      */
     public function dump(?string $filename, ?string $connectionName = null): void;
 }

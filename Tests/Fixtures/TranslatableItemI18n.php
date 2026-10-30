@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -20,17 +20,17 @@ use Propel\Runtime\Connection\ConnectionInterface;
 class TranslatableItemI18n implements ActiveRecordInterface
 {
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $id;
 
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $locale;
 
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $value;
 
@@ -45,9 +45,9 @@ class TranslatableItemI18n implements ActiveRecordInterface
     private mixed $item;
 
     /**
-     * @param mixed|null $id
-     * @param mixed|null $locale
-     * @param mixed|null $value
+     * @param mixed $id
+     * @param mixed $locale
+     * @param mixed $value
      */
     public function __construct(mixed $id = null, mixed $locale = null, mixed $value = null)
     {
@@ -57,7 +57,7 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getPrimaryKey(): mixed
     {
@@ -65,7 +65,7 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getId(): mixed
     {
@@ -73,7 +73,7 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed|null $id
+     * @param mixed $id
      * @return void
      */
     public function setId(mixed $id = null): void
@@ -82,7 +82,7 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed|null $primaryKey
+     * @param mixed $primaryKey
      * @return void
      */
     public function setPrimaryKey(mixed $primaryKey = null): void
@@ -123,10 +123,10 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @param $b
+     * @param bool $b
      * @return void
      */
-    public function setNew($b): void
+    public function setNew(bool $b): void
     {
     }
 
@@ -146,10 +146,10 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @param $b
+     * @param bool $b
      * @return void
      */
-    public function setDeleted($b): void
+    public function setDeleted(bool $b): void
     {
     }
 
@@ -170,7 +170,7 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getLocale(): mixed
     {
@@ -178,7 +178,7 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed|null $locale
+     * @param mixed $locale
      * @return void
      */
     public function setLocale(mixed $locale = null): void
@@ -204,7 +204,7 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getValue(): mixed
     {
@@ -212,7 +212,7 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed|null $value
+     * @param mixed $value
      * @return void
      */
     public function setValue(mixed $value = null): void

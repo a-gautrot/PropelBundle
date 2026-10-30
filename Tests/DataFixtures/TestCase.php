@@ -10,9 +10,10 @@
 
 namespace Propel\Bundle\PropelBundle\Tests\DataFixtures;
 
+use Exception;
 use PDO;
+use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
 use Propel\Bundle\PropelBundle\Tests\TestCase as BaseTestCase;
-use Propel\Generator\Util\QuickBuilder;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Connection\PropelPDO;
 use Propel\Runtime\Propel;
@@ -31,12 +32,13 @@ class TestCase extends BaseTestCase
     /**
      * The list of created temp files to be removed.
      *
-     * @var array
+     * @var list<string>
      */
     protected array $tmpFiles = [];
 
     /**
      * @return void
+     * @throws Exception
      */
     protected function setUp(): void
     {
@@ -64,7 +66,7 @@ class TestCase extends BaseTestCase
 </database>
 XML;
 
-            QuickBuilder::buildSchema($schema);
+            SchemaBuilder::buildSchema($schema);
         }
 
         $this->con = Propel::getServiceContainer()->getConnection('default');

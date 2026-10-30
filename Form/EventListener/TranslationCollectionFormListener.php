@@ -1,5 +1,6 @@
 <?php
-/*
+
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -10,20 +11,31 @@
 
 namespace Propel\Bundle\PropelBundle\Form\EventListener;
 
-use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Form\Exception\UnexpectedTypeException;
+use ArrayAccess;
+use Override;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Form\Exception\RuntimeException;
+use Symfony\Component\Form\Exception\UnexpectedTypeException;
 use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Traversable;
 
 /**
- * listener class for propel_translatable_collection
+ * # TranslationCollectionFormListener
+ * Listener class for propel_translatable_collection
  *
  * @author Patrick Kaufmann
+ * @api
  */
 class TranslationCollectionFormListener implements EventSubscriberInterface
 {
+    /**
+     * @var string
+     */
     private string $i18nClass;
-    /** @var string[] */
+    /**
+     * @var string[]
+     */
     private array $languages;
 
     /**
@@ -37,26 +49,35 @@ class TranslationCollectionFormListener implements EventSubscriberInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @return array<string, array{string, int}>
      */
+    #[Override]
     public static function getSubscribedEvents(): array
     {
-        return array(
-            FormEvents::PRE_SET_DATA => array('preSetData', 1),
-        );
+        return [
+            FormEvents::PRE_SET_DATA => ['preSetData', 1],
+        ];
     }
 
+    /**
+     * @param FormEvent $event
+     * @return void
+     * @throws RuntimeException
+     * @throws UnexpectedTypeException
+     */
     public function preSetData(FormEvent $event): void
     {
         $form = $event->getForm();
         $data = $event->getData();
 
-        if (null === $data) {
+        if ($data === null) {
             return;
         }
 
-        if (!is_array($data) && !($data instanceof \Traversable && $data instanceof \ArrayAccess)) {
-            throw new UnexpectedTypeException($data, 'array or (\Traversable and \ArrayAccess)');
+        if (!is_array($data)) {
+            if (!$data instanceof Traversable || !$data instanceof ArrayAccess) {
+                throw new UnexpectedTypeException($data, 'array or (\Traversable and \ArrayAccess)');
+            }
         }
 
         //get the class name of the i18nClass
@@ -66,7 +87,7 @@ class TranslationCollectionFormListener implements EventSubscriberInterface
         $rootData = $form->getRoot()->getData();
         $foundData = false;
 
-        $addFunction = 'add'.$dataClass;
+        $addFunction = "add$dataClass";
 
         //add a database row for every needed language
         foreach ($this->languages as $lang) {
@@ -89,7 +110,7 @@ class TranslationCollectionFormListener implements EventSubscriberInterface
                     if (method_exists($rootData, $addFunction)) {
                         $foundData = true;
                         break;
-                    } elseif (null != ($currentForm = $currentForm->getParent())) {
+                    } elseif (($currentForm = $currentForm->getParent()) != null) {
                         $rootData = $currentForm->getData();
                     } else {
                         break;
@@ -99,6 +120,9 @@ class TranslationCollectionFormListener implements EventSubscriberInterface
                     throw new UnexpectedTypeException($rootData, 'Propel i18n object');
                 }
 
+                if (!class_exists($this->i18nClass)) {
+                    throw new UnexpectedTypeException($this->i18nClass, 'Propel i18n class');
+                }
                 $newTranslation = new $this->i18nClass();
                 $newTranslation->setLocale($lang);
 

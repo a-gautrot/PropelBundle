@@ -164,7 +164,7 @@ class PropelBundleTest extends TestCase
 
     /**
      * initialize PropelBundle with given configuration
-     * @param array $configuration propel configuration parameters
+     * @param array<string, mixed> $configuration propel configuration parameters
      * @param mixed $logger
      * @return ContainerBuilder
      */
@@ -195,7 +195,7 @@ class PropelBundleTest extends TestCase
      * test logger is set and methods exist
      * @return void
      */
-    public function testConfigureLogging()
+    public function testConfigureLogging(): void
     {
         Propel::setServiceContainer(new StandardServiceContainer());
         $serviceContainer = Propel::getServiceContainer();

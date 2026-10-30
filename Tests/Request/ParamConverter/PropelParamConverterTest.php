@@ -5,10 +5,16 @@ namespace Propel\Bundle\PropelBundle\Tests\Request\ParamConverter;
 use Exception;
 use LogicException;
 use Propel\Bundle\PropelBundle\Request\ParamConverter\PropelParamConverter;
+use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book;
+use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
 use Propel\Bundle\PropelBundle\Tests\TestCase;
-use Propel\Generator\Util\QuickBuilder;
+use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Propel;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -18,9 +24,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class PropelParamConverterTest extends TestCase
 {
     /**
-     * @var mixed $con
+     * @var ConnectionWrapper|null $con
      */
-    protected mixed $con = null;
+    protected ?ConnectionWrapper $con = null;
 
     /**
      * @return void
@@ -309,7 +315,7 @@ class PropelParamConverterTest extends TestCase
 XML;
 
         if (!class_exists('Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor')) {
-            QuickBuilder::buildSchema($schema);
+            SchemaBuilder::buildSchema($schema);
         }
 
         $this->con = Propel::getConnection('default');
@@ -425,5 +431,71 @@ XML;
         $author = $request->attributes->get('author');
         $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor', $author,
             'param "author" should be an instance of "Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor"');
+    }
+
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testSymfonyResolvesControllerArgumentsUsingRegisteredService(): void
+    {
+        $container = new ContainerBuilder();
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../../Resources/config'));
+        $loader->load('converters.xml');
+        $services = $container->findTaggedServiceIds('controller.argument_value_resolver');
+        $this->assertCount(1, $services);
+
+        $resolver = new ArgumentResolver(null, array_merge(
+            [$container->get(array_key_first($services))],
+            [...ArgumentResolver::getDefaultArgumentValueResolvers()]
+        ));
+        $request = new Request([], [], ['id' => 1]);
+        $controller = static function (Book $book, string $format = 'html'): void {
+        };
+
+        $arguments = $resolver->getArguments($request, $controller);
+
+        $this->assertInstanceOf(Book::class, $arguments[0]);
+        $this->assertSame(1, $arguments[0]->getId());
+        $this->assertSame('html', $arguments[1]);
+    }
+
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testResolverPreservesExistingModelArgument(): void
+    {
+        $book = new Book();
+        $request = new Request([], [], ['book' => $book]);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null);
+
+        $this->assertSame([$book], (new PropelParamConverter())->resolve($request, $argument));
+    }
+
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testResolverCanBeReusedAfterMappedJoinedArgument(): void
+    {
+        $this->loadFixtures();
+        $resolver = new PropelParamConverter();
+        $request = new Request([], [], [
+            'authorId' => 10,
+            'propel_converter' => ['author' => [
+                'mapping' => ['authorId' => 'id'],
+                'with' => [['MyBook', 'left join']],
+            ]],
+        ]);
+        $argument = new ArgumentMetadata('author', MyAuthor::class, false, false, null);
+        $this->assertInstanceOf(MyAuthor::class, $resolver->resolve($request, $argument)[0]);
+
+        $request = new Request([], [], ['id' => 1]);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null);
+        $book = $resolver->resolve($request, $argument)[0];
+
+        $this->assertInstanceOf(Book::class, $book);
+        $this->assertSame(1, $book->getId());
     }
 }

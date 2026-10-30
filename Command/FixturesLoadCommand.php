@@ -10,40 +10,74 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use ArrayIterator;
+use InvalidArgumentException;
+use LogicException;
+use Override;
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
+use RuntimeException;
+use SplFileInfo;
+use Symfony\Component\Config\FileLocatorInterface;
+use Symfony\Component\Console\Exception\ExceptionInterface;
+use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException as ConsoleLogicException;
 use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
- * FixturesLoadCommand
+ * # FixturesLoadCommand
  *
  * @author William DURAND <william.durand1@gmail.com>
+ * @api
  */
 class FixturesLoadCommand extends AbstractCommand
 {
     /**
      * Default fixtures directory.
+     * @var string
      */
     private string $defaultFixturesDir = 'propel/fixtures';
 
     /**
      * Absolute path for fixtures directory
+     * @var string
      */
     private string $absoluteFixturesPath = '';
 
     /**
      * Filesystem for manipulating files
+     * @var Filesystem
      */
-    private ?\Symfony\Component\Filesystem\Filesystem $filesystem = null;
+    private Filesystem $filesystem;
 
     /**
-     * @see Command
+     * @param ContainerInterface $container
+     * @param string|null $name
+     * @throws ConsoleLogicException
      */
+    public function __construct(ContainerInterface $container, ?string $name = null)
+    {
+        $this->filesystem = new Filesystem();
+        parent::__construct($container, $name);
+    }
+
+    /**
+     * @return void
+     * @throws ConsoleInvalidArgumentException
+     * @see \Symfony\Component\Console\Command\Command
+     */
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -91,134 +125,126 @@ YAML fixtures are:
             Description: Hello world !
 </comment>
 EOT
-        )
-
+            )
             ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to load fixtures from')
             ->addOption(
-                'dir', 'd', InputOption::VALUE_OPTIONAL,
+                'dir',
+                'd',
+                InputOption::VALUE_OPTIONAL,
                 'The directory where XML, SQL and/or YAML fixtures files are located',
                 $this->defaultFixturesDir
             )
             ->addOption('xml', '', InputOption::VALUE_NONE, 'Load XML fixtures')
             ->addOption('sql', '', InputOption::VALUE_NONE, 'Load SQL fixtures')
             ->addOption('yml', '', InputOption::VALUE_NONE, 'Load YAML fixtures')
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a connection to use')
-        ;
+            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a connection to use');
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws ExceptionInterface
+     * @throws InvalidArgumentException
+     * @throws LogicException
+     * @throws RuntimeException
+     * @throws ServiceCircularReferenceException
+     * @throws ServiceNotFoundException
+     * @throws IOException
      */
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->filesystem = new Filesystem();
-
-        if (null !== $this->bundle) {
+        if ($this->bundle !== null) {
             $this->absoluteFixturesPath = $this->getFixturesPath($this->bundle);
         } else {
-            $this->absoluteFixturesPath = realpath($this->getKernel()->getProjectDir() . '/' . $input->getOption('dir'));
+            $path = "{$this->getKernel()->getProjectDir()}/{$input->getOption('dir')}";
+            $resolvedPath = realpath($path);
+            $this->absoluteFixturesPath = $resolvedPath === false ? $path : $resolvedPath;
         }
 
-        if (!$this->absoluteFixturesPath && !file_exists($this->absoluteFixturesPath)) {
-            $this->writeSection($output, array(
-                'The fixtures directory "' . $this->absoluteFixturesPath . '" does not exist.'
-            ), 'fg=white;bg=red');
+        if (!is_dir($this->absoluteFixturesPath)) {
+            $this->writeSection($output, [
+                "The fixtures directory \"$this->absoluteFixturesPath\" does not exist."
+            ], 'fg=white;bg=red');
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         }
 
         $noOptions = !$input->getOption('xml') && !$input->getOption('sql') && !$input->getOption('yml');
 
         if ($input->getOption('sql') || $noOptions) {
-            if (-1 === $this->loadSqlFixtures($input, $output)) {
+            if ($this->loadSqlFixtures($input, $output) === -1) {
                 $output->writeln('No <info>SQL</info> fixtures found.');
             }
         }
 
         if ($input->getOption('xml') || $noOptions) {
-            if (-1 === $this->loadFixtures($input, $output, 'xml')) {
+            if ($this->loadFixtures($input, $output, 'xml') === -1) {
                 $output->writeln('No <info>XML</info> fixtures found.');
             }
         }
 
         if ($input->getOption('yml') || $noOptions) {
-            if (-1 === $this->loadFixtures($input, $output, 'yml')) {
+            if ($this->loadFixtures($input, $output, 'yml') === -1) {
                 $output->writeln('No <info>YML</info> fixtures found.');
             }
         }
 
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 
     /**
-     * Load fixtures
+     * Returns the path the command will look into to find fixture files
      *
-     * @param \Symfony\Component\Console\Input\InputInterface   $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param string|null                                       $type   If specified, only fixtures with the given type will be loaded (yml, xml).
+     * @param BundleInterface $bundle The bundle to explore.
      *
-     * @return bool|int|void
+     * @return string
      */
-    protected function loadFixtures(InputInterface $input, OutputInterface $output, ?string $type = null)
+    protected function getFixturesPath(BundleInterface $bundle): string
     {
-        if (null === $type) {
-            return;
-        }
-
-        $datas = $this->getFixtureFiles($type);
-
-        if (count(iterator_to_array($datas)) === 0) {
-            return -1;
-        }
-
-        $connectionName = $input->getOption('connection') ?: $this->getDefaultConnection();
-
-        if ('yml' === $type) {
-            $loader = $this->getContainer()->get('propel.loader.yaml');
-        } elseif ('xml' === $type) {
-            $loader = $this->getContainer()->get('propel.loader.xml');
-        } else {
-            return;
-        }
-
-        $nb = $loader->load(iterator_to_array($datas), $connectionName);
-
-        $output->writeln(sprintf('<comment>%s</comment> %s fixtures file%s loaded.', $nb, strtoupper($type), $nb > 1 ? 's' : ''));
-
-        return true;
+        return $bundle->getPath() . DIRECTORY_SEPARATOR . 'Resources' . DIRECTORY_SEPARATOR . 'fixtures';
     }
 
     /**
      * Load SQL fixtures
      *
-     * @param \Symfony\Component\Console\Input\InputInterface   $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
      * @return int
+     * @throws ExceptionInterface
+     * @throws InvalidArgumentException
+     * @throws LogicException
+     * @throws RuntimeException
+     * @throws IOException
      */
     protected function loadSqlFixtures(InputInterface $input, OutputInterface $output): int
     {
         $tmpdir = $this->getCacheDir();
-        $datas  = $this->getFixtureFiles('sql');
+        $datas = $this->getFixtureFiles();
 
         $this->prepareCache($tmpdir);
 
         $connectionName = $input->getOption('connection') ?: $this->getContainer()->getParameter('propel.dbal.default_connection');
+        if (!is_string($connectionName)) {
+            throw new InvalidArgumentException('The connection name must be a string.');
+        }
 
         // Create a "sqldb.map" file
         $sqldbContent = '';
         foreach ($datas as $data) {
-            $output->writeln(sprintf('<info>Loading SQL fixtures from</info> <comment>%s</comment>.', $data));
+            $output->writeln("<info>Loading SQL fixtures from</info> <comment>$data</comment>.");
 
-            $sqldbContent .= $data->getFilename() . '=' . $connectionName . PHP_EOL;
-            $this->filesystem->copy($data, $tmpdir . '/' . $data->getFilename(), true);
+            $sqldbContent .= "{$data->getFilename()}=$connectionName" . PHP_EOL;
+            $this->filesystem->copy($data->getPathname(), "$tmpdir/{$data->getFilename()}", true);
         }
 
-        if ('' === $sqldbContent) {
+        if ($sqldbContent === '') {
             return -1;
         }
 
-        $sqldbFile = $tmpdir . '/sqldb.map';
+        $sqldbFile = "$tmpdir/sqldb.map";
         file_put_contents($sqldbFile, $sqldbContent);
 
         if (!$this->insertSql($connectionName, $input, $output)) {
@@ -231,9 +257,60 @@ EOT
     }
 
     /**
+     * Returns the fixtures files to load.
+     *
+     * @param string $type The extension of the files.
+     * @param string|null $in The directory in which we search the files. If null,
+     *                     we'll use the absoluteFixturesPath property.
+     *
+     * @return ArrayIterator<int, SplFileInfo>|Finder
+     * @throws LogicException
+     * @throws DirectoryNotFoundException
+     */
+    protected function getFixtureFiles(string $type = 'sql', ?string $in = null): ArrayIterator|Finder
+    {
+        $finder = new Finder();
+        $finder->sort(function (SplFileInfo $a, SplFileInfo $b): int {
+            return strcmp($a->getPathname(), $b->getPathname());
+        })->name("*.$type");
+
+        $files = $finder->in($in !== null ? $in : $this->absoluteFixturesPath);
+
+        if ($this->bundle === null) {
+            return $files;
+        }
+
+        $finalFixtureFiles = [];
+        foreach ($files as $file) {
+            $fixtureFilePath = str_replace($this->getFixturesPath($this->bundle) . DIRECTORY_SEPARATOR, '', $file->getRealPath());
+            $logicalName = "@{$this->bundle->getName()}/Resources/fixtures/$fixtureFilePath";
+            $finalFixtureFiles[] = new SplFileInfo($this->getFileLocator()->locate($logicalName));
+        }
+
+        return new ArrayIterator($finalFixtureFiles);
+    }
+
+    /**
+     * @return FileLocatorInterface
+     * @throws RuntimeException
+     * @throws ServiceNotFoundException
+     */
+    protected function getFileLocator(): FileLocatorInterface
+    {
+        $locator = $this->getContainer()->get('file_locator');
+        if (!$locator instanceof FileLocatorInterface) {
+            throw new RuntimeException('The file_locator service must implement FileLocatorInterface.');
+        }
+
+        return $locator;
+    }
+
+    /**
      * Prepare the cache directory
      *
      * @param string $tmpdir The temporary directory path.
+     * @return void
+     * @throws IOException
      */
     protected function prepareCache(string $tmpdir): void
     {
@@ -244,21 +321,27 @@ EOT
 
     /**
      * Insert SQL
+     * @param string $connectionName
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return bool
+     * @throws ExceptionInterface
+     * @throws RuntimeException
      */
     protected function insertSql(string $connectionName, InputInterface $input, OutputInterface $output): bool
     {
-        $parameters = array(
-            '--connection'  => array($connectionName),
-            '--verbose'     => $input->getOption('verbose'),
-            '--sql-dir'     => $this->getCacheDir(),
-            '--force'       => 'force'
-        );
+        $parameters = [
+            '--connection' => [$connectionName],
+            '--verbose' => $input->getOption('verbose'),
+            '--sql-dir' => $this->getCacheDir(),
+            '--force' => 'force'
+        ];
 
         // add the command's name to the parameters
         array_unshift($parameters, $this->getName());
 
-        $command = $this->getApplication()->find('propel:sql:insert');
-        $command->setApplication($this->getApplication());
+        $command = $this->getRequiredApplication()->find('propel:sql:insert');
+        $command->setApplication($this->getRequiredApplication());
 
         // and run the sub-command
         $ret = $command->run(new ArrayInput($parameters), $output);
@@ -273,54 +356,46 @@ EOT
     }
 
     /**
-     * Returns the fixtures files to load.
+     * Load fixtures
      *
-     * @param string $type The extension of the files.
-     * @param string|null $in   The directory in which we search the files. If null,
-     *                     we'll use the absoluteFixturesPath property.
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param string|null $type If specified, only fixtures with the given type will be loaded (yml, xml).
      *
-     * @return \ArrayIterator<int, \SplFileInfo>|Finder
+     * @return bool|int|null
+     * @throws LogicException
+     * @throws ConsoleInvalidArgumentException
+     * @throws ServiceCircularReferenceException
+     * @throws ServiceNotFoundException
      */
-    protected function getFixtureFiles(string $type = 'sql', ?string $in = null)
+    protected function loadFixtures(InputInterface $input, OutputInterface $output, ?string $type = null): int|bool|null
     {
-        $finder = new Finder();
-        $finder->sort(function ($a, $b) {
-            return strcmp($a->getPathname(), $b->getPathname());
-        })->name('*.' . $type);
-
-        $files = $finder->in(null !== $in ? $in : $this->absoluteFixturesPath);
-
-        if (null === $this->bundle) {
-            return $files;
+        if ($type === null) {
+            return null;
         }
 
-        $finalFixtureFiles = array();
-        foreach ($files as $file) {
-            $fixtureFilePath = str_replace($this->getFixturesPath($this->bundle) . DIRECTORY_SEPARATOR, '', $file->getRealPath());
-            $logicalName = sprintf('@%s/Resources/fixtures/%s', $this->bundle->getName(), $fixtureFilePath);
-            $finalFixtureFiles[] = new \SplFileInfo($this->getFileLocator()->locate($logicalName));
+        $datas = $this->getFixtureFiles($type);
+
+        if (count(iterator_to_array($datas)) === 0) {
+            return -1;
         }
 
-        return new \ArrayIterator($finalFixtureFiles);
-    }
+        $connectionName = $input->getOption('connection') ?: $this->getDefaultConnection();
 
-    /**
-     * Returns the path the command will look into to find fixture files
-     *
-     * @param BundleInterface $bundle The bundle to explore.
-     *
-     * @return String
-     */
-    protected function getFixturesPath(BundleInterface $bundle)
-    {
-        return $bundle->getPath() . DIRECTORY_SEPARATOR . 'Resources' . DIRECTORY_SEPARATOR . 'fixtures';
-    }
+        if ($type === 'yml') {
+            $loader = $this->getContainer()->get('propel.loader.yaml');
+        } elseif ($type === 'xml') {
+            $loader = $this->getContainer()->get('propel.loader.xml');
+        } else {
+            return null;
+        }
 
-    /**
-     * @return \Symfony\Component\Config\FileLocatorInterface
-     */
-    protected function getFileLocator()
-    {
-        return $this->getContainer()->get('file_locator');
+        $nb = $loader->load(iterator_to_array($datas), $connectionName);
+
+        $fixtureType = strtoupper($type);
+        $plural = $nb > 1 ? 's' : '';
+        $output->writeln("<comment>$nb</comment> $fixtureType fixtures file$plural loaded.");
+
+        return true;
     }
 }

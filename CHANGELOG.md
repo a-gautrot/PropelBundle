@@ -4,6 +4,7 @@
 
 <!-- TOC -->
 
+* [7.1.1](#711)
 * [7.1.0](#710)
     * [7.1.0.1](#7101)
     * [7.1.0.2](#7102)
@@ -41,3 +42,14 @@
 
 * Updated `composer.json`
 * Removed more deprecated content
+
+## 7.1.1
+
+* Updated `composer.json`
+* Updated the project's source code
+    * Trimmed the package with gitattributes
+    * Updated with support from PHPStan, Psalm, and PHPCS
+* Updated unit tests
+    * Now uses Docker for some UTs
+    * Fixed UTs for its Book schema
+* Fixed fixture path validation, SQL result handling, and static type declarations

@@ -10,39 +10,53 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use InvalidArgumentException;
+use Override;
+use PDO;
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Runtime\Adapter\Pdo\MysqlAdapter;
+use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
-use Symfony\Component\Console\Command\Command;
+use RuntimeException;
+use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
+ * # TableDropCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class TableDropCommand extends AbstractCommand
 {
     use FormattingHelpers;
 
     /**
-     * {@inheritdoc}
+     * @return void
+     * @throws ConsoleInvalidArgumentException
      */
+    #[Override]
     protected function configure(): void
     {
         $this
             ->setName('propel:table:drop')
             ->setDescription('Drop a given table or all tables in the database.')
-
-            ->addOption('connection',   null, InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('force',        null, InputOption::VALUE_NONE, 'Set this parameter to execute this action.')
-            ->addArgument('table',      InputArgument::IS_ARRAY, 'Set this parameter to défine which table to delete (default all the table in the database.')
-        ;
+            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
+            ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action.')
+            ->addArgument('table', InputArgument::IS_ARRAY, 'Set this parameter to défine which table to delete (default all the table in the database.');
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws ConnectionException
+     * @throws RuntimeException
+     * @throws ConsoleInvalidArgumentException
      */
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $connection = Propel::getConnection($input->getOption('connection'));
@@ -51,29 +65,29 @@ class TableDropCommand extends AbstractCommand
         if (!$adapter instanceof MysqlAdapter) {
             $output->writeln('<error>This command is MySQL only.</error>');
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         }
 
         if (!$input->getOption('force')) {
             $output->writeln('<error>You have to use the "--force" option to drop some tables.</error>');
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         }
 
         $tablesToDelete = $input->getArgument('table');
         $nbTable = count($tablesToDelete);
-        $tablePlural = (($nbTable > 1 || $nbTable == 0) ? 's' : '' );
+        $tablePlural = (($nbTable > 1 || $nbTable == 0) ? 's' : '');
 
-        if ('prod' === $this->getKernel()->getEnvironment()) {
+        if ($this->getKernel()->getEnvironment() === 'prod') {
             $count = $nbTable ?: 'all';
 
             $this->writeSection(
                 $output,
-                'WARNING: you are about to drop ' . $count . ' table' . $tablePlural . ' in production !',
+                "WARNING: you are about to drop $count table$tablePlural in production !",
                 'bg=red;fg=white'
             );
 
-            if (false === $this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', false)) {
+            if ($this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', false) === false) {
                 $output->writeln('<info>Aborted, nice decision !</info>');
 
                 return -2;
@@ -81,14 +95,17 @@ class TableDropCommand extends AbstractCommand
         }
 
         $showStatement = $connection->prepare('SHOW TABLES;');
+        if ($showStatement === false) {
+            throw new RuntimeException('Cannot list the database tables.');
+        }
         $showStatement->execute();
 
-        $allTables = $showStatement->fetchAll(\PDO::FETCH_COLUMN);
+        $allTables = $showStatement->fetchAll(PDO::FETCH_COLUMN);
 
         if ($nbTable) {
             foreach ($tablesToDelete as $tableToDelete) {
-                if (!array_search($tableToDelete, $allTables)) {
-                    throw new \InvalidArgumentException(sprintf('Table %s doesn\'t exist in the database.', $tableToDelete));
+                if (!in_array($tableToDelete, $allTables, true)) {
+                    throw new InvalidArgumentException("Table $tableToDelete doesn't exist in the database.");
                 }
             }
         } else {
@@ -97,22 +114,22 @@ class TableDropCommand extends AbstractCommand
 
         $connection->exec('SET FOREIGN_KEY_CHECKS = 0;');
 
-        array_walk($tablesToDelete, function (&$table, $key, $dbAdapter) {
+        array_walk($tablesToDelete, function (string &$table, int|string $key, MysqlAdapter $dbAdapter): void {
             $table = $dbAdapter->quoteIdentifierTable($table);
         }, $adapter);
 
         $tablesToDelete = join(', ', $tablesToDelete);
 
-        if ('' !== $tablesToDelete) {
-            $connection->exec('DROP TABLE ' . $tablesToDelete . ' ;');
+        if ($tablesToDelete !== '') {
+            $connection->exec("DROP TABLE $tablesToDelete ;");
 
-            $output->writeln(sprintf('Table' . $tablePlural . ' <info><comment>%s</comment> has been dropped.</info>', $tablesToDelete));
+            $output->writeln("Table$tablePlural <info><comment>$tablesToDelete</comment> has been dropped.</info>");
         } else {
             $output->writeln('<info>No tables have been dropped</info>');
         }
 
         $connection->exec('SET FOREIGN_KEY_CHECKS = 1;');
 
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 }

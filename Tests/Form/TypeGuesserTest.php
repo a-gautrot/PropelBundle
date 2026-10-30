@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -43,7 +43,7 @@ class TypeGuesserTest extends TestCase
     private TypeGuesser $guesser;
 
     /**
-     * @return array[]
+     * @return list<array{string, class-string, int, bool?}>
      */
     public static function dataProviderForGuessType(): array
     {
@@ -52,6 +52,7 @@ class TypeGuesserTest extends TestCase
             ['enabled', CheckboxType::class, Guess::HIGH_CONFIDENCE],
             ['id', IntegerType::class, Guess::MEDIUM_CONFIDENCE],
             ['value', TextType::class, Guess::MEDIUM_CONFIDENCE],
+            ['code', TextType::class, Guess::MEDIUM_CONFIDENCE],
             ['price', NumberType::class, Guess::MEDIUM_CONFIDENCE],
             ['updated_at', DateTimeType::class, Guess::HIGH_CONFIDENCE],
 
@@ -99,6 +100,22 @@ class TypeGuesserTest extends TestCase
         $value = $this->guesser->guessPattern(self::CLASS_NAME, 'value');
 
         $this->assertNull($value);
+    }
+
+    /**
+     * @return void
+     */
+    public function testGuessMaxLengthWithoutApplicableConstraint(): void
+    {
+        $this->assertNull($this->guesser->guessMaxLength(self::CLASS_NAME, 'id'));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGuessPatternWithoutApplicableConstraint(): void
+    {
+        $this->assertNull($this->guesser->guessPattern(self::CLASS_NAME, 'id'));
     }
 
     /**
@@ -162,7 +179,7 @@ class TypeGuesserTest extends TestCase
      * @param string $property
      * @param mixed $type
      * @param mixed $confidence
-     * @param mixed|null $multiple
+     * @param mixed $multiple
      * @return void
      */
     #[DataProvider('dataProviderForGuessType')]

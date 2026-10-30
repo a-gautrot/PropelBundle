@@ -10,23 +10,35 @@
 
 namespace Propel\Bundle\PropelBundle\Twig\Extension;
 
+use Override;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
+
 /**
- * SyntaxExtension class
+ * # SyntaxExtension
  *
  * @package PropelBundle
  * @subpackage Extension
  * @author William DURAND <william.durand1@gmail.com>
+ * @api
  */
-class SyntaxExtension extends \Twig\Extension\AbstractExtension
+class SyntaxExtension extends AbstractExtension
 {
+    /**
+     * @return TwigFilter[]
+     */
+    #[Override]
     public function getFilters(): array
     {
         return [
-            new \Twig\TwigFilter('format_sql', [$this, 'formatSQL'], ['is_safe' => ['html']]),
-            new \Twig\TwigFilter('format_memory', [$this, 'formatMemory']),
+            new TwigFilter('format_sql', [$this, 'formatSQL'], ['is_safe' => ['html']]),
+            new TwigFilter('format_memory', [$this, 'formatMemory']),
         ];
     }
 
+    /**
+     * @return string
+     */
     public function getName(): string
     {
         return 'propel_syntax_extension';
@@ -35,23 +47,45 @@ class SyntaxExtension extends \Twig\Extension\AbstractExtension
     /**
      * Format a byte count into a human-readable representation.
      *
-     * @param integer $bytes     Byte count to convert. Can be negative.
-     * @param integer $precision How many decimals to include.
+     * @param int|float $bytes Byte count to convert. Can be negative.
+     * @param int $precision How many decimals to include.
      *
      * @return string
      */
-    public function formatMemory($bytes, $precision = 3)
+    public function formatMemory(int|float $bytes, int $precision = 3): string
     {
-        $absBytes = abs($bytes);
-        $sign = ($bytes == $absBytes) ? 1 : -1;
-        $suffix = array('B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+        $absBytes = abs((float)$bytes);
+        $sign = ($bytes == $absBytes) ? 1.0 : -1.0;
+        $suffix = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         $total = count($suffix);
 
-        for ($i = 0; $absBytes > 1024 && $i < $total; $i++) {
-            $absBytes /= 1024;
+        for ($i = 0; $absBytes > 1024 && $i < $total - 1; $i++) {
+            $absBytes /= 1024.0;
         }
 
-        return self::toPrecision($sign * $absBytes, $precision).' '.$suffix[$i];
+        return self::toPrecision($sign * $absBytes, $precision) . ' ' . ($suffix[$i] ?? 'YB');
+    }
+
+    /**
+     * Rounding to significant digits (sort of like JavaScript's toPrecision()).
+     *
+     * @param int|float $number Value to round
+     * @param int $significantFigures Number of significant figures
+     *
+     * @return string
+     */
+    public static function toPrecision(int|float $number, int $significantFigures = 3): string
+    {
+        $number = (float)$number;
+        if ($number === 0.0) {
+            return '0';
+        }
+
+        $significantDecimals = (int)floor((float)$significantFigures - log10(abs($number)));
+        $magnitude = pow(10.0, $significantDecimals);
+        $shifted = round($number * $magnitude);
+
+        return number_format($shifted / $magnitude, $significantDecimals);
     }
 
     /**
@@ -59,10 +93,10 @@ class SyntaxExtension extends \Twig\Extension\AbstractExtension
      *
      * @return string|string[]
      */
-    public function formatSQL($sql)
+    public function formatSQL(string|array $sql): string|array
     {
         // list of keywords to prepend a newline in output
-        $newlines = array(
+        $newlines = [
             'FROM',
             '(((FULL|LEFT|RIGHT)? ?(OUTER|INNER)?|CROSS|NATURAL)? JOIN)',
             'VALUES',
@@ -71,10 +105,10 @@ class SyntaxExtension extends \Twig\Extension\AbstractExtension
             'GROUP BY',
             'HAVING',
             'LIMIT',
-        );
+        ];
 
         // list of keywords to highlight
-        $keywords = array_merge($newlines, array(
+        $keywords = array_merge($newlines, [
             // base
             'SELECT', 'UPDATE', 'DELETE', 'INSERT', 'REPLACE',
             'SET',
@@ -98,47 +132,24 @@ class SyntaxExtension extends \Twig\Extension\AbstractExtension
             'AND', 'OR', 'XOR',
             'BETWEEN',
 
-            // order, group, limit ..
+            // order, group, limit...
             'ASC',
             'DESC',
             'OFFSET',
-        ));
+        ]);
 
-        $sql = preg_replace(array(
-            '/\b('.implode('|', $newlines).')\b/',
-            '/\b('.implode('|', $keywords).')\b/',
+        return preg_replace([
+            '/\b(' . implode('|', $newlines) . ')\b/',
+            '/\b(' . implode('|', $keywords) . ')\b/',
             '/(\/\*.*\*\/)/',
             '/(`[^`.]*`)/',
             '/(([0-9a-zA-Z$_]+)\.([0-9a-zA-Z$_]+))/',
-        ), array(
+        ], [
             '<br />\\1',
             '<span class="SQLKeyword">\\1</span>',
             '<span class="SQLComment">\\1</span>',
             '<span class="SQLName">\\1</span>',
             '<span class="SQLName">\\1</span>',
-        ), $sql);
-
-        return $sql;
-    }
-
-    /**
-     * Rounding to significant digits (sort of like JavaScript's toPrecision()).
-     *
-     * @param int|float $number             Value to round
-     * @param integer   $significantFigures Number of significant figures
-     *
-     * @return string
-     */
-    public static function toPrecision($number, int $significantFigures = 3): string
-    {
-        if (0 === $number) {
-            return '0';
-        }
-
-        $significantDecimals = (int)floor($significantFigures - log10(abs($number)));
-        $magnitude = pow(10, $significantDecimals);
-        $shifted = round($number * $magnitude);
-
-        return number_format($shifted / $magnitude, $significantDecimals);
+        ], $sql) ?? $sql;
     }
 }

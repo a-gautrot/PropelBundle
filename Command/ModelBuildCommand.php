@@ -10,21 +10,28 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputInterface;
-
+use Override;
 use Propel\Generator\Command\ModelBuildCommand as BaseModelBuildCommand;
+use RuntimeException;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
+ * # ModelBuildCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class ModelBuildCommand extends WrappedCommand
 {
     /**
-     * {@inheritdoc}
+     * @return void
+     * @throws InvalidArgumentException
      */
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
@@ -32,30 +39,31 @@ class ModelBuildCommand extends WrappedCommand
         $this
             ->setName('propel:model:build')
             ->setDescription('Build the model classes based on Propel XML schemas')
-
             ->addOption('connection', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
             ->addOption('loader-script-dir', null, InputOption::VALUE_OPTIONAL, 'Target folder of the database table map loader script. Defaults to paths.loaderScriptDir', null)
-            ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to generate model classes from')
-        ;
+            ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to generate model classes from');
     }
 
     /**
-     * {@inheritdoc}
+     * @return Command
+     * @throws LogicException
      */
+    #[Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseModelBuildCommand();
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @return array<string, string>
+     * @throws RuntimeException
      */
+    #[Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
-        $outputDir = $this->getKernel()->getProjectDir().'/';
+        $outputDir = "{$this->getKernel()->getProjectDir()}/";
 
-        return array(
-            '--output-dir' => $outputDir,
-        );
+        return ['--output-dir' => $outputDir];
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -20,12 +20,12 @@ use Propel\Runtime\Connection\ConnectionInterface;
 class TranslatableItem implements ActiveRecordInterface
 {
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $id;
 
     /**
-     * @var mixed|array
+     * @var mixed
      */
     private mixed $currentTranslations;
 
@@ -40,8 +40,8 @@ class TranslatableItem implements ActiveRecordInterface
     private mixed $price;
 
     /**
-     * @param mixed|null $id
-     * @param mixed|array $translations
+     * @param mixed $id
+     * @param mixed $translations
      */
     public function __construct(mixed $id = null, mixed $translations = [])
     {
@@ -66,7 +66,7 @@ class TranslatableItem implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getPrimaryKey(): mixed
     {
@@ -74,7 +74,7 @@ class TranslatableItem implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getId(): mixed
     {
@@ -82,7 +82,7 @@ class TranslatableItem implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed|null $id
+     * @param mixed $id
      * @return void
      */
     public function setId(mixed $id = null): void
@@ -91,7 +91,7 @@ class TranslatableItem implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed|null $primaryKey
+     * @param mixed $primaryKey
      * @return void
      */
     public function setPrimaryKey(mixed $primaryKey = null): void
@@ -132,10 +132,10 @@ class TranslatableItem implements ActiveRecordInterface
     }
 
     /**
-     * @param $b
+     * @param bool $b
      * @return void
      */
-    public function setNew($b): void
+    public function setNew(bool $b): void
     {
     }
 
@@ -155,10 +155,10 @@ class TranslatableItem implements ActiveRecordInterface
     }
 
     /**
-     * @param $b
+     * @param bool $b
      * @return void
      */
-    public function setDeleted($b): void
+    public function setDeleted(bool $b): void
     {
     }
 
@@ -179,9 +179,9 @@ class TranslatableItem implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed|null $locale
+     * @param mixed $locale
      * @param ConnectionInterface|null $con
-     * @return mixed|TranslatableItemI18n
+     * @return mixed
      */
     public function getTranslation(mixed $locale = 'de', ?ConnectionInterface $con = null): mixed
     {

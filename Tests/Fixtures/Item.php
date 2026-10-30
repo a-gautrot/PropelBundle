@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -20,30 +20,30 @@ use Propel\Runtime\Connection\ConnectionInterface;
 class Item implements ActiveRecordInterface
 {
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $id;
 
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $value;
 
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $groupName;
 
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private mixed $price;
 
     /**
-     * @param mixed|null $id
-     * @param mixed|null $value
-     * @param mixed|null $groupName
-     * @param mixed|null $price
+     * @param mixed $id
+     * @param mixed $value
+     * @param mixed $groupName
+     * @param mixed $price
      */
     public function __construct(mixed $id = null, mixed $value = null, mixed $groupName = null, mixed $price = null)
     {
@@ -54,7 +54,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getValue(): mixed
     {
@@ -62,7 +62,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getGroupName(): mixed
     {
@@ -70,7 +70,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getPrice(): mixed
     {
@@ -78,7 +78,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getPrimaryKey(): mixed
     {
@@ -86,7 +86,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function getId(): mixed
     {
@@ -94,7 +94,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed|null $id
+     * @param mixed $id
      * @return void
      */
     public function setId(mixed $id = null): void
@@ -103,7 +103,7 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @param mixed|null $primaryKey
+     * @param mixed $primaryKey
      * @return void
      */
     public function setPrimaryKey(mixed $primaryKey = null): void
@@ -144,10 +144,10 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @param $b
+     * @param bool $b
      * @return void
      */
-    public function setNew($b): void
+    public function setNew(bool $b): void
     {
     }
 
@@ -167,10 +167,10 @@ class Item implements ActiveRecordInterface
     }
 
     /**
-     * @param $b
+     * @param bool $b
      * @return void
      */
-    public function setDeleted($b): void
+    public function setDeleted(bool $b): void
     {
     }
 

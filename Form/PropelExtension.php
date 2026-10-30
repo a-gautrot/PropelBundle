@@ -1,28 +1,32 @@
 <?php
 
-/*
-* This file is part of the Symfony package.
-*
-* (c) Fabien Potencier <fabien@symfony.com>
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+/**
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Propel\Bundle\PropelBundle\Form;
 
+use Override;
 use Symfony\Component\Form\AbstractExtension;
 use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
 use Symfony\Component\Form\ChoiceList\Factory\DefaultChoiceListFactory;
 use Symfony\Component\Form\ChoiceList\Factory\PropertyAccessDecorator;
 use Symfony\Component\Form\FormTypeGuesserInterface;
+use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 /**
+ * # PropelExtension
  * Represents the Propel form extension, which loads the Propel functionality.
  *
  * @author Joseph Rouff <rouffj@gmail.com>
+ * @api
  */
 class PropelExtension extends AbstractExtension
 {
@@ -30,12 +34,12 @@ class PropelExtension extends AbstractExtension
     /**
      * @var PropertyAccessorInterface
      */
-    protected $propertyAccessor;
+    protected PropertyAccessorInterface $propertyAccessor;
 
     /**
      * @var ChoiceListFactoryInterface
      */
-    protected $choiceListFactory;
+    protected ChoiceListFactoryInterface $choiceListFactory;
 
     /**
      * PropelExtension constructor.
@@ -49,15 +53,23 @@ class PropelExtension extends AbstractExtension
         $this->choiceListFactory = $choiceListFactory ?: new PropertyAccessDecorator(new DefaultChoiceListFactory(), $this->propertyAccessor);
     }
 
+    /**
+     * @return FormTypeInterface<mixed>[]
+     */
+    #[Override]
     protected function loadTypes(): array
     {
-        return array(
+        return [
             new Type\ModelType($this->propertyAccessor, $this->choiceListFactory),
             new Type\TranslationCollectionType(),
             new Type\TranslationType()
-        );
+        ];
     }
 
+    /**
+     * @return FormTypeGuesserInterface|null
+     */
+    #[Override]
     protected function loadTypeGuesser(): ?FormTypeGuesserInterface
     {
         return new TypeGuesser();

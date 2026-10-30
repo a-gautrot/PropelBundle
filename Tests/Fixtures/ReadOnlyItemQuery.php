@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -34,7 +34,7 @@ class ReadOnlyItemQuery
      */
     public function getPrimaryKeys(): array
     {
-        $cm = new ColumnMap('id', new TableMap());
+        $cm = new ColumnMap('id', new TableMap(), '', '');
         $cm->setType('INTEGER');
 
         return ['id' => $cm];

@@ -4,17 +4,17 @@
     <thead>
     </thead>
     <tbody>
-        <tr>
-            <th>Propel version</th>
-            <td>{{ propel_version }}</td>
-        </tr>
-        <tr>
-            <th>Default connection</th>
-            <td>{{ configuration.runtime.defaultConnection }}</td>
-        <tr>
-            <th>Logging</th>
-            <td>{{ logging ? 'enabled' : 'disabled' }}</td>
-        </tr>
+    <tr>
+        <th>Propel version</th>
+        <td>{{ propel_version }}</td>
+    </tr>
+    <tr>
+        <th>Default connection</th>
+        <td>{{ configuration.runtime.defaultConnection }}</td>
+    <tr>
+        <th>Logging</th>
+        <td>{{ logging ? 'enabled' : 'disabled' }}</td>
+    </tr>
     </tbody>
 </table>
 
@@ -22,13 +22,13 @@
 
 <table summary="Current Propel connections">
     <thead>
-        <tr>
-            <th>Connection name</th>
-            <th colspan="2" style="text-align: center;">Configuration parameters</th>
-        </tr>
+    <tr>
+        <th>Connection name</th>
+        <th colspan="2" style="text-align: center;">Configuration parameters</th>
+    </tr>
     </thead>
     <tbody>
-        {% for name, config in configuration.database.connections %}
+    {% for name, config in configuration.database.connections %}
         <tr>
             <th rowspan="5" style="vertical-align: top;">
                 {{ name }}
@@ -49,7 +49,7 @@
             <td>
                 <ul>
                     {% for key, value in config.options %}
-                    <li>{{ key }} : {{ value }}</li>
+                        <li>{{ key }} : {{ value }}</li>
                     {% endfor %}
                 </ul>
             </td>
@@ -59,11 +59,11 @@
             <td>
                 <ul>
                     {% for key, value in config.attributes %}
-                    <li>{{ key }} : {{ value }}</li>
+                        <li>{{ key }} : {{ value }}</li>
                     {% endfor %}
                 </ul>
             </td>
         </tr>
-        {% endfor %}
+    {% endfor %}
     </tbody>
 </table>

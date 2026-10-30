@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -31,7 +31,7 @@ class ReadOnlyItem implements ActiveRecordInterface
      */
     public function isPrimaryKeyNull(): bool
     {
-        return null === $this->getPrimaryKey();
+        return $this->getPrimaryKey() === null;
     }
 
     /**

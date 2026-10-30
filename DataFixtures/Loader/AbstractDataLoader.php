@@ -10,51 +10,60 @@
 
 namespace Propel\Bundle\PropelBundle\DataFixtures\Loader;
 
+use Exception;
+use InvalidArgumentException;
+use Override;
 use Propel\Bundle\PropelBundle\DataFixtures\AbstractDataHandler;
 use Propel\Bundle\PropelBundle\Util\PropelInflector;
 use Propel\Generator\Model\PropelTypes;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
+use Propel\Runtime\Exception\LogicException;
 use Propel\Runtime\Map\Exception\TableNotFoundException;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Propel;
+use ReflectionClass;
+use ReflectionException;
+use RuntimeException;
 
 /**
+ * # AbstractDataLoader
  * Abstract class to manage a common logic to load datas.
  *
  * @author William Durand <william.durand1@gmail.com>
  */
 abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoaderInterface
 {
-    /** @var string[] */
-    protected array $deletedClasses = array();
-
-    /** @var array<string, ActiveRecordInterface> */
-    protected array $object_references = array();
+    /**
+     * @var string[]
+     */
+    protected array $deletedClasses = [];
 
     /**
-     * Transforms a file containing data in an array.
-     *
-     * @param string $file A filename.
-     *
-     * @return array<string, array<string, array<string, mixed>>>
+     * @var array<string, ActiveRecordInterface>
      */
-    abstract protected function transformDataToArray(string $file): array;
+    protected array $object_references = [];
 
     /**
-     * {@inheritdoc}
+     * @param string[] $files
+     * @param string $connectionName
+     * @return int
+     * @throws ReflectionException
+     * @throws Exception
+     * @throws RuntimeException
      */
+    #[Override]
     public function load(array $files, string $connectionName): int
     {
         $nbFiles = 0;
-        $this->deletedClasses = array();
+        $this->deletedClasses = [];
 
         $this->loadMapBuilders($connectionName);
         $this->con = Propel::getConnection($connectionName);
 
         try {
-            $this->con->beginTransaction();
+            $this->getConnection()->beginTransaction();
 
-            $datas = array();
+            $datas = [];
             foreach ($files as $file) {
                 $content = $this->transformDataToArray($file);
 
@@ -67,9 +76,9 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
             $this->deleteCurrentData($datas);
             $this->loadDataFromArray($datas);
 
-            $this->con->commit();
-        } catch (\Exception $e) {
-            $this->con->rollBack();
+            $this->getConnection()->commit();
+        } catch (Exception $e) {
+            $this->getConnection()->rollBack();
             throw $e;
         }
 
@@ -77,11 +86,21 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
     }
 
     /**
+     * Transforms a file containing data in an array.
+     *
+     * @param string $file A filename.
+     *
+     * @return array<string, mixed>
+     */
+    abstract protected function transformDataToArray(string $file): array;
+
+    /**
      * Deletes current data.
      *
-     * @param array<string, array<string, array<string, mixed>>>|null $data The data to delete
+     * @param array<string, mixed>|null $data The data to delete
      *
-     * @throws \ReflectionException
+     * @return void
+     * @throws ReflectionException
      */
     protected function deleteCurrentData(?array $data = null): void
     {
@@ -102,18 +121,26 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
      *
      * @param string $class Class name to delete
      *
-     * @throws \ReflectionException
+     * @return void
+     * @throws ReflectionException
+     * @throws InvalidArgumentException
+     * @throws TableNotFoundException
+     * @throws RuntimeException
      */
     protected function deleteClassData(string $class): void
     {
-        $tableMap = $this->dbMap->getTable(constant(constant($class.'::TABLE_MAP').'::TABLE_NAME'));
+        if (!class_exists($class)) {
+            throw new InvalidArgumentException("Unknown class \"$class\".");
+        }
+        $tableMap = $this->getDatabaseMap()->getTable(constant(constant("$class::TABLE_MAP") . '::TABLE_NAME'));
         $tableMap->doDeleteAll($this->con);
 
         $this->deletedClasses[] = $class;
 
         // Remove ancestors data
-        if (false !== ($parentClass = get_parent_class(get_parent_class($class)))) {
-            $reflectionClass = new \ReflectionClass($parentClass);
+        $baseClass = get_parent_class($class);
+        if ($baseClass !== false && ($parentClass = get_parent_class($baseClass)) !== false) {
+            $reflectionClass = new ReflectionClass($parentClass);
             if (!$reflectionClass->isAbstract()) {
                 $this->deleteClassData($parentClass);
             }
@@ -123,9 +150,10 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
     /**
      * Loads the data using the generated data model.
      *
-     * @param array<string, array<string, array<string, mixed>>>|null $data The data to be loaded
+     * @param array<string, mixed>|null $data The data to be loaded
      *
-     * @throws \ReflectionException
+     * @return void
+     * @throws ReflectionException
      */
     protected function loadDataFromArray(?array $data = null): void
     {
@@ -141,42 +169,42 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
             }
 
             $class = trim($class);
-            if ('\\' == $class[0]) {
+            if ($class[0] == '\\') {
                 $class = substr($class, 1);
             }
-            $tableMap     = $this->dbMap->getTable(constant(constant($class.'::TABLE_MAP').'::TABLE_NAME'));
+            $tableMap = $this->getDatabaseMap()->getTable(constant(constant("$class::TABLE_MAP") . '::TABLE_NAME'));
             $column_names = $tableMap->getFieldnames(TableMap::TYPE_PHPNAME);
 
             foreach ($datas as $key => $values) {
                 // create a new entry in the database
                 if (!class_exists($class)) {
-                    throw new \InvalidArgumentException(sprintf('Unknown class "%s".', $class));
+                    throw new InvalidArgumentException("Unknown class \"$class\".");
                 }
 
                 $obj = new $class();
 
                 if (!$obj instanceof ActiveRecordInterface) {
-                    throw new \RuntimeException(
-                        sprintf('The class "%s" is not a Propel class. There is probably another class named "%s" somewhere.', $class, $class)
+                    throw new RuntimeException(
+                        "The class \"$class\" is not a Propel class. There is probably another class named \"$class\" somewhere."
                     );
                 }
 
                 if (!is_array($values)) {
-                    throw new \InvalidArgumentException(sprintf('You must give a name for each fixture data entry (class %s).', $class));
+                    throw new InvalidArgumentException("You must give a name for each fixture data entry (class $class).");
                 }
 
                 foreach ($values as $name => $value) {
-                    if (is_array($value) && 's' === substr($name, -1)) {
+                    if (is_array($value) && str_ends_with($name, 's')) {
                         try {
-                            // many to many relationship
+                            // many-to-many relationship
                             $this->loadManyToMany($obj, substr($name, 0, -1), $value);
 
                             continue;
                         } catch (TableNotFoundException $e) {
                             // Check whether this is actually an array stored in the object.
                             if ('Cannot fetch TableMap for undefined table: ' . substr($name, 0, -1) === $e->getMessage()) {
-                                if (PropelTypes::PHP_ARRAY !== $tableMap->getColumn($name)->getType()
-                                    && PropelTypes::OBJECT !== $tableMap->getColumn($name)->getType()) {
+                                if ($tableMap->getColumn($name)->getType() !== PropelTypes::PHP_ARRAY
+                                    && $tableMap->getColumn($name)->getType() !== PropelTypes::OBJECT) {
                                     throw $e;
                                 }
                             }
@@ -192,43 +220,42 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
                     }
 
                     // foreign key?
-                    if (null !== $column) {
+                    if ($column !== null) {
                         /*
                          * A column, which is a PrimaryKey (self referencing, e.g. versionable behavior),
                          * but which is not a ForeignKey (e.g. delegatable behavior on 1:1 relation).
                          */
-                        if ($column->isPrimaryKey() && null !== $value && !$column->isForeignKey()) {
-                            if (isset($this->object_references[$this->cleanObjectRef($class.'_'.$value)])) {
-                                $obj = $this->object_references[$this->cleanObjectRef($class.'_'.$value)];
+                        if ($column->isPrimaryKey() && $value !== null && !$column->isForeignKey()) {
+                            if (isset($this->object_references[$this->cleanObjectRef("{$class}_$value")])) {
+                                $obj = $this->object_references[$this->cleanObjectRef("{$class}_$value")];
 
                                 continue;
                             }
                         }
 
-                        if ($column->isForeignKey() && null !== $value) {
-                            $relatedTable = $this->dbMap->getTable($column->getRelatedTableName());
-                            if (isset($this->object_references[$this->cleanObjectRef($relatedTable->getClassname().'_'.$value)])) {
+                        if ($column->isForeignKey() && $value !== null) {
+                            $relatedTable = $this->getDatabaseMap()->getTable($column->getRelatedTableName());
+                            if (isset($this->object_references[$this->cleanObjectRef("{$relatedTable->getClassname()}_$value")])) {
                                 $value = $this
-                                    ->object_references[$this->cleanObjectRef($relatedTable->getClassname().'_'.$value)]
+                                    ->object_references[$this->cleanObjectRef("{$relatedTable->getClassname()}_$value")]
                                     ->getByName($column->getRelatedName(), TableMap::TYPE_COLNAME);
                             } else {
-                                $relatedClass = $this->cleanObjectRef($relatedTable->getClassName());
-                                if (isset($data[$relatedClass]) || isset($data['\\' . $relatedClass])) {
-                                    throw new \InvalidArgumentException(
-                                        sprintf('The object "%s" from class "%s" is not defined in your data file.', $value, $relatedTable->getClassname())
+                                $relatedClass = $this->cleanObjectRef($relatedTable->getClassNameOrFail());
+                                if (isset($data[$relatedClass]) || isset($data["\\$relatedClass"])) {
+                                    throw new InvalidArgumentException(
+                                        "The object \"$value\" from class \"{$relatedTable->getClassname()}\" is not defined in your data file."
                                     );
-
                                 }
                             }
                         }
                     }
 
-                    if (false !== $pos = array_search($name, $column_names)) {
+                    if (($pos = array_search($name, $column_names)) !== false) {
                         $obj->setByPosition($pos, $value);
-                    } elseif (is_callable(array($obj, $method = 'set'.ucfirst(PropelInflector::camelize($name))))) {
+                    } elseif (is_callable([$obj, $method = 'set' . ucfirst(PropelInflector::camelize($name) ?? '')])) {
                         $obj->$method($value);
                     } else {
-                        throw new \InvalidArgumentException(sprintf('Column "%s" does not exist for class "%s".', $name, $class));
+                        throw new InvalidArgumentException("Column \"$name\" does not exist for class \"$class\".");
                     }
                 }
 
@@ -240,78 +267,108 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
     }
 
     /**
-     * Save a reference to the specified object (and its ancestors) before loading them.
-     *
-     * @param string                $class Class name of passed object
-     * @param string                $key   Key identifying specified object
-     * @param ActiveRecordInterface $obj   A Propel object
-     *
-     * @throws \ReflectionException
-     */
-    protected function saveParentReference(string $class, string $key, ActiveRecordInterface $obj): void
-    {
-        if (!method_exists($obj, 'getPrimaryKey')) {
-            return;
-        }
-
-        $this->object_references[$this->cleanObjectRef($class.'_'.$key)] = $obj;
-
-        // Get parent (schema ancestor) of parent (Propel base class) in case of inheritance
-        if (false !== ($parentClass = get_parent_class(get_parent_class($class)))) {
-
-            $reflectionClass = new \ReflectionClass($parentClass);
-            if (!$reflectionClass->isAbstract()) {
-                $parentObj = new $parentClass();
-                $parentObj->fromArray($obj->toArray());
-                $this->saveParentReference($parentClass, $key, $parentObj);
-            }
-        }
-    }
-
-    /**
      * Loads many to many objects.
      *
-     * @param ActiveRecordInterface $obj             A Propel object
-     * @param string                $middleTableName The middle table name
-     * @param string[]              $values          An array of values
+     * @param ActiveRecordInterface $obj A Propel object
+     * @param string $middleTableName The middle table name
+     * @param string[] $values An array of values
+     * @return void
+     * @throws InvalidArgumentException
+     * @throws LogicException
+     * @throws TableNotFoundException
+     * @throws RuntimeException
      */
     protected function loadManyToMany(ActiveRecordInterface $obj, string $middleTableName, array $values): void
     {
-        $middleTable = $this->dbMap->getTable($middleTableName);
-        $middleClass = $middleTable->getClassname();
-        $tableName   = constant(constant(get_class($obj).'::TABLE_MAP').'::TABLE_NAME');
+        $middleTable = $this->getDatabaseMap()->getTable($middleTableName);
+        $middleClass = $middleTable->getClassNameOrFail();
+        if (!class_exists($middleClass)) {
+            throw new InvalidArgumentException("Unknown class \"$middleClass\".");
+        }
+        $tableName = constant(constant(get_class($obj) . '::TABLE_MAP') . '::TABLE_NAME');
 
         foreach ($middleTable->getColumns() as $column) {
             if ($column->isForeignKey()) {
                 if ($tableName !== $column->getRelatedTableName()) {
-                    $relatedClass  = $this->dbMap->getTable($column->getRelatedTableName())->getClassname();
-                    $relatedSetter = 'set' . $column->getRelation()->getName();
+                    $relatedClass = $this->getDatabaseMap()->getTable($column->getRelatedTableName())->getClassname();
+                    $relation = $column->getRelation();
+                    if ($relation === null) {
+                        throw new RuntimeException('The foreign key relation is not defined.');
+                    }
+                    $relatedSetter = "set{$relation->getName()}";
                 } else {
-                    $setter = 'set' . $column->getRelation()->getName();
+                    $relation = $column->getRelation();
+                    if ($relation === null) {
+                        throw new RuntimeException('The foreign key relation is not defined.');
+                    }
+                    $setter = "set{$relation->getName()}";
                 }
             }
         }
 
-        if (!isset($relatedClass)) {
-            throw new \InvalidArgumentException(sprintf('Unable to find the many-to-many relationship for object "%s".', get_class($obj)));
+        if (!isset($relatedClass, $setter, $relatedSetter)) {
+            $objectClass = get_class($obj);
+            throw new InvalidArgumentException("Unable to find the many-to-many relationship for object \"$objectClass\".");
         }
 
         foreach ($values as $value) {
-            if (!isset($this->object_references[$this->cleanObjectRef($relatedClass.'_'.$value)])) {
-                throw new \InvalidArgumentException(
-                    sprintf('The object "%s" from class "%s" is not defined in your data file.', $value, $relatedClass)
+            if (!isset($this->object_references[$this->cleanObjectRef("{$relatedClass}_$value")])) {
+                throw new InvalidArgumentException(
+                    "The object \"$value\" from class \"$relatedClass\" is not defined in your data file."
                 );
             }
 
             $middle = new $middleClass();
             $middle->$setter($obj);
-            $middle->$relatedSetter($this->object_references[$this->cleanObjectRef($relatedClass.'_'.$value)]);
+            $middle->$relatedSetter($this->object_references[$this->cleanObjectRef("{$relatedClass}_$value")]);
             $middle->save($this->con);
         }
     }
 
+    /**
+     * @param string $ref
+     * @return string
+     */
     protected function cleanObjectRef(string $ref): string
     {
         return $ref[0] === '\\' ? substr($ref, 1) : $ref;
+    }
+
+    /**
+     * Save a reference to the specified object (and its ancestors) before loading them.
+     *
+     * @param string $class Class name of passed object
+     * @param string $key Key identifying specified object
+     * @param ActiveRecordInterface $obj A Propel object
+     *
+     * @return void
+     * @throws ReflectionException
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     */
+    protected function saveParentReference(string $class, string $key, ActiveRecordInterface $obj): void
+    {
+        if (!class_exists($class)) {
+            throw new InvalidArgumentException("Unknown class \"$class\".");
+        }
+        if (!method_exists($obj, 'getPrimaryKey')) {
+            return;
+        }
+
+        $this->object_references[$this->cleanObjectRef("{$class}_$key")] = $obj;
+
+        // Get parent (schema ancestor) of parent (Propel base class) in case of inheritance
+        $baseClass = get_parent_class($class);
+        if ($baseClass !== false && ($parentClass = get_parent_class($baseClass)) !== false) {
+            $reflectionClass = new ReflectionClass($parentClass);
+            if (!$reflectionClass->isAbstract()) {
+                $parentObj = new $parentClass();
+                if (!$parentObj instanceof ActiveRecordInterface) {
+                    throw new RuntimeException('The parent model must implement ActiveRecordInterface.');
+                }
+                $parentObj->fromArray($obj->toArray());
+                $this->saveParentReference($parentClass, $key, $parentObj);
+            }
+        }
     }
 }

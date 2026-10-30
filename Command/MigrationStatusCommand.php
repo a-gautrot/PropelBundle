@@ -10,20 +10,27 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputInterface;
-
+use Override;
 use Propel\Generator\Command\MigrationStatusCommand as BaseMigrationCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
 
 /**
+ * # MigrationStatusCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class MigrationStatusCommand extends WrappedCommand
 {
     /**
-     * {@inheritdoc}
+     * @return void
+     * @throws InvalidArgumentException
      */
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
@@ -31,33 +38,37 @@ class MigrationStatusCommand extends WrappedCommand
         $this
             ->setName('propel:migration:status')
             ->setDescription('Get migration status')
-
-            ->addOption('connection',       null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('migration-table',  null, InputOption::VALUE_OPTIONAL,  'Migration table name (if none given, the configured table is used)', null)
-            ->addOption('output-dir',       null, InputOption::VALUE_OPTIONAL,  'The output directory')
-        ;
+            ->addOption('connection', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
+            ->addOption('migration-table', null, InputOption::VALUE_OPTIONAL, 'Migration table name (if none given, the configured table is used)', null)
+            ->addOption('output-dir', null, InputOption::VALUE_OPTIONAL, 'The output directory');
     }
 
     /**
-     * {@inheritdoc}
+     * @return Command
+     * @throws LogicException
      */
+    #[Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseMigrationCommand();
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException
+     * @throws ParameterNotFoundException
      */
+    #[Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $config = $this->getConfig();
         $defaultOutputDir = $config['paths']['migrationDir'];
 
-        return array(
-            '--connection'      => $this->getConnections($input->getOption('connection')),
+        return [
+            '--connection' => $this->getConnections($input->getOption('connection')),
             '--migration-table' => $input->getOption('migration-table') ?: $this->getMigrationsTable(),
-            '--output-dir'      => $input->getOption('output-dir') ?: $defaultOutputDir,
-        );
+            '--output-dir' => $input->getOption('output-dir') ?: $defaultOutputDir,
+        ];
     }
 }

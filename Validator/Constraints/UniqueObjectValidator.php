@@ -10,40 +10,53 @@
 
 namespace Propel\Bundle\PropelBundle\Validator\Constraints;
 
+use Override;
+use Propel\Runtime\ActiveQuery\ModelCriteria;
+use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Map\TableMap;
-
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
+use function count;
 
 /**
+ * # UniqueObjectValidator
  * Unique Object Validator checks if one or a set of fields contain unique values.
  *
  * @author Maxime AILLOUD <maxime.ailloud@gmail.com>
  * @author Marek Kalnik <marekk@theodo.fr>
+ * @api
  */
 class UniqueObjectValidator extends ConstraintValidator
 {
     /**
-     * {@inheritdoc}
+     * @param mixed $value
+     * @param Constraint $constraint
+     * @return void
+     * @throws ConstraintDefinitionException
      */
-    public function validate($object, Constraint $constraint): void
+    #[Override]
+    public function validate(mixed $value, Constraint $constraint): void
     {
         /** @var UniqueObject $constraint */
-        $fields         = (array) $constraint->fields;
-        $class          = get_class($object);
-        $queryClass     = $class . 'Query';
-        $tableMapClass  = $class::TABLE_MAP;
-        $classFields    = $tableMapClass::getFieldnames(TableMap::TYPE_FIELDNAME);
+        $fields = (array)$constraint->fields;
+        $class = get_class($value);
+        $queryClass = "{$class}Query";
+        if (!is_a($value, ActiveRecordInterface::class)
+            || !is_a($queryClass, ModelCriteria::class, true)) {
+            throw new ConstraintDefinitionException('The value must be a Propel model with a query class.');
+        }
+        $tableMapClass = get_class($value)::TABLE_MAP;
+        $classFields = $tableMapClass::getFieldnames(TableMap::TYPE_FIELDNAME);
 
         // ensure at least one field is selected
-        if (0 === \count($fields)) {
+        if (empty($fields)) {
             throw new ConstraintDefinitionException('At least one field has to be specified.');
         }
 
         foreach ($fields as $fieldName) {
-            if (false === array_search($fieldName, $classFields)) {
-                throw new ConstraintDefinitionException('The field "' . $fieldName .'" doesn\'t exist in the "' . $class . '" class.');
+            if (!in_array($fieldName, $classFields)) {
+                throw new ConstraintDefinitionException("The field \"$fieldName\" doesn't exist in the \"$class\" class.");
             }
         }
 
@@ -51,33 +64,29 @@ class UniqueObjectValidator extends ConstraintValidator
         foreach ($fields as $fieldName) {
             $bddUsersQuery->filterBy(
                 $tableMapClass::translateFieldname($fieldName, TableMap::TYPE_FIELDNAME, TableMap::TYPE_PHPNAME),
-                $object->getByName($fieldName, TableMap::TYPE_FIELDNAME)
+                $value->getByName($fieldName, TableMap::TYPE_FIELDNAME)
             );
         }
 
-        $bddUsers  = $bddUsersQuery->find();
+        $bddUsers = $bddUsersQuery->find();
         $countUser = count($bddUsers);
 
-        if ($countUser > 1 || ($countUser === 1 && !$object->equals($bddUsers[0]))) {
-            $fieldParts = array();
+        if ($countUser > 1 || ($countUser === 1 && !$value->equals($bddUsers[0]))) {
+            $fieldParts = [];
 
             foreach ($fields as $fieldName) {
-                $fieldParts[] = sprintf(
-                    '%s "%s"',
-                    $tableMapClass::translateFieldname($fieldName, TableMap::TYPE_FIELDNAME, TableMap::TYPE_PHPNAME),
-                    $object->getByName($fieldName, TableMap::TYPE_FIELDNAME)
-                );
+                $fieldPhpName = $tableMapClass::translateFieldname($fieldName, TableMap::TYPE_FIELDNAME, TableMap::TYPE_PHPNAME);
+                $fieldParts[] = "$fieldPhpName \"{$value->getByName($fieldName, TableMap::TYPE_FIELDNAME)}\"";
             }
 
             $this->context->buildViolation($constraint->message)
                 // if no path is selected select first field
                 ->atPath($constraint->errorPath ?? $fields[0])
-                ->setParameters(array(
+                ->setParameters([
                     '{{ object_class }}' => $class,
                     '{{ fields }}' => implode($constraint->messageFieldSeparator, $fieldParts)
-                ))
+                ])
                 ->addViolation();
-
         }
     }
 }

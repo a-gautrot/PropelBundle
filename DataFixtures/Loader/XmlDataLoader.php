@@ -10,16 +10,23 @@
 
 namespace Propel\Bundle\PropelBundle\DataFixtures\Loader;
 
+use Override;
+use SimpleXMLElement;
+
 /**
+ * # XmlDataLoader
  * XML fixtures loader.
  *
  * @author William Durand <william.durand1@gmail.com>
+ * @api
  */
 class XmlDataLoader extends AbstractDataLoader
 {
     /**
-     * {@inheritdoc}
+     * @param string $file
+     * @return array<string, array<string, array<string, string>>>
      */
+    #[Override]
     protected function transformDataToArray(string $file): array
     {
         $xml = simplexml_load_file($file);
@@ -28,29 +35,31 @@ class XmlDataLoader extends AbstractDataLoader
     }
 
     /**
-     * @param  \SimpleXMLElement|false $xml
+     * @param SimpleXMLElement|false $xml
      * @return array<string, array<string, array<string, string>>>
      */
-    protected function simpleXmlToArray($xml): array
+    protected function simpleXmlToArray(SimpleXMLElement|false $xml): array
     {
-        $array = array();
-        if ($xml instanceof \SimpleXMLElement) {
+        $array = [];
+        if ($xml instanceof SimpleXMLElement) {
             foreach ($xml as $key => $value) {
+                $key = (string)$key;
                 // First make a valid key which is the Ns (Namespace) attribute
                 // + the element name (the class name)
-                foreach ($value->attributes() as $subkey => $subvalue) {
-                    if ('Namespace' === (string) $subkey) {
-                        $key = $subvalue . '\\' . $key;
+                foreach ($value->attributes() ?? [] as $subkey => $subvalue) {
+                    if ($subkey === 'Namespace') {
+                        $key = "$subvalue\\$key";
                         break;
                     }
                 }
 
-                $array[$key] = array();
+                $array[$key] = [];
                 foreach ($value as $elementKey => $elementValue) {
-                    $array[$key][$elementKey] = array();
+                    $elementKey = (string)$elementKey;
+                    $array[$key][$elementKey] = [];
 
-                    foreach ($elementValue->attributes() as $subkey => $subvalue) {
-                        $array[$key][$elementKey][$subkey] = (string) $subvalue;
+                    foreach ($elementValue->attributes() ?? [] as $subkey => $subvalue) {
+                        $array[$key][$elementKey][(string)$subkey] = (string)$subvalue;
                     }
                 }
             }

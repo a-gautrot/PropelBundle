@@ -29,6 +29,7 @@ class YamlDataDumperTest extends TestCase
     public function testYamlDump(): void
     {
         $author = new CoolBookAuthor();
+        $author->setId(1);
         $author->setName('A famous one')->save($this->con);
 
         $complementary = new stdClass();
@@ -36,6 +37,7 @@ class YamlDataDumperTest extends TestCase
 
         $book = new CoolBook();
         $book
+            ->setId(1)
             ->setName('An important one')
             ->setAuthorId(1)
             ->setComplementaryInfos($complementary)

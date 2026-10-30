@@ -1,5 +1,6 @@
 <?php
-/*
+
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -10,20 +11,28 @@
 
 namespace Propel\Bundle\PropelBundle\Form\EventListener;
 
+use Override;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 
 /**
+ * # TranslationFormListener
  * Event Listener class for propel_translation
  *
  * @author Patrick Kaufmann
+ * @api
  */
 class TranslationFormListener implements EventSubscriberInterface
 {
-    /** @var array<string, array<string, mixed>|string|null> */
+    /**
+     * @var array<string, array<string, mixed>|string|null>
+     */
     private array $columns;
+    /**
+     * @var string
+     */
     private string $dataClass;
 
     /**
@@ -36,13 +45,21 @@ class TranslationFormListener implements EventSubscriberInterface
         $this->dataClass = $dataClass;
     }
 
+    /**
+     * @return array<string, array{string, int}>
+     */
+    #[Override]
     public static function getSubscribedEvents(): array
     {
-        return array(
-            FormEvents::PRE_SET_DATA => array('preSetData', 1),
-        );
+        return [
+            FormEvents::PRE_SET_DATA => ['preSetData', 1],
+        ];
     }
 
+    /**
+     * @param FormEvent $event
+     * @return void
+     */
     public function preSetData(FormEvent $event): void
     {
         $form = $event->getForm();
@@ -56,10 +73,10 @@ class TranslationFormListener implements EventSubscriberInterface
         foreach ($this->columns as $column => $options) {
             if (is_string($options)) {
                 $column = $options;
-                $options = array();
+                $options = [];
             }
-            if (null === $options) {
-                $options = array();
+            if ($options === null) {
+                $options = [];
             }
 
             $type = TextType::class;
@@ -71,13 +88,13 @@ class TranslationFormListener implements EventSubscriberInterface
                 $label = $options['label'];
             }
 
-            $customOptions = array();
+            $customOptions = [];
             if (array_key_exists('options', $options)) {
                 $customOptions = $options['options'];
             }
-            $options = array(
-                'label' => $label.' '.strtoupper($data->getLocale())
-            );
+            $options = [
+                'label' => "$label " . strtoupper($data->getLocale())
+            ];
 
             $options = array_merge($options, $customOptions);
 

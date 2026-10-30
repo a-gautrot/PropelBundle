@@ -10,10 +10,14 @@
 
 namespace Propel\Bundle\PropelBundle\Form\ChoiceList;
 
+use Override;
+use PDO;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
+use Propel\Runtime\Exception\LogicException;
 use Propel\Runtime\Map\ColumnMap;
+use Propel\Runtime\Map\Exception\ColumnNotFoundException;
 use Symfony\Component\Form\ChoiceList\ChoiceListInterface;
 use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
 use Symfony\Component\Form\ChoiceList\Loader\ChoiceLoaderInterface;
@@ -22,81 +26,109 @@ use Symfony\Component\Form\ChoiceList\Loader\ChoiceLoaderInterface;
  * @author William Durand <william.durand1@gmail.com>
  * @author Toni Uebernickel <tuebernickel@gmail.com>
  * @author Moritz Schroeder <moritz.schroeder@molabs.de>
+ * @api
  */
 class PropelChoiceLoader implements ChoiceLoaderInterface
 {
+    /**
+     * @var ChoiceListFactoryInterface
+     */
     protected ChoiceListFactoryInterface $factory;
+    /**
+     * @var string
+     */
     protected string $class;
+    /**
+     * @var ModelCriteria
+     */
     protected ModelCriteria $query;
     /**
      * The fields of which the identifier of the underlying class consists
      *
      * This property should only be accessed through identifier.
      *
-     * @var \Propel\Runtime\Map\ColumnMap[]
+     * @var ColumnMap[]
      */
-    protected array $identifier = array();
+    protected array $identifier = [];
     /**
      * Whether to use the identifier for index generation.
+     * @var bool
      */
     protected bool $identifierAsIndex = false;
+    /**
+     * @var ChoiceListInterface|null
+     */
     protected ?ChoiceListInterface $choiceList = null;
 
     /**
      * PropelChoiceListLoader constructor.
+     * @param ChoiceListFactoryInterface $factory
+     * @param string $class
+     * @param ModelCriteria $queryObject
+     * @param string|null $useAsIdentifier
+     * @throws LogicException
+     * @throws ColumnNotFoundException
      */
     public function __construct(ChoiceListFactoryInterface $factory, string $class, ModelCriteria $queryObject, ?string $useAsIdentifier = null)
     {
         $this->factory = $factory;
         $this->class = $class;
         $this->query = $queryObject;
-        if ($useAsIdentifier) {
-            $this->identifier = array($this->query->getTableMap()->getColumn($useAsIdentifier));
+        if ($useAsIdentifier !== null && $useAsIdentifier !== '') {
+            $this->identifier = [$this->query->getTableMapOrFail()->getColumn($useAsIdentifier)];
         } else {
-            $this->identifier = $this->query->getTableMap()->getPrimaryKeys();
+            $this->identifier = $this->query->getTableMapOrFail()->getPrimaryKeys();
         }
-        if (1 === count($this->identifier) && $this->isScalar(current($this->identifier))) {
+        if (count($this->identifier) === 1 && $this->isScalar(current($this->identifier))) {
             $this->identifierAsIndex = true;
         }
     }
 
     /**
-     * {@inheritdoc}
+     * Whether this column contains scalar values (to be used as indices).
+     *
+     * @param ColumnMap $column
+     *
+     * @return bool
      */
-    public function loadChoiceList($value = null): ChoiceListInterface
+    private function isScalar(ColumnMap $column): bool
     {
-        if ($this->choiceList) {
-            return $this->choiceList;
-        }
-
-        $models = iterator_to_array($this->query->find());
-
-        $this->choiceList = $this->factory->createListFromChoices($models, $value);
-
-        return $this->choiceList;
+        return in_array(
+            $column->getPdoType(),
+            [
+                PDO::PARAM_BOOL,
+                PDO::PARAM_INT,
+                PDO::PARAM_STR,
+            ]
+        );
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<array-key, mixed> $values
+     * @param callable|null $value
+     * @return array<array-key, mixed>
+     * @throws LogicException
      */
-    public function loadChoicesForValues(array $values, $value = null): array
+    #[Override]
+    public function loadChoicesForValues(array $values, ?callable $value = null): array
     {
         // Performance optimization
         if (empty($values)) {
-            return array();
+            return [];
         }
 
         // Optimize performance in case we have a single-field identifier
-        if (!$this->choiceList && $this->identifierAsIndex && current($this->identifier) instanceof ColumnMap) {
-            $phpName = current($this->identifier)->getPhpName();
+        $identifier = current($this->identifier);
+        if (!$this->choiceList && $this->identifierAsIndex && $identifier instanceof ColumnMap) {
+            $phpName = $identifier->getPhpName();
             $query = clone $this->query;
             $unorderedObjects = $query->filterBy($phpName, $values, Criteria::IN);
-            $objectsById = array();
-            $objects = array();
+            $objectsById = [];
+            $objects = [];
 
             // Maintain order and indices from the given $values
             foreach ($unorderedObjects as $object) {
-                $objectsById[(string) current($this->getIdentifierValues($object))] = $object;
+                $objectsById[(string)current($this->getIdentifierValues($object))] = $object;
             }
 
             foreach ($values as $i => $id) {
@@ -112,23 +144,76 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Returns the values of the identifier fields of a model.
+     *
+     * Propel must know about this model, that is, the model must already
+     * be persisted or added to the id model map before. Otherwise, an
+     * exception is thrown.
+     *
+     * @param object $model The model for which to get the identifier
+     *
+     * @return list<mixed>
      */
-    public function loadValuesForChoices(array $choices, $value = null): array
+    private function getIdentifierValues(object $model): array
+    {
+        if (!$model instanceof $this->class) {
+            return [];
+        }
+
+        if (count($this->identifier) === 1) {
+            $identifier = array_values($this->identifier)[0];
+            $phpName = $identifier->getPhpName();
+            if (method_exists($model, "get$phpName")) {
+                return [$model->{"get$phpName"}()];
+            }
+        }
+
+        if ($model instanceof ActiveRecordInterface && method_exists($model, 'getPrimaryKey')) {
+            return [$model->getPrimaryKey()];
+        }
+
+        return $model->getPrimaryKeys();
+    }
+
+    /**
+     * @param callable|null $value
+     * @return ChoiceListInterface
+     */
+    #[Override]
+    public function loadChoiceList(?callable $value = null): ChoiceListInterface
+    {
+        if ($this->choiceList) {
+            return $this->choiceList;
+        }
+
+        $models = iterator_to_array($this->query->find());
+
+        $this->choiceList = $this->factory->createListFromChoices($models, $value);
+
+        return $this->choiceList;
+    }
+
+    /**
+     * @param array<array-key, mixed> $choices
+     * @param callable|null $value
+     * @return string[]
+     */
+    #[Override]
+    public function loadValuesForChoices(array $choices, ?callable $value = null): array
     {
         // Performance optimization
         if (empty($choices)) {
-            return array();
+            return [];
         }
 
         if (!$this->choiceList && $this->identifierAsIndex) {
-            $values = array();
+            $values = [];
 
             // Maintain order and indices of the given objects
             foreach ($choices as $i => $object) {
                 if ($object instanceof $this->class) {
                     // Make sure to convert to the right format
-                    $values[$i] = (string) current($this->getIdentifierValues($object));
+                    $values[$i] = (string)current($this->getIdentifierValues($object));
                 }
             }
 
@@ -136,55 +221,5 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
         }
 
         return $this->loadChoiceList($value)->getValuesForChoices($choices);
-    }
-
-    /**
-     * Whether this column contains scalar values (to be used as indices).
-     *
-     * @param ColumnMap $column
-     *
-     * @return bool
-     */
-    private function isScalar(ColumnMap $column): bool
-    {
-        return in_array(
-            $column->getPdoType(),
-            array(
-                \PDO::PARAM_BOOL,
-                \PDO::PARAM_INT,
-                \PDO::PARAM_STR,
-            )
-        );
-    }
-
-    /**
-     * Returns the values of the identifier fields of a model.
-     *
-     * Propel must know about this model, that is, the model must already
-     * be persisted or added to the idmodel map before. Otherwise an
-     * exception is thrown.
-     *
-     * @param object $model The model for which to get the identifier
-     *
-     * @return array<mixed>
-     */
-    private function getIdentifierValues(object $model): array
-    {
-        if (!$model instanceof $this->class) {
-            return array();
-        }
-
-        if (1 === count($this->identifier) && current($this->identifier) instanceof ColumnMap) {
-            $phpName = current($this->identifier)->getPhpName();
-            if (method_exists($model, 'get' . $phpName)) {
-                return array($model->{'get' . $phpName}());
-            }
-        }
-
-        if ($model instanceof ActiveRecordInterface) {
-            return array($model->getPrimaryKey());
-        }
-
-        return $model->getPrimaryKeys();
     }
 }

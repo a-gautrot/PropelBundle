@@ -11,22 +11,39 @@
 namespace Propel\Bundle\PropelBundle\Service;
 
 use App\AppBundle;
+use LogicException;
+use SplFileInfo;
 use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
+/**
+ * # SchemaLocator
+ * @api
+ */
 class SchemaLocator
 {
+    /**
+     * @var ContainerInterface
+     */
     protected ContainerInterface $container;
+    /**
+     * @var FileLocatorInterface
+     */
     protected FileLocatorInterface $fileLocator;
-    /** @var array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: string, loaderScriptDir: string}} */
+    /**
+     * @var array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: string|null, loaderScriptDir: string}}
+     */
     protected array $configuration;
 
     /**
      * @param ContainerInterface $container
      * @param FileLocatorInterface $fileLocator
-     * @param array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: string, loaderScriptDir: string}} $configuration
+     * @param array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: string|null, loaderScriptDir: string}} $configuration
      */
     public function __construct(ContainerInterface $container, FileLocatorInterface $fileLocator, array $configuration)
     {
@@ -38,7 +55,9 @@ class SchemaLocator
     /**
      * @param array<string, BundleInterface> $bundles
      *
-     * @return array<string, array{?BundleInterface, \SplFileInfo}>
+     * @return array<string, array{?BundleInterface, SplFileInfo}>
+     * @throws ServiceCircularReferenceException
+     * @throws ServiceNotFoundException
      */
     public function locateFromBundlesAndConfiguration(array $bundles): array
     {
@@ -48,10 +67,11 @@ class SchemaLocator
 
         $schemas = $this->locateFromBundles($bundles);
 
-        $path = $this->configuration['paths']['schemaDir'].'/schema.xml';
+        $path = "{$this->configuration['paths']['schemaDir']}/schema.xml";
+
         if (file_exists($path)) {
-            $schema = new \SplFileInfo($path);
-            $schemas[(string) $schema] = array(null, $schema);
+            $schema = new SplFileInfo($path);
+            $schemas[(string)$schema] = [null, $schema];
         }
 
         return $schemas;
@@ -60,11 +80,12 @@ class SchemaLocator
     /**
      * @param array<string, BundleInterface> $bundles
      *
-     * @return array<string, array{BundleInterface, \SplFileInfo}>
+     * @return array<string, array{BundleInterface, SplFileInfo}>
      */
     public function locateFromBundles(array $bundles): array
     {
-        $schemas = array();
+        $schemas = [];
+
         foreach ($bundles as $bundle) {
             $schemas = array_merge($schemas, $this->locateFromBundle($bundle));
         }
@@ -75,26 +96,28 @@ class SchemaLocator
     /**
      * @param BundleInterface $bundle
      *
-     * @return array<string, array{BundleInterface, \SplFileInfo}>
+     * @return array<string, array{BundleInterface, SplFileInfo}>
+     * @throws LogicException
+     * @throws DirectoryNotFoundException
      */
     public function locateFromBundle(BundleInterface $bundle): array
     {
         // no bundle/bundle
-        $dir = ($bundle->getName() === AppBundle::NAME)? $bundle->getPath().'/config' : $bundle->getPath().'/Resources/config';
+        $dir = ($bundle->getName() === AppBundle::NAME) ? "{$bundle->getPath()}/config" : "{$bundle->getPath()}/Resources/config";
 
-        $finalSchemas = array();
+        $finalSchemas = [];
 
         if (is_dir($dir)) {
-            $finder  = new Finder();
+            $finder = new Finder();
             $schemas = $finder->files()->name('*schema.xml')->followLinks()->in($dir);
 
             if (iterator_count($schemas)) {
                 foreach ($schemas as $schema) {
                     $logicalName = $this->transformToLogicalName($schema, $bundle);
 
-                    $finalSchema = new \SplFileInfo($this->fileLocator->locate($logicalName));
+                    $finalSchema = new SplFileInfo($this->fileLocator->locate($logicalName));
 
-                    $finalSchemas[(string) $finalSchema] = array($bundle, $finalSchema);
+                    $finalSchemas[(string)$finalSchema] = [$bundle, $finalSchema];
                 }
             }
         }
@@ -103,26 +126,25 @@ class SchemaLocator
     }
 
     /**
-     * @param  \SplFileInfo    $schema
-     * @param  BundleInterface $bundle
+     * @param SplFileInfo $schema
+     * @param BundleInterface $bundle
      * @return string
      */
-    protected function transformToLogicalName(\SplFileInfo $schema, BundleInterface $bundle)
+    protected function transformToLogicalName(SplFileInfo $schema, BundleInterface $bundle): string
     {
-        // NOTE: for future research - i dont see why this function exists call of ->getRealPath() should do the job
+        // NOTE: for future research - I don't see why this function exists call of ->getRealPath() should do the job
 
         $schemaPath = str_replace(
-            // no bundle/bundle
-            $bundle->getPath(). DIRECTORY_SEPARATOR . ($bundle->getName() == AppBundle::NAME ? '' : 'Resources' . DIRECTORY_SEPARATOR) . 'config' . DIRECTORY_SEPARATOR,
+        // no bundle/bundle
+            $bundle->getPath() . DIRECTORY_SEPARATOR . ($bundle->getName() == AppBundle::NAME ? '' : 'Resources' . DIRECTORY_SEPARATOR) . 'config' . DIRECTORY_SEPARATOR,
             '',
             $schema->getRealPath()
         );
 
-        //
         if ($bundle->getName() == AppBundle::NAME) {
-            return sprintf('%s/config/%s', $bundle->getPath(), $schemaPath);
+            return "{$bundle->getPath()}/config/$schemaPath";
         }
 
-        return sprintf('@%s/Resources/config/%s', $bundle->getName(), $schemaPath);
+        return "@{$bundle->getName()}/Resources/config/$schemaPath";
     }
 }
