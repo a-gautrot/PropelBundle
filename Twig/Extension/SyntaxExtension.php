@@ -31,8 +31,8 @@ class SyntaxExtension extends AbstractExtension
     public function getFilters(): array
     {
         return [
-            new TwigFilter('format_sql', [$this, 'formatSQL'], ['is_safe' => ['html']]),
-            new TwigFilter('format_memory', [$this, 'formatMemory']),
+            new TwigFilter('format_sql', $this->formatSQL(...), ['is_safe' => ['html']]),
+            new TwigFilter('format_memory', $this->formatMemory(...)),
         ];
     }
 
@@ -82,7 +82,7 @@ class SyntaxExtension extends AbstractExtension
         }
 
         $significantDecimals = (int)floor((float)$significantFigures - log10(abs($number)));
-        $magnitude = pow(10.0, $significantDecimals);
+        $magnitude = 10.0 ** $significantDecimals;
         $shifted = round($number * $magnitude);
 
         return number_format($shifted / $magnitude, $significantDecimals);

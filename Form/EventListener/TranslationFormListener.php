@@ -27,22 +27,11 @@ use Symfony\Component\Form\FormEvents;
 class TranslationFormListener implements EventSubscriberInterface
 {
     /**
-     * @var array<string, array<string, mixed>|string|null>
-     */
-    private array $columns;
-    /**
-     * @var string
-     */
-    private string $dataClass;
-
-    /**
      * @param array<string, array<string, mixed>|string|null> $columns
      * @param string $dataClass
      */
-    public function __construct(array $columns, string $dataClass)
+    public function __construct(private readonly array $columns, private readonly string $dataClass)
     {
-        $this->columns = $columns;
-        $this->dataClass = $dataClass;
     }
 
     /**
@@ -75,9 +64,7 @@ class TranslationFormListener implements EventSubscriberInterface
                 $column = $options;
                 $options = [];
             }
-            if ($options === null) {
-                $options = [];
-            }
+            $options ??= [];
 
             $type = TextType::class;
             if (array_key_exists('type', $options)) {

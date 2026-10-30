@@ -24,6 +24,7 @@ use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
+#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:migration:status', description: 'Get migration status')]
 class MigrationStatusCommand extends WrappedCommand
 {
     /**
@@ -36,11 +37,9 @@ class MigrationStatusCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->setName('propel:migration:status')
-            ->setDescription('Get migration status')
-            ->addOption('connection', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('migration-table', null, InputOption::VALUE_OPTIONAL, 'Migration table name (if none given, the configured table is used)', null)
-            ->addOption('output-dir', null, InputOption::VALUE_OPTIONAL, 'The output directory');
+            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
+            ->addOption('migration-table', mode: InputOption::VALUE_OPTIONAL, description: 'Migration table name (if none given, the configured table is used)')
+            ->addOption('output-dir', mode: InputOption::VALUE_OPTIONAL, description: 'The output directory');
     }
 
     /**

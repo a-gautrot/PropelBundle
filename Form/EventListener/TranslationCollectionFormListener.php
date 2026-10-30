@@ -30,22 +30,11 @@ use Traversable;
 class TranslationCollectionFormListener implements EventSubscriberInterface
 {
     /**
-     * @var string
-     */
-    private string $i18nClass;
-    /**
-     * @var string[]
-     */
-    private array $languages;
-
-    /**
      * @param string[] $languages
      * @param string $i18nClass
      */
-    public function __construct(array $languages, string $i18nClass)
+    public function __construct(private readonly array $languages, private readonly string $i18nClass)
     {
-        $this->i18nClass = $i18nClass;
-        $this->languages = $languages;
     }
 
     /**

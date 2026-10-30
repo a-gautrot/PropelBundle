@@ -28,28 +28,12 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 class SchemaLocator
 {
     /**
-     * @var ContainerInterface
-     */
-    protected ContainerInterface $container;
-    /**
-     * @var FileLocatorInterface
-     */
-    protected FileLocatorInterface $fileLocator;
-    /**
-     * @var array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: string|null, loaderScriptDir: string}}
-     */
-    protected array $configuration;
-
-    /**
      * @param ContainerInterface $container
      * @param FileLocatorInterface $fileLocator
      * @param array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: string|null, loaderScriptDir: string}} $configuration
      */
-    public function __construct(ContainerInterface $container, FileLocatorInterface $fileLocator, array $configuration)
+    public function __construct(protected ContainerInterface $container, protected FileLocatorInterface $fileLocator, protected array $configuration)
     {
-        $this->container = $container;
-        $this->fileLocator = $fileLocator;
-        $this->configuration = $configuration;
     }
 
     /**

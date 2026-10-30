@@ -6,8 +6,10 @@ use Exception;
 use LogicException;
 use Propel\Bundle\PropelBundle\Request\ParamConverter\PropelParamConverter;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book;
+use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Map\BookTableMap;
 use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
 use Propel\Bundle\PropelBundle\Tests\TestCase;
+use Propel\Runtime\Collection\ObjectCollection;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Propel;
 use Symfony\Component\Config\FileLocator;
@@ -38,7 +40,7 @@ class PropelParamConverterTest extends TestCase
         // @fixme: some tests fail if instance pooling is disabled...
         //Propel::disableInstancePooling();
 
-        $this->loadDatabaseMap(['Propel\\Bundle\\PropelBundle\\Tests\\Fixtures\\Model\\Map\\BookTableMap']);
+        $this->loadDatabaseMap([BookTableMap::class]);
     }
 
     /**
@@ -49,7 +51,7 @@ class PropelParamConverterTest extends TestCase
         //Propel::enableInstancePooling();
 
         if ($this->con) {
-            $this->con->useDebug(false);
+            $this->con->useDebug(value: false);
         }
     }
 
@@ -60,13 +62,13 @@ class PropelParamConverterTest extends TestCase
     {
         $paramConverter = new PropelParamConverter();
 
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null);
         $this->assertTrue($paramConverter->supports($argument), 'param converter should support propel class');
 
-        $argument = new ArgumentMetadata('fakeClass', 'fakeClass', false, false, null);
+        $argument = new ArgumentMetadata('fakeClass', 'fakeClass', isVariadic: false, hasDefaultValue: false, defaultValue: null);
         $this->assertFalse($paramConverter->supports($argument), 'param converter should not support wrong class');
 
-        $argument = new ArgumentMetadata('test', 'Propel\Bundle\PropelBundle\Tests\TestCase', false, false, null);
+        $argument = new ArgumentMetadata('test', TestCase::class, isVariadic: false, hasDefaultValue: false, defaultValue: null);
         $this->assertFalse($paramConverter->supports($argument), 'param converter should not support wrong class');
     }
 
@@ -78,12 +80,12 @@ class PropelParamConverterTest extends TestCase
     {
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['id' => 1, 'book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null);
 
         $paramConverter->resolve($request, $argument);
 
         $this->assertInstanceOf(
-            'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+            Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"'
         );
     }
@@ -96,7 +98,7 @@ class PropelParamConverterTest extends TestCase
     {
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['id' => 2, 'book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null);
 
         $this->expectException(NotFoundHttpException::class);
 
@@ -111,9 +113,9 @@ class PropelParamConverterTest extends TestCase
     {
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['slug' => 'my-book', 'book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null);
         $paramConverter->resolve($request, $argument);
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -125,10 +127,10 @@ class PropelParamConverterTest extends TestCase
     {
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['author_slug' => 'my-author', 'slug' => 'my-kewl-book', 'book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null);
 
         $paramConverter->resolve($request, $argument);
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -140,7 +142,7 @@ class PropelParamConverterTest extends TestCase
     {
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['slug' => 'my-foo', 'book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null);
 
         $this->expectException(NotFoundHttpException::class);
 
@@ -156,9 +158,9 @@ class PropelParamConverterTest extends TestCase
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['slug' => 'my-book', 'name' => 'foo', 'book' => null]);
         $request->attributes->set('propel_converter', ['book' => ['exclude' => ['name']]]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null, false);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null, isNullable: false);
         $paramConverter->resolve($request, $argument);
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -171,13 +173,13 @@ class PropelParamConverterTest extends TestCase
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['slug' => 'my-book', 'name' => 'foo', 'book' => null]);
         $request->attributes->set('propel_converter', ['book' => ['exclude' => ['name', 'slug']]]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null, false);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null, isNullable: false);
 
         $this->expectException(LogicException::class);
 
         $paramConverter->resolve($request, $argument);
 
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -190,13 +192,13 @@ class PropelParamConverterTest extends TestCase
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['id' => '1234', 'book' => null]);
         $request->attributes->set('propel_converter', ['book' => ['exclude' => ['id']]]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null, false);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null, isNullable: false);
 
         $this->expectException(LogicException::class);
 
         $paramConverter->resolve($request, $argument);
 
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -208,7 +210,7 @@ class PropelParamConverterTest extends TestCase
     {
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null);
 
         $this->expectException(LogicException::class);
 
@@ -223,7 +225,7 @@ class PropelParamConverterTest extends TestCase
     {
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['book' => null]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null, true);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null, isNullable: true);
         $paramConverter->resolve($request, $argument);
 
         $this->assertNull($request->attributes->get('book'),
@@ -239,9 +241,9 @@ class PropelParamConverterTest extends TestCase
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['toto' => 1, 'book' => null]);
         $request->attributes->set('propel_converter', ['book' => ['mapping' => ['toto' => 'id']]]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null, false);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null, isNullable: false);
         $paramConverter->resolve($request, $argument);
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -254,9 +256,9 @@ class PropelParamConverterTest extends TestCase
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['slugParam_special' => 'my-book', 'book' => null]);
         $request->attributes->set('propel_converter', ['book' => ['mapping' => ['slugParam_special' => 'slug']]]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', false, false, null, false);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null, isNullable: false);
         $paramConverter->resolve($request, $argument);
-        $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book', $request->attributes->get('book'),
+        $this->assertInstanceOf(Book::class, $request->attributes->get('book'),
             'param "book" should be an instance of "Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book"');
     }
 
@@ -271,7 +273,7 @@ class PropelParamConverterTest extends TestCase
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['id' => 1, 'book' => null]);
         $request->attributes->set('propel_converter', ['book' => ['with' => 'MyAuthor']]);
-        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyBook', false, false, null, false);
+        $argument = new ArgumentMetadata('book', 'Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyBook', isVariadic: false, hasDefaultValue: false, defaultValue: null, isNullable: false);
 
         $nb = $this->con->getQueryCount();
         $paramConverter->resolve($request, $argument);
@@ -355,7 +357,7 @@ XML;
             'with' => [['MyBook', 'left join']],
             'mapping' => ['param1' => 'id'],
         ]]);
-        $argument = new ArgumentMetadata('author', 'Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor', false, false, null, false);
+        $argument = new ArgumentMetadata('author', 'Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor', isVariadic: false, hasDefaultValue: false, defaultValue: null, isNullable: false);
 
         $nb = $this->con->getQueryCount();
         $paramConverter->resolve($request, $argument);
@@ -367,7 +369,7 @@ XML;
         $this->assertEquals($nb + 1, $this->con->getQueryCount(), 'only one query to get the author');
 
         $books = $author->getMyBooks();
-        $this->assertInstanceOf('\Propel\Runtime\Collection\ObjectCollection', $books);
+        $this->assertInstanceOf(ObjectCollection::class, $books);
         $this->assertCount(2, $books, 'Author should have two books');
 
         $this->assertEquals($nb + 1, $this->con->getQueryCount(), 'no new query to get the books');
@@ -384,7 +386,7 @@ XML;
         $paramConverter = new PropelParamConverter();
         $request = new Request([], [], ['id' => 10, 'author' => null]);
         $request->attributes->set('propel_converter', ['author' => ['with' => [['MyBook', 'left join']]]]);
-        $argument = new ArgumentMetadata('author', 'Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor', false, false, null, false);
+        $argument = new ArgumentMetadata('author', 'Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor', isVariadic: false, hasDefaultValue: false, defaultValue: null, isNullable: false);
         $nb = $this->con->getQueryCount();
         $paramConverter->resolve($request, $argument);
 
@@ -395,7 +397,7 @@ XML;
         $this->assertEquals($nb + 1, $this->con->getQueryCount(), 'only one query to get the book');
 
         $books = $author->getMyBooks();
-        $this->assertInstanceOf('\Propel\Runtime\Collection\ObjectCollection', $books);
+        $this->assertInstanceOf(ObjectCollection::class, $books);
         $this->assertCount(2, $books, 'Author should have two books');
 
         $this->assertEquals($nb + 1, $this->con->getQueryCount(), 'no new query to get the books');
@@ -425,7 +427,7 @@ XML;
             ],
         ]);
 
-        $argument = new ArgumentMetadata('author', 'Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor', false, false, null);
+        $argument = new ArgumentMetadata('author', 'Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor', isVariadic: false, hasDefaultValue: false, defaultValue: null);
         $paramConverter->resolve($request, $argument);
 
         $author = $request->attributes->get('author');
@@ -445,7 +447,7 @@ XML;
         $services = $container->findTaggedServiceIds('controller.argument_value_resolver');
         $this->assertCount(1, $services);
 
-        $resolver = new ArgumentResolver(null, array_merge(
+        $resolver = new ArgumentResolver(argumentMetadataFactory: null, argumentValueResolvers: array_merge(
             [$container->get(array_key_first($services))],
             [...ArgumentResolver::getDefaultArgumentValueResolvers()]
         ));
@@ -468,7 +470,7 @@ XML;
     {
         $book = new Book();
         $request = new Request([], [], ['book' => $book]);
-        $argument = new ArgumentMetadata('book', Book::class, false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null);
 
         $this->assertSame([$book], (new PropelParamConverter())->resolve($request, $argument));
     }
@@ -488,11 +490,11 @@ XML;
                 'with' => [['MyBook', 'left join']],
             ]],
         ]);
-        $argument = new ArgumentMetadata('author', MyAuthor::class, false, false, null);
+        $argument = new ArgumentMetadata('author', MyAuthor::class, isVariadic: false, hasDefaultValue: false, defaultValue: null);
         $this->assertInstanceOf(MyAuthor::class, $resolver->resolve($request, $argument)[0]);
 
         $request = new Request([], [], ['id' => 1]);
-        $argument = new ArgumentMetadata('book', Book::class, false, false, null);
+        $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null);
         $book = $resolver->resolve($request, $argument)[0];
 
         $this->assertInstanceOf(Book::class, $book);

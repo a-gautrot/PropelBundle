@@ -23,6 +23,7 @@ use Symfony\Component\Console\Input\InputOption;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
+#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:graphviz:generate', description: 'Generate Graphviz files (.dot)')]
 class GraphvizGenerateCommand extends WrappedCommand
 {
     /**
@@ -35,9 +36,7 @@ class GraphvizGenerateCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->setName('propel:graphviz:generate')
-            ->setDescription('Generate Graphviz files (.dot)')
-            ->addOption('output-dir', null, InputOption::VALUE_REQUIRED, 'The output directory', BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY);
+            ->addOption('output-dir', mode: InputOption::VALUE_REQUIRED, description: 'The output directory', default: BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY);
     }
 
     /**

@@ -25,20 +25,13 @@ use Symfony\Component\Yaml\Yaml;
 class YamlDataLoader extends AbstractDataLoader
 {
     /**
-     * @var Generator|null
-     */
-    private ?Generator $faker;
-
-    /**
      * @param string $rootDir
      * @param array{database?: array{connections: array<string, array<string, mixed>>}} $datasources
      * @param Generator|null $faker
      */
-    public function __construct(string $rootDir, array $datasources, ?Generator $faker = null)
+    public function __construct(string $rootDir, array $datasources, private readonly ?Generator $faker = null)
     {
         parent::__construct($rootDir, $datasources);
-
-        $this->faker = $faker;
     }
 
     /**

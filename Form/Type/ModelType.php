@@ -23,6 +23,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
 use Symfony\Component\Form\ChoiceList\Factory\DefaultChoiceListFactory;
 use Symfony\Component\Form\ChoiceList\Factory\PropertyAccessDecorator;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
@@ -68,7 +69,7 @@ class ModelType extends AbstractType
     /**
      * @var ChoiceListFactoryInterface
      */
-    private ChoiceListFactoryInterface $choiceListFactory;
+    private readonly ChoiceListFactoryInterface $choiceListFactory;
 
     /**
      * ModelType constructor.
@@ -138,7 +139,7 @@ class ModelType extends AbstractType
     {
         if ($options['multiple']) {
             $builder
-                ->addViewTransformer(new CollectionToArrayTransformer(), true);
+                ->addViewTransformer(new CollectionToArrayTransformer(), forcePrepend: true);
         }
     }
 
@@ -177,7 +178,7 @@ class ModelType extends AbstractType
             /** @var ColumnMap $firstIdentifier */
             $firstIdentifier = current($identifier);
             if (count($identifier) === 1 && $firstIdentifier->getPdoType() === PDO::PARAM_INT) {
-                return [__CLASS__, 'createChoiceName'];
+                return self::createChoiceName(...);
             }
             return null;
         };
@@ -223,7 +224,7 @@ class ModelType extends AbstractType
         $choiceLabelNormalizer = function (Options $options, mixed $choiceLabel): mixed {
             if ($choiceLabel === null) {
                 if ($options['property'] == null) {
-                    $choiceLabel = [__CLASS__, 'createChoiceLabel'];
+                    $choiceLabel = self::createChoiceLabel(...);
                 } else {
                     $valueProperty = $options['property'];
                     /** @var ModelCriteria $query */
@@ -259,7 +260,7 @@ class ModelType extends AbstractType
         $resolver->setRequired(['class']);
         $resolver->setNormalizer('query', $queryNormalizer);
         $resolver->setNormalizer('choice_label', $choiceLabelNormalizer);
-        $resolver->setAllowedTypes('query', ['null', 'Propel\Runtime\ActiveQuery\ModelCriteria']);
+        $resolver->setAllowedTypes('query', ['null', ModelCriteria::class]);
     }
 
     /**
@@ -277,6 +278,6 @@ class ModelType extends AbstractType
     #[Override]
     public function getParent(): ?string
     {
-        return 'Symfony\Component\Form\Extension\Core\Type\ChoiceType';
+        return ChoiceType::class;
     }
 }

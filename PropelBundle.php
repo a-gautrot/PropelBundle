@@ -64,14 +64,14 @@ class PropelBundle extends Bundle
     protected function configureConnections(): void
     {
         if ($this->container === null) {
-            throw new \LogicException('The bundle container has not been set.');
+            throw new BaseLogicException('The bundle container has not been set.');
         }
 
         /** @var array{runtime: array{defaultConnection?: string}, database: array{connections: array<string, array<string, mixed>>}, paths: array{loaderScriptDir: string}} $config Validated by DependencyInjection\Configuration. */
         $config = $this->container->getParameter('propel.configuration');
         $defaultConnection = $config['runtime']['defaultConnection'] ?? key($config['database']['connections']);
         if ($defaultConnection === null) {
-            throw new \LogicException('No Propel connection is configured.');
+            throw new BaseLogicException('No Propel connection is configured.');
         }
 
         /** @var StandardServiceContainer $serviceContainer */
@@ -120,14 +120,14 @@ class PropelBundle extends Bundle
     protected function configureLogging(): void
     {
         if ($this->container === null) {
-            throw new \LogicException('The bundle container has not been set.');
+            throw new BaseLogicException('The bundle container has not been set.');
         }
 
         /** @var StandardServiceContainer $serviceContainer */
         $serviceContainer = Propel::getServiceContainer();
         $logger = $this->container->get('propel.logger');
         if (!$logger instanceof LoggerInterface) {
-            throw new \LogicException('The propel.logger service must implement LoggerInterface.');
+            throw new BaseLogicException('The propel.logger service must implement LoggerInterface.');
         }
         $serviceContainer->setLogger('defaultLogger', $logger);
 

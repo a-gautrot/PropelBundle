@@ -116,7 +116,7 @@ class TypeGuesser implements FormTypeGuesserInterface
                 if ($column->getValueSet()) {
                     //check if this is mysql enum
                     $choices = $column->getValueSet();
-                    $labels = array_map('ucfirst', $choices);
+                    $labels = array_map(ucfirst(...), $choices);
 
                     return new TypeGuess(ChoiceType::class, ['choices' => array_combine($choices, $labels)], Guess::MEDIUM_CONFIDENCE);
                 }
@@ -210,7 +210,7 @@ class TypeGuesser implements FormTypeGuesserInterface
                 case PropelTypes::REAL:
                 case PropelTypes::DOUBLE:
                 case PropelTypes::DECIMAL:
-                    return new ValueGuess(null, Guess::MEDIUM_CONFIDENCE);
+                    return new ValueGuess(value: null, confidence: Guess::MEDIUM_CONFIDENCE);
             }
         }
 
@@ -232,7 +232,7 @@ class TypeGuesser implements FormTypeGuesserInterface
                 case PropelTypes::REAL:
                 case PropelTypes::DOUBLE:
                 case PropelTypes::DECIMAL:
-                    return new ValueGuess(null, Guess::MEDIUM_CONFIDENCE);
+                    return new ValueGuess(value: null, confidence: Guess::MEDIUM_CONFIDENCE);
             }
         }
 

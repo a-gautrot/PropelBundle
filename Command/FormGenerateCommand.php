@@ -39,6 +39,7 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
  * @author William DURAND <william.durand1@gmail.com>
  * @api
  */
+#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:form:generate', description: 'Generate Form types stubs based on the schema.xml')]
 class FormGenerateCommand extends AbstractCommand
 {
     /**
@@ -56,10 +57,8 @@ class FormGenerateCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
-            ->setName('propel:form:generate')
-            ->setDescription('Generate Form types stubs based on the schema.xml')
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Overwrite existing Form types')
-            ->addOption('platform', null, InputOption::VALUE_REQUIRED, 'The platform')
+            ->addOption('platform', mode: InputOption::VALUE_REQUIRED, description: 'The platform')
             ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to use to generate Form types (Ex: @AcmeDemoBundle)')
             ->addArgument('models', InputArgument::IS_ARRAY, 'Model classes to generate Form Types from')
             ->setHelp(<<<EOT

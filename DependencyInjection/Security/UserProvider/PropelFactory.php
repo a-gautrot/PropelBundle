@@ -30,22 +30,11 @@ use Symfony\Component\DependencyInjection\Exception\BadMethodCallException;
 class PropelFactory implements UserProviderFactoryInterface
 {
     /**
-     * @var string
-     */
-    private string $key;
-    /**
-     * @var string
-     */
-    private string $providerId;
-
-    /**
      * @param string $key
      * @param string $providerId
      */
-    public function __construct(string $key, string $providerId)
+    public function __construct(private readonly string $key, private readonly string $providerId)
     {
-        $this->key = $key;
-        $this->providerId = $providerId;
     }
 
     /**

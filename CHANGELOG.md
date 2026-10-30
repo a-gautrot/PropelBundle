@@ -44,8 +44,7 @@
 * Updated `composer.json`
 * Updated the project's source code
     * Trimmed the package with gitattributes
-    * Updated with support from PHPStan, Psalm, and PHPCS
-* Added support for Oracle Database and Microsoft SQL Server
+    * Updated with support from Rector, PHPStan, Psalm, and PHPCS
 * Added deprecation warnings for XML schemas
 * Updated unit tests
     * Now uses Docker for some UTs

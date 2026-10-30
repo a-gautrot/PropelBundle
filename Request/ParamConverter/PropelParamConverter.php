@@ -83,7 +83,7 @@ class PropelParamConverter implements ValueResolverInterface
         }
 
         $class = $argument->getType();
-        if ($class === null || !is_a($class, ActiveRecordInterface::class, true)) {
+        if ($class === null || !is_a($class, ActiveRecordInterface::class, allow_string: true)) {
             return [];
         }
         $existing = $request->attributes->get($argument->getName());
@@ -131,7 +131,7 @@ class PropelParamConverter implements ValueResolverInterface
                 }
             }
         } else {
-            $this->exclude = isset($options['exclude']) ? $options['exclude'] : [];
+            $this->exclude = $options['exclude'] ?? [];
             $this->filters = $request->attributes->all();
         }
 
@@ -215,7 +215,7 @@ class PropelParamConverter implements ValueResolverInterface
      */
     protected function getQuery(string $classQuery): ModelCriteria
     {
-        if (!is_a($classQuery, ModelCriteria::class, true)) {
+        if (!is_a($classQuery, ModelCriteria::class, allow_string: true)) {
             throw new LogicException('The query class must extend ModelCriteria.');
         }
         $query = $classQuery::create();
@@ -226,7 +226,7 @@ class PropelParamConverter implements ValueResolverInterface
                     $query->joinWith($with[0], $this->getValidJoin($with));
                     $this->hasWith = true;
                 } else {
-                    $invalidWith = var_export($with, true);
+                    $invalidWith = var_export($with, return: true);
                     throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
                             only string relation name (e.g. \"Book\") or an array with two keys (e.g. {\"Book\", \"LEFT_JOIN\"}) are allowed");
                 }
@@ -258,7 +258,7 @@ class PropelParamConverter implements ValueResolverInterface
             case 'INNER':
                 return Criteria::INNER_JOIN;
             default:
-                $invalidWith = var_export($with, true);
+                $invalidWith = var_export($with, return: true);
                 throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
                 only \"left\", \"right\" or \"inner\" are allowed for join option");
         }
@@ -309,7 +309,7 @@ class PropelParamConverter implements ValueResolverInterface
                 try {
                     $query->{'filterBy' . PropelInflector::camelize($column)}($value);
                     $hasCriteria = true;
-                } catch (Exception $e) {
+                } catch (Exception) {
                 }
             }
         }

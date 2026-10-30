@@ -25,17 +25,9 @@ use Symfony\Component\VarDumper\Caster\TraceStub;
 class PropelLogger implements LoggerInterface
 {
     /**
-     * @var LoggerInterface|null
-     */
-    protected ?LoggerInterface $logger = null;
-    /**
      * @var array<int, array{sql: string, connection: string, time: int|float, memory: int, trace: TraceStub}>
      */
     protected array $queries = [];
-    /**
-     * @var Stopwatch|null
-     */
-    protected ?Stopwatch $stopwatch;
     /**
      * @var bool
      */
@@ -49,10 +41,8 @@ class PropelLogger implements LoggerInterface
      * @param LoggerInterface|null $logger A LoggerInterface instance
      * @param Stopwatch|null $stopwatch A Stopwatch instance
      */
-    public function __construct(?LoggerInterface $logger = null, ?Stopwatch $stopwatch = null)
+    public function __construct(protected ?LoggerInterface $logger = null, protected ?Stopwatch $stopwatch = null)
     {
-        $this->logger = $logger;
-        $this->stopwatch = $stopwatch;
         $this->isPrepared = false;
     }
 

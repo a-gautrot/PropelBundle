@@ -19,23 +19,11 @@ use Propel\Generator\Model\PropelTypes;
 class Column
 {
     /**
-     * @var mixed
-     */
-    private mixed $name;
-
-    /**
-     * @var mixed
-     */
-    private mixed $type;
-
-    /**
      * @param mixed $name
      * @param mixed $type
      */
-    public function __construct(mixed $name, mixed $type)
+    public function __construct(private readonly mixed $name, private readonly mixed $type)
     {
-        $this->name = $name;
-        $this->type = $type;
     }
 
     /**

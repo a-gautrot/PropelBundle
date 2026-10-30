@@ -285,7 +285,7 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
         if (!class_exists($middleClass)) {
             throw new InvalidArgumentException("Unknown class \"$middleClass\".");
         }
-        $tableName = constant(constant(get_class($obj) . '::TABLE_MAP') . '::TABLE_NAME');
+        $tableName = constant(constant($obj::class . '::TABLE_MAP') . '::TABLE_NAME');
 
         foreach ($middleTable->getColumns() as $column) {
             if ($column->isForeignKey()) {
@@ -307,7 +307,7 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
         }
 
         if (!isset($relatedClass, $setter, $relatedSetter)) {
-            $objectClass = get_class($obj);
+            $objectClass = $obj::class;
             throw new InvalidArgumentException("Unable to find the many-to-many relationship for object \"$objectClass\".");
         }
 

@@ -29,6 +29,7 @@ use Symfony\Component\Filesystem\Filesystem;
  * @author William DURAND <william.durand1@gmail.com>
  * @api
  */
+#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:fixtures:dump', description: 'Dump data from database into YAML fixtures file.')]
 class FixturesDumpCommand extends AbstractCommand
 {
     /**
@@ -45,8 +46,6 @@ class FixturesDumpCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
-            ->setName('propel:fixtures:dump')
-            ->setDescription('Dump data from database into YAML fixtures file.')
             ->setHelp(<<<EOT
 The <info>propel:fixtures:dump</info> dumps data from database into YAML fixtures file.
 
@@ -57,8 +56,8 @@ The <info>--dir</info> parameter allows you to change the output directory.
 The default connection is the active connection (propel.dbal.default_connection).
 EOT
             )
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a connection to use')
-            ->addOption('dir', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a fixture directory');
+            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Set this parameter to define a connection to use')
+            ->addOption('dir', mode: InputOption::VALUE_OPTIONAL, description: 'Set this parameter to define a fixture directory');
     }
 
     /**

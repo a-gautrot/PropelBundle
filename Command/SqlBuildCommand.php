@@ -24,6 +24,7 @@ use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
+#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:sql:build', description: 'Build SQL files')]
 class SqlBuildCommand extends WrappedCommand
 {
     /**
@@ -36,11 +37,9 @@ class SqlBuildCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->setName('propel:sql:build')
-            ->setDescription('Build SQL files')
-            ->addOption('sql-dir', null, InputOption::VALUE_REQUIRED, 'The SQL files directory')
-            ->addOption('overwrite', null, InputOption::VALUE_NONE, '')
-            ->addOption('connection', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore');
+            ->addOption('sql-dir', mode: InputOption::VALUE_REQUIRED, description: 'The SQL files directory')
+            ->addOption('overwrite', mode: InputOption::VALUE_NONE, description: '')
+            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore');
     }
 
     /**

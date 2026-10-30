@@ -66,7 +66,7 @@ final class SchemaBuilder
             };
             foreach ($behavior->getElementsByTagName('parameter') as $parameter) {
                 if ($parameter->getAttribute('name') === $parameterName) {
-                    $names = array_map('trim', explode(',', $parameter->getAttribute('value')));
+                    $names = array_map(trim(...), explode(',', $parameter->getAttribute('value')));
                     $parameter->setAttribute('value', implode(',', array_map(static fn(string $name): string => $tableNames[$name] ?? $name, $names)));
                 }
             }
