@@ -103,7 +103,7 @@ YAML;
      * @return void
      * @throws Exception
      */
-    public function testLoadSelfReferencing()
+    public function testLoadSelfReferencing(): void
     {
         $fixtures = <<<YAML
 Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\CoolBookAuthor:

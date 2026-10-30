@@ -6,17 +6,17 @@ use Exception;
 use LogicException;
 use Propel\Bundle\PropelBundle\Request\ArgumentResolver\PropelValueResolver;
 use Propel\Bundle\PropelBundle\Request\ParamConverter\PropelParamConverter;
-use Propel\Bundle\PropelBundle\Tests\TestCase;
-use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book;
+use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
+use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Propel;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -168,6 +168,59 @@ class PropelValueResolverTest extends TestCase
 
         $this->assertSame([null], $resolver->getArguments($request, $controller));
         $this->assertSame($queryCount, $this->con->getQueryCount());
+    }
+
+    /**
+     * @return void
+     * @throws Exception
+     */
+    protected function loadFixtures(): void
+    {
+        $schema = <<<XML
+<database name="default" package="vendor.bundles.Propel.Bundle.PropelBundle.Tests.Request.ParamConverter"
+    namespace="Propel\Bundle\PropelBundle\Tests\Request\ParamConverter" defaultIdMethod="native">
+    <table name="my_book">
+        <column name="id" type="integer" primaryKey="true" />
+        <column name="name" type="varchar" size="255" />
+        <column name="my_author_id" type="integer" required="true" />
+
+        <foreign-key foreignTable="my_author" onDelete="CASCADE" onUpdate="CASCADE">
+            <reference local="my_author_id" foreign="id" />
+        </foreign-key>
+    </table>
+
+    <table name="my_author">
+        <column name="id" type="integer" primaryKey="true" />
+        <column name="name" type="varchar" size="255" />
+    </table>
+</database>
+XML;
+
+        if (!class_exists('Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor')) {
+            SchemaBuilder::buildSchema($schema);
+        }
+
+        $this->con = Propel::getConnection('default');
+        $this->con->useDebug();
+
+        MyBookQuery::create()->deleteAll($this->con);
+        MyAuthorQuery::create()->deleteAll($this->con);
+
+        $author = new MyAuthor();
+        $author->setId(10);
+        $author->setName('Will');
+
+        $book = new MyBook();
+        $book->setId(1);
+        $book->setName('PropelBook');
+        $book->setMyAuthor($author);
+
+        $book2 = new MyBook();
+        $book2->setId(2);
+        $book2->setName('sf2lBook');
+        $book2->setMyAuthor($author);
+
+        $author->save($this->con);
     }
 
     /**
@@ -413,58 +466,6 @@ class PropelValueResolverTest extends TestCase
 
         $this->assertEquals($nb + 1, $this->con->getQueryCount(), 'no new query to get the author');
         Propel::enableInstancePooling();
-    }
-
-    /**
-     * @return void
-     */
-    protected function loadFixtures(): void
-    {
-        $schema = <<<XML
-<database name="default" package="vendor.bundles.Propel.Bundle.PropelBundle.Tests.Request.ParamConverter"
-    namespace="Propel\Bundle\PropelBundle\Tests\Request\ParamConverter" defaultIdMethod="native">
-    <table name="my_book">
-        <column name="id" type="integer" primaryKey="true" />
-        <column name="name" type="varchar" size="255" />
-        <column name="my_author_id" type="integer" required="true" />
-
-        <foreign-key foreignTable="my_author" onDelete="CASCADE" onUpdate="CASCADE">
-            <reference local="my_author_id" foreign="id" />
-        </foreign-key>
-    </table>
-
-    <table name="my_author">
-        <column name="id" type="integer" primaryKey="true" />
-        <column name="name" type="varchar" size="255" />
-    </table>
-</database>
-XML;
-
-        if (!class_exists('Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor')) {
-            SchemaBuilder::buildSchema($schema);
-        }
-
-        $this->con = Propel::getConnection('default');
-        $this->con->useDebug();
-
-        MyBookQuery::create()->deleteAll($this->con);
-        MyAuthorQuery::create()->deleteAll($this->con);
-
-        $author = new MyAuthor();
-        $author->setId(10);
-        $author->setName('Will');
-
-        $book = new MyBook();
-        $book->setId(1);
-        $book->setName('PropelBook');
-        $book->setMyAuthor($author);
-
-        $book2 = new MyBook();
-        $book2->setId(2);
-        $book2->setName('sf2lBook');
-        $book2->setMyAuthor($author);
-
-        $author->save($this->con);
     }
 
     /**

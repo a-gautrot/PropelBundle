@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -19,7 +19,7 @@ use Propel\Runtime\Map\TableMap;
 /**
  * # ItemQuery
  */
-class ItemQuery
+class ItemQuery extends TableMap
 {
     /**
      * @var array
@@ -31,10 +31,6 @@ class ItemQuery
         'price' => PropelTypes::FLOAT,
         'is_active' => PropelTypes::BOOLEAN,
         'enabled' => PropelTypes::BOOLEAN_EMU,
-        'updated_at' => PropelTypes::TIMESTAMP,
-
-        'updated_at' => PropelTypes::TIMESTAMP,
-        'updated_at' => PropelTypes::TIMESTAMP,
         'updated_at' => PropelTypes::TIMESTAMP,
     ];
 
@@ -53,34 +49,39 @@ class ItemQuery
      */
     public function getPrimaryKeys(): array
     {
-        $cm = new ColumnMap('id', new TableMap());
-        $cm->setType('INTEGER');
+        $cm = new ColumnMap('id', $this, 'Id', PropelTypes::INTEGER);
 
         return ['id' => $cm];
     }
 
     /**
      * Method from the TableMap API
-     * @param mixed $column
-     * @return Column|null
+     * @param string $name
+     * @param bool $normalize
+     * @return ColumnMap
      */
-    public function getColumn($column): ?Column
+    public function getColumn(string $name, bool $normalize = true): ColumnMap
     {
-        if ($this->hasColumn($column)) {
-            return new Column($column, $this->map[$column]);
+        if ($this->hasColumn($name)) {
+            $map = new ColumnMap($name, $this, ucfirst($name), $this->map[$name]);
+            $map->setSize($map->isText() ? 255 : 0);
+            $map->setNotNull($name === 'id');
+
+            return $map;
         }
 
-        return null;
+        return parent::getColumn($name, $normalize);
     }
 
     /**
      * Method from the TableMap API
-     * @param mixed $column
+     * @param mixed $name
+     * @param bool $normalize
      * @return bool
      */
-    public function hasColumn($column): bool
+    public function hasColumn($name, bool $normalize = true): bool
     {
-        return in_array($column, array_keys($this->map));
+        return in_array($name, array_keys($this->map));
     }
 
     /**

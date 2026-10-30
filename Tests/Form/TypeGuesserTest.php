@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -102,11 +102,17 @@ class TypeGuesserTest extends TestCase
         $this->assertNull($value);
     }
 
+    /**
+     * @return void
+     */
     public function testGuessMaxLengthWithoutApplicableConstraint(): void
     {
         $this->assertNull($this->guesser->guessMaxLength(self::CLASS_NAME, 'id'));
     }
 
+    /**
+     * @return void
+     */
     public function testGuessPatternWithoutApplicableConstraint(): void
     {
         $this->assertNull($this->guesser->guessPattern(self::CLASS_NAME, 'id'));
@@ -173,7 +179,7 @@ class TypeGuesserTest extends TestCase
      * @param string $property
      * @param mixed $type
      * @param mixed $confidence
-     * @param mixed|null $multiple
+     * @param mixed $multiple
      * @return void
      * @dataProvider dataProviderForGuessType
      */

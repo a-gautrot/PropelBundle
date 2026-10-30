@@ -54,7 +54,7 @@ XML;
 
         $choices = $loader->loadChoicesForValues(['last' => '3', 'excluded' => '2', 'missing' => '99', 'first' => '1']);
 
-        $this->assertSame(['last' => 3, 'first' => 1], array_map(static fn($item) => $item->getId(), $choices));
+        $this->assertSame(['last' => 3, 'first' => 1], array_map(static fn(ChoiceLoaderItem $item): int => $item->getId(), $choices));
         $this->assertSame(2, $query->count());
     }
 
@@ -83,7 +83,7 @@ XML;
 
         $choices = $loader->loadChoicesForValues(['third' => 'three', 'first' => 'one']);
 
-        $this->assertSame(['third' => 3, 'first' => 1], array_map(static fn($item) => $item->getId(), $choices));
+        $this->assertSame(['third' => 3, 'first' => 1], array_map(static fn(ChoiceLoaderItem $item): int => $item->getId(), $choices));
         $this->assertSame(['third' => 'three', 'first' => 'one'], $loader->loadValuesForChoices($choices));
     }
 
@@ -93,7 +93,7 @@ XML;
     public function testLoadedChoiceListIsCachedAndSupportsPartialLookups(): void
     {
         $loader = new PropelChoiceLoader(new DefaultChoiceListFactory(), ChoiceLoaderItem::class, ChoiceLoaderItemQuery::create()->orderById());
-        $value = static fn($item) => (string)$item->getId();
+        $value = static fn(ChoiceLoaderItem $item): string => (string)$item->getId();
         $list = $loader->loadChoiceList($value);
 
         $this->assertSame($list, $loader->loadChoiceList($value));

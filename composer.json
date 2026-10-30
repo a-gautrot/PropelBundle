@@ -62,8 +62,8 @@
     "ext-libxml": "*",
     "ext-pdo": "*",
     "ext-pdo_sqlite": "*",
-    "fakerphp/faker": "^1.0",
-    "mikey179/vfsstream": "^1.6",
+    "fakerphp/faker": "^1.24",
+    "mikey179/vfsstream": "^1.6.12",
     "phpstan/extension-installer": "^1.4",
     "phpstan/phpstan": "^2.0",
     "phpstan/phpstan-deprecation-rules": "^2.0",
@@ -76,7 +76,7 @@
     "symfony/twig-bridge": "^5.4.31",
     "symfony/web-profiler-bundle": "^5.4",
     "twig/twig": "<=3.19||^3.26",
-    "vimeo/psalm": "@stable"
+    "vimeo/psalm": ">=0.3"
   },
   "config": {
     "allow-plugins": {

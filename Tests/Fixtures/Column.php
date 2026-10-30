@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -44,11 +44,6 @@ class Column
     public function getType()
     {
         return $this->type;
-    }
-
-    public function getValueSet(): array
-    {
-        return [];
     }
 
     /**

@@ -10,9 +10,10 @@
 
 namespace Propel\Bundle\PropelBundle\Tests\DataFixtures;
 
+use Exception;
 use PDO;
-use Propel\Bundle\PropelBundle\Tests\TestCase as BaseTestCase;
 use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
+use Propel\Bundle\PropelBundle\Tests\TestCase as BaseTestCase;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Connection\PropelPDO;
 use Propel\Runtime\Propel;
@@ -37,6 +38,7 @@ class TestCase extends BaseTestCase
 
     /**
      * @return void
+     * @throws Exception
      */
     protected function setUp(): void
     {

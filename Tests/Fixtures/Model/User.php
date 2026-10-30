@@ -34,4 +34,28 @@ class User extends BaseUser implements UserInterface
         // TODO: Implement getUserIdentifier() method.
         return '';
     }
+
+    /**
+     * @return void
+     */
+    public function getPassword()
+    {
+        // TODO: Implement getPassword() method.
+    }
+
+    /**
+     * @return void
+     */
+    public function getSalt()
+    {
+        // TODO: Implement getSalt() method.
+    }
+
+    /**
+     * @return void
+     */
+    public function getUsername()
+    {
+        // TODO: Implement getUsername() method.
+    }
 }

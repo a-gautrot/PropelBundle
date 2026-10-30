@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
+use PHPUnit\Runner\Version;
+use PHPUnit\TextUI\Application;
+use PHPUnit\TextUI\Command;
+
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-$legacy = version_compare(\PHPUnit\Runner\Version::id(), '10.0.0', '<');
+$legacy = version_compare(Version::id(), '10.0.0', '<');
 $configuration = $legacy ? 'phpunit-legacy.dist.xml' : 'phpunit.dist.xml';
 
 $_SERVER['argv'] = array_merge(
@@ -14,7 +18,7 @@ $_SERVER['argv'] = array_merge(
 $_SERVER['argc'] = count($_SERVER['argv']);
 
 if ($legacy) {
-    \PHPUnit\TextUI\Command::main();
+    Command::main();
 } else {
-    exit((new \PHPUnit\TextUI\Application())->run($_SERVER['argv']));
+    exit((new Application())->run($_SERVER['argv']));
 }
