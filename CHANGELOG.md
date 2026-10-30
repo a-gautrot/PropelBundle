@@ -45,8 +45,9 @@
 * Updated the project's source code
     * Trimmed the package with gitattributes
     * Updated with support from PHPStan, Psalm, and PHPCS
+* Added support for Oracle Database and Microsoft SQL Server
 * Added deprecation warnings for XML schemas
-* Fixed fixture path validation, SQL result handling, and static type declarations
 * Updated unit tests
     * Now uses Docker for some UTs
     * Fixed UTs for its Book schema
+* Fixed fixture path validation, SQL result handling, and static type declarations
