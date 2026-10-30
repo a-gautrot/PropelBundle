@@ -43,7 +43,7 @@ class TypeGuesserTest extends TestCase
     private TypeGuesser $guesser;
 
     /**
-     * @return array[]
+     * @return list<array{string, class-string, int, bool?}>
      */
     public static function dataProviderForGuessType(): array
     {

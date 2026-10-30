@@ -17,20 +17,16 @@ use Symfony\Component\Yaml\Yaml;
  * YAML fixtures dumper.
  *
  * @author William Durand <william.durand1@gmail.com>
+ * @api
  */
 class YamlDataDumper extends AbstractDataDumper
 {
     /**
-     * @param array $data
+     * @param array<string, array<string, array<string, mixed>>> $data
      * @return string
      */
     protected function transformArrayToData(array $data): string
     {
-        return Yaml::dump(
-            $data,
-            3,
-            4,
-            Yaml::DUMP_OBJECT
-        );
+        return Yaml::dump($data, 3, 4, Yaml::DUMP_OBJECT);
     }
 }

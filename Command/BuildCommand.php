@@ -10,8 +10,11 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -20,11 +23,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * # BuildCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class BuildCommand extends Command
 {
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
     protected function configure(): void
     {
@@ -40,19 +45,27 @@ class BuildCommand extends Command
     }
 
     /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
      * @throws ExceptionInterface
+     * @throws RuntimeException
      * @see Command
      *
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $application = $this->getApplication();
+        if ($application === null) {
+            throw new RuntimeException('The command is not attached to an application.');
+        }
         if (!$input->getOption('sql')) {
             $in = new ArrayInput([
                 'command' => 'propel:model:build',
                 '--connection' => $input->getOption('connection'),
                 '--verbose' => $input->getOption('verbose')
             ]);
-            $cmd = $this->getApplication()->find('propel:model:build');
+            $cmd = $application->find('propel:model:build');
             $cmd->run($in, $output);
         }
 
@@ -62,7 +75,7 @@ class BuildCommand extends Command
                 '--connection' => $input->getOption('connection'),
                 '--verbose' => $input->getOption('verbose'),
             ]);
-            $cmd = $this->getApplication()->find('propel:sql:build');
+            $cmd = $application->find('propel:sql:build');
             $cmd->run($in, $output);
         }
 
@@ -73,10 +86,10 @@ class BuildCommand extends Command
                 '--force' => true,
                 '--verbose' => $input->getOption('verbose'),
             ]);
-            $cmd = $this->getApplication()->find('propel:sql:insert');
+            $cmd = $application->find('propel:sql:insert');
             $cmd->run($in, $output);
         }
 
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 }

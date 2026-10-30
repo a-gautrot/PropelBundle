@@ -11,18 +11,29 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException;
+use JsonException;
+use LogicException;
 use Propel\Bundle\PropelBundle\Service\SchemaLocator;
 use ReflectionClass;
 use RuntimeException;
 use SplFileInfo;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Console\Application as SymfonyConsoleApplication;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
+use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException as ConsoleLogicException;
+use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
+use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
@@ -42,10 +53,12 @@ abstract class AbstractCommand extends Command
     protected ?BundleInterface $bundle = null;
     /**
      * @var InputInterface
+     * @psalm-suppress PropertyNotSetInConstructor Initialized by Symfony in initialize().
      */
     protected InputInterface $input;
     /**
      * @var OutputInterface
+     * @psalm-suppress PropertyNotSetInConstructor Initialized by Symfony in initialize().
      */
     protected OutputInterface $output;
     /**
@@ -58,6 +71,7 @@ abstract class AbstractCommand extends Command
     /**
      * @param ContainerInterface $container
      * @param string|null $name
+     * @throws ConsoleLogicException
      */
     public function __construct(ContainerInterface $container, ?string $name = null)
     {
@@ -70,6 +84,10 @@ abstract class AbstractCommand extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return void
+     * @throws RuntimeException
+     * @throws ConsoleInvalidArgumentException
+     * @throws ServiceCircularReferenceException
+     * @throws ServiceNotFoundException
      */
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
@@ -77,7 +95,7 @@ abstract class AbstractCommand extends Command
         $this->output = $output;
         $this->cacheDir = "{$this->getKernel()->getCacheDir()}/propel";
 
-        if ($input->hasArgument('bundle') && !empty($input->getArgument('bundle')) && substr($input->getArgument('bundle'), 0, 1) === '@') {
+        if ($input->hasArgument('bundle') && !empty($input->getArgument('bundle')) && str_starts_with($input->getArgument('bundle'), '@')) {
             $this->bundle = $this
                 ->getContainer()
                 ->get('kernel')
@@ -89,21 +107,41 @@ abstract class AbstractCommand extends Command
      * Return the current Propel cache directory.
      *
      * @return string The current Propel cache directory.
+     * @throws RuntimeException
      */
     protected function getCacheDir(): string
     {
+        if ($this->cacheDir === null) {
+            throw new RuntimeException('The command has not been initialized.');
+        }
+
         return $this->cacheDir;
     }
 
     /**
      * @return KernelInterface
+     * @throws RuntimeException
      */
     protected function getKernel(): KernelInterface
     {
         /** @var Application $application */
-        $application = $this->getApplication();
+        $application = $this->getRequiredApplication();
 
         return $application->getKernel();
+    }
+
+    /**
+     * @return SymfonyConsoleApplication
+     * @throws RuntimeException
+     */
+    protected function getRequiredApplication(): SymfonyConsoleApplication
+    {
+        $application = $this->getApplication();
+        if ($application === null) {
+            throw new RuntimeException('The command is not attached to an application.');
+        }
+
+        return $application;
     }
 
     /**
@@ -115,15 +153,37 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * @return HelperSet
+     * @throws RuntimeException
+     */
+    protected function getRequiredHelperSet(): HelperSet
+    {
+        $helpers = $this->getHelperSet();
+        if ($helpers === null) {
+            throw new RuntimeException('The command has no helper set.');
+        }
+
+        return $helpers;
+    }
+
+    /**
      * Create all the files needed by Propel's commands.
+     * @return void
+     * @throws JsonException
+     * @throws LogicException
+     * @throws RuntimeException
+     * @throws ParameterNotFoundException
+     * @throws ServiceNotFoundException
+     * @throws IOException
+     * @throws DirectoryNotFoundException
      */
     protected function setupBuildTimeFiles(): void
     {
         $fs = new Filesystem();
-        $fs->mkdir($this->cacheDir);
+        $fs->mkdir($this->getCacheDir());
 
         // collect all schemas
-        $this->copySchemas($this->getKernel(), $this->cacheDir);
+        $this->copySchemas($this->getKernel(), $this->getCacheDir());
 
         // propel.json
         $this->createPropelConfigurationFile("$this->cacheDir/propel.json");
@@ -133,12 +193,16 @@ abstract class AbstractCommand extends Command
      * @param KernelInterface $kernel The application kernel.
      * @param string $cacheDir The directory in which the schemas will
      *                                  be copied.
+     * @return void
+     * @throws LogicException
+     * @throws RuntimeException
+     * @throws ServiceNotFoundException
+     * @throws DirectoryNotFoundException
      */
     protected function copySchemas(KernelInterface $kernel, string $cacheDir): void
     {
         $filesystem = new Filesystem();
 
-        /** @var array<string, array{?BundleInterface, SplFileInfo}> $finalSchemas */
         $finalSchemas = $this->getFinalSchemas($kernel, $this->bundle);
         foreach ($finalSchemas as $schema) {
             list($bundle, $finalSchema) = $schema;
@@ -155,6 +219,9 @@ abstract class AbstractCommand extends Command
             // besides, the automated namespace to package conversion has
             // not taken place yet so it needs to be done manually
             $database = simplexml_load_file($file);
+            if ($database === false) {
+                throw new RuntimeException("Cannot load schema: $file");
+            }
 
             if (isset($database['package'])) {
                 // Do not use the prefix!
@@ -186,7 +253,7 @@ abstract class AbstractCommand extends Command
                 }
             }
 
-            foreach ($database->table as $table) {
+            foreach ($database->table ?? [] as $table) {
                 if (isset($table['package'])) {
                     $table['package'] = $table['package'];
                 } elseif (isset($table['namespace'])) {
@@ -212,6 +279,10 @@ abstract class AbstractCommand extends Command
      *                                     be returned.
      *
      * @return array<string, array{?BundleInterface, SplFileInfo}> A list of schemas.
+     * @throws LogicException
+     * @throws RuntimeException
+     * @throws ServiceNotFoundException
+     * @throws DirectoryNotFoundException
      */
     protected function getFinalSchemas(KernelInterface $kernel, ?BundleInterface $bundle = null): array
     {
@@ -224,10 +295,17 @@ abstract class AbstractCommand extends Command
 
     /**
      * @return SchemaLocator
+     * @throws RuntimeException
+     * @throws ServiceNotFoundException
      */
     protected function getSchemaLocator(): SchemaLocator
     {
-        return $this->getContainer()->get('propel.schema_locator');
+        $locator = $this->getContainer()->get('propel.schema_locator');
+        if (!$locator instanceof SchemaLocator) {
+            throw new RuntimeException('The propel.schema_locator service must be a SchemaLocator.');
+        }
+
+        return $locator;
     }
 
     /**
@@ -235,12 +313,13 @@ abstract class AbstractCommand extends Command
      * @param string $namespace
      *
      * @return string
+     * @throws RuntimeException
      */
     protected function getPackageFromBundle(BundleInterface $bundle, string $namespace): string
     {
         //find relative path from namespace to bundle->getNamespace()
         $baseNamespace = (new ReflectionClass($bundle))->getNamespaceName();
-        if (strpos($namespace, $baseNamespace) === 0) {
+        if (str_starts_with($namespace, $baseNamespace)) {
             //base namespace fits
             //eg.
             //  Base: Jarves/JarvesBundle => Jarves
@@ -250,8 +329,15 @@ abstract class AbstractCommand extends Command
 
             $namespaceDiff = substr($namespace, strlen($baseNamespace) + 1);
 
-            $bundlePath = realpath($bundle->getPath()) . '/' . str_replace('\\', '/', $namespaceDiff);
+            $bundleRoot = realpath($bundle->getPath());
+            if ($bundleRoot === false) {
+                throw new RuntimeException('The bundle directory does not exist.');
+            }
+            $bundlePath = $bundleRoot . '/' . str_replace('\\', '/', $namespaceDiff);
             $appPath = realpath($this->getKernel()->getProjectDir());
+            if ($appPath === false) {
+                throw new RuntimeException('The project directory does not exist.');
+            }
 
             $path = static::getRelativePath($bundlePath, $appPath);
 
@@ -279,14 +365,15 @@ abstract class AbstractCommand extends Command
         $from = '/' . trim($from, '/');
         $to = '/' . trim($to, '/');
 
-        if (strpos($from, $to) === 0) {
+        if (str_starts_with($from, $to)) {
             return substr($from, strlen($to) + ($to === '/' ? 0 : 1));
         }
 
         $result = '';
-        while ($to && strpos($from, $to) === false) {
+        while ($to && !str_contains($from, $to)) {
             $result .= '../';
-            $to = substr($to, 0, strrpos($to, '/'));
+            $position = strrpos($to, '/');
+            $to = $position === false ? '' : substr($to, 0, $position);
         }
 
         return !$to /*we reached root*/ ? $result . substr($from, 1) : $result . substr($from, strlen($to) + 1);
@@ -314,19 +401,39 @@ abstract class AbstractCommand extends Command
      * Returns the name of the default connection.
      *
      * @return string
+     * @throws RuntimeException
+     * @throws ParameterNotFoundException
      */
     protected function getDefaultConnection(): string
     {
         $config = $this->getConfig();
 
-        return !empty($config['generator']['defaultConnection']) ? $config['generator']['defaultConnection'] : key($config['database']['connections']);
+        $connection = $config['generator']['defaultConnection'] ?? key($config['database']['connections']);
+        if (!is_string($connection) || $connection === '') {
+            throw new RuntimeException('No default Propel connection is configured.');
+        }
+
+        return $connection;
     }
 
     /**
      * @return array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: ?string, loaderScriptDir: string}, database: array{connections: array<string, array<string, mixed>>}, runtime: array{defaultConnection: string, logging: bool}, migrations: array{tableName: string, parserClass: string}, generator: array<string, mixed>}
+     * @throws ParameterNotFoundException
      */
     protected function getConfig(): array
     {
+        /**
+         * @var array{
+         *     paths: array{
+         *         schemaDir: string, sqlDir: string, migrationDir: string,
+         *         composerDir: string|null, loaderScriptDir: string
+         *     },
+         *     database: array{connections: array<string, array<string, mixed>>},
+         *     runtime: array{defaultConnection: string, logging: bool},
+         *     migrations: array{tableName: string, parserClass: string},
+         *     generator: array<string, mixed>
+         * }
+         */
         return $this->getContainer()->getParameter('propel.configuration');
     }
 
@@ -334,6 +441,9 @@ abstract class AbstractCommand extends Command
      * Create a JSON file which represents propel.configuration.
      *
      * @param string $file Should be 'propel.json'.
+     * @return void
+     * @throws JsonException
+     * @throws ParameterNotFoundException
      */
     protected function createPropelConfigurationFile(string $file): void
     {
@@ -345,7 +455,7 @@ abstract class AbstractCommand extends Command
 
         $config = ['propel' => $propelConfig];
 
-        file_put_contents($file, json_encode($config, JSON_PRETTY_PRINT));
+        file_put_contents($file, json_encode($config, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
     }
 
     /**
@@ -359,6 +469,7 @@ abstract class AbstractCommand extends Command
      * @return int The command return code.
      *
      * @throws ExceptionInterface
+     * @throws RuntimeException
      */
     protected function runCommand(Command $command, array $parameters, InputInterface $input, OutputInterface $output): int
     {
@@ -383,12 +494,13 @@ abstract class AbstractCommand extends Command
         $parameters = array_merge($extraParameters, $parameters);
 
         if ($input->hasOption('platform')) {
-            if ($platform = $input->getOption('platform') ?: $this->getPlatform()) {
+            $platform = $input->getOption('platform') ?: $this->getPlatform();
+            if ($platform !== null && $platform !== '') {
                 $parameters['--platform'] = $platform;
             }
         }
 
-        $command->setApplication($this->getApplication());
+        $command->setApplication($this->getRequiredApplication());
 
         // and run the sub-command
         return $command->run(new ArrayInput($parameters), $output);
@@ -398,6 +510,7 @@ abstract class AbstractCommand extends Command
      * Reads the platform class from the configuration
      *
      * @return string|null The platform class name.
+     * @throws ParameterNotFoundException
      */
     protected function getPlatform(): ?string
     {
@@ -429,6 +542,7 @@ abstract class AbstractCommand extends Command
      * @param string $connectionName The connection name.
      *
      * @return string The DSN.
+     * @throws InvalidArgumentException
      */
     protected function getDsn(string $connectionName): string
     {
@@ -451,6 +565,7 @@ abstract class AbstractCommand extends Command
      * @param string $name The connection name.
      *
      * @return array<string, mixed> The connection data.
+     * @throws InvalidArgumentException
      */
     protected function getConnectionData(string $name): array
     {
@@ -484,6 +599,7 @@ abstract class AbstractCommand extends Command
      * Returns the name of the migrations table.
      *
      * @return string
+     * @throws ParameterNotFoundException
      */
     protected function getMigrationsTable(): string
     {

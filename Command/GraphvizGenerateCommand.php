@@ -12,17 +12,21 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use Propel\Generator\Command\GraphvizGenerateCommand as BaseGraphvizGenerateCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
  * # GraphvizGenerateCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class GraphvizGenerateCommand extends WrappedCommand
 {
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
     protected function configure(): void
     {
@@ -36,6 +40,7 @@ class GraphvizGenerateCommand extends WrappedCommand
 
     /**
      * @return Command
+     * @throws LogicException
      */
     protected function createSubCommandInstance(): Command
     {
@@ -44,7 +49,8 @@ class GraphvizGenerateCommand extends WrappedCommand
 
     /**
      * @param InputInterface $input
-     * @return array
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException
      */
     protected function getSubCommandArguments(InputInterface $input): array
     {

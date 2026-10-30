@@ -10,6 +10,9 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use RuntimeException;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\RuntimeException as ConsoleRuntimeException;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -33,13 +36,16 @@ trait FormattingHelpers
      * @param bool $default The default answer if the user enters nothing
      *
      * @return bool true if the user has confirmed, false otherwise
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
+     * @throws ConsoleRuntimeException
      */
     protected function askConfirmation(InputInterface $input, OutputInterface $output, string $question, bool $default = true): bool
     {
         $question = new Question($question);
         do {
             /** @var QuestionHelper $questionHelper */
-            $questionHelper = $this->getHelperSet()->get('question');
+            $questionHelper = $this->getRequiredHelperSet()->get('question');
             $answer = $questionHelper->ask($input, $output, $question);
         } while ($answer && !in_array(strtolower($answer[0]), ['y', 'n']));
 
@@ -53,6 +59,7 @@ trait FormattingHelpers
     /**
      * @param OutputInterface $output The output.
      * @param string $filename The filename.
+     * @return void
      */
     protected function writeNewFile(OutputInterface $output, string $filename): void
     {
@@ -62,6 +69,7 @@ trait FormattingHelpers
     /**
      * @param OutputInterface $output The output.
      * @param string $directory The directory.
+     * @return void
      */
     protected function writeNewDirectory(OutputInterface $output, string $directory): void
     {
@@ -73,7 +81,10 @@ trait FormattingHelpers
      *
      * @param OutputInterface $output The output.
      * @param string $taskName A task name.
-     * @param Boolean $more Whether to add a 'more details' message or not.
+     * @param bool $more Whether to add a 'more details' message or not.
+     * @return void
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
      */
     protected function writeTaskError(OutputInterface $output, string $taskName, bool $more = true): void
     {
@@ -93,11 +104,14 @@ trait FormattingHelpers
      * @param OutputInterface $output The output.
      * @param string|string[] $text A text message.
      * @param string $style A style to apply on the section.
+     * @return void
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
      */
-    protected function writeSection(OutputInterface $output, $text, string $style = 'bg=blue;fg=white'): void
+    protected function writeSection(OutputInterface $output, string|array $text, string $style = 'bg=blue;fg=white'): void
     {
         /** @var FormatterHelper $formatter */
-        $formatter = $this->getHelperSet()->get('formatter');
+        $formatter = $this->getRequiredHelperSet()->get('formatter');
 
         $output->writeln([
             '',

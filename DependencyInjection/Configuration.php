@@ -12,11 +12,13 @@ namespace Propel\Bundle\PropelBundle\DependencyInjection;
 
 use InvalidArgumentException;
 use Propel\Common\Config\PropelConfiguration;
+use RuntimeException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
 /**
  * # Configuration
  * This class contains the configuration information for the bundle
+ * @api
  */
 class Configuration extends PropelConfiguration
 {
@@ -47,6 +49,8 @@ class Configuration extends PropelConfiguration
     /**
      * @param ArrayNodeDefinition $node
      * @return void
+     * @psalm-suppress PossiblyNullReference Symfony's end() returns the configured parent builder.
+     * @psalm-suppress UndefinedInterfaceMethod Symfony's fluent builder loses the concrete parent type at end().
      */
     protected function addPathsSection(ArrayNodeDefinition $node): void
     {
@@ -56,10 +60,10 @@ class Configuration extends PropelConfiguration
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('schemaDir')->defaultValue($this->defaultDir)->end()
-                        ->scalarNode('sqlDir')->defaultValue("$this->defaultDir/sql")->end()
-                        ->scalarNode('migrationDir')->defaultValue("$this->defaultDir/migrations")->end()
+                        ->scalarNode('sqlDir')->defaultValue($this->defaultDir . '/sql')->end()
+                        ->scalarNode('migrationDir')->defaultValue($this->defaultDir . '/migrations')->end()
                         ->scalarNode('composerDir')->defaultNull()->end()
-                        ->scalarNode('loaderScriptDir')->defaultValue("$this->kernelDir/generated-conf")->end()
+                        ->scalarNode('loaderScriptDir')->defaultValue($this->kernelDir . '/generated-conf')->end()
                     ->end()
                 ->end()
             ->end()
@@ -69,6 +73,8 @@ class Configuration extends PropelConfiguration
     /**
      * @param ArrayNodeDefinition $node
      * @return void
+     * @psalm-suppress PossiblyNullReference Symfony's end() returns the configured parent builder.
+     * @psalm-suppress UndefinedInterfaceMethod Symfony's fluent builder loses the concrete parent type at end().
      */
     protected function addRuntimeSection(ArrayNodeDefinition $node): void
     {
@@ -95,7 +101,7 @@ class Configuration extends PropelConfiguration
                         ->end()
                         ->arrayNode('profiler')
                             ->children()
-                                ->scalarNode('classname')->defaultValue('\Propel\Runtime\Util\Profiler')->end()
+                                ->scalarNode('classname')->defaultValue(Profiler::class)->end()
                                 ->floatNode('slowTreshold')->defaultValue(0.1)->end()
                                 ->arrayNode('details')
                                     ->children()
@@ -141,6 +147,8 @@ class Configuration extends PropelConfiguration
     /**
      * @param ArrayNodeDefinition $node
      * @return void
+     * @psalm-suppress UndefinedMethod ExprBuilder::end() returns the connections ArrayNodeDefinition.
+     * @throws RuntimeException
      */
     protected function addDatabaseSection(ArrayNodeDefinition $node): void
     {
@@ -156,10 +164,10 @@ class Configuration extends PropelConfiguration
                             ->isRequired()
                             ->validate()
                             ->always()
-                                ->then(function(array $connections): array {
-                                    foreach ($connections as $name => $connection) {
+                                ->then(function (array $connections): array {
+                                    foreach (array_keys($connections) as $name) {
                                         if (str_contains($name, '.')) {
-                                            throw new \InvalidArgumentException('Dots are not allowed in connection names');
+                                            throw new InvalidArgumentException('Dots are not allowed in connection names');
                                         }
                                     }
 

@@ -3,6 +3,9 @@ includes:
 
 parameters:
   level: 6
+  phpVersion: 70400
+  stubFiles:
+    - Resources/phpstan/propel.stub
   paths:
     - ./
   excludePaths:

@@ -17,12 +17,13 @@ use SimpleXMLElement;
  * XML fixtures loader.
  *
  * @author William Durand <william.durand1@gmail.com>
+ * @api
  */
 class XmlDataLoader extends AbstractDataLoader
 {
     /**
      * @param string $file
-     * @return string[][][]
+     * @return array<string, array<string, array<string, string>>>
      */
     protected function transformDataToArray(string $file): array
     {
@@ -35,14 +36,15 @@ class XmlDataLoader extends AbstractDataLoader
      * @param SimpleXMLElement|false $xml
      * @return array<string, array<string, array<string, string>>>
      */
-    protected function simpleXmlToArray($xml): array
+    protected function simpleXmlToArray(SimpleXMLElement|false $xml): array
     {
         $array = [];
         if ($xml instanceof SimpleXMLElement) {
             foreach ($xml as $key => $value) {
+                $key = (string)$key;
                 // First make a valid key which is the Ns (Namespace) attribute
                 // + the element name (the class name)
-                foreach ($value->attributes() as $subkey => $subvalue) {
+                foreach ($value->attributes() ?? [] as $subkey => $subvalue) {
                     if ($subkey === 'Namespace') {
                         $key = "$subvalue\\$key";
                         break;
@@ -51,10 +53,11 @@ class XmlDataLoader extends AbstractDataLoader
 
                 $array[$key] = [];
                 foreach ($value as $elementKey => $elementValue) {
+                    $elementKey = (string)$elementKey;
                     $array[$key][$elementKey] = [];
 
-                    foreach ($elementValue->attributes() as $subkey => $subvalue) {
-                        $array[$key][$elementKey][$subkey] = (string)$subvalue;
+                    foreach ($elementValue->attributes() ?? [] as $subkey => $subvalue) {
+                        $array[$key][$elementKey][(string)$subkey] = (string)$subvalue;
                     }
                 }
             }

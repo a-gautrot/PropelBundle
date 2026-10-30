@@ -12,17 +12,22 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use Propel\Generator\Command\MigrationDownCommand as BaseMigrationCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
 
 /**
  * # MigrationDownCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class MigrationDownCommand extends WrappedCommand
 {
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
     protected function configure(): void
     {
@@ -40,6 +45,7 @@ class MigrationDownCommand extends WrappedCommand
 
     /**
      * @return Command
+     * @throws LogicException
      */
     protected function createSubCommandInstance(): Command
     {
@@ -48,7 +54,9 @@ class MigrationDownCommand extends WrappedCommand
 
     /**
      * @param InputInterface $input
-     * @return array
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException
+     * @throws ParameterNotFoundException
      */
     protected function getSubCommandArguments(InputInterface $input): array
     {

@@ -10,6 +10,8 @@
 
 namespace Propel\Bundle\PropelBundle\Validator\Constraints;
 
+use Propel\Runtime\ActiveQuery\ModelCriteria;
+use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Map\TableMap;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -22,6 +24,7 @@ use function count;
  *
  * @author Maxime AILLOUD <maxime.ailloud@gmail.com>
  * @author Marek Kalnik <marekk@theodo.fr>
+ * @api
  */
 class UniqueObjectValidator extends ConstraintValidator
 {
@@ -29,6 +32,7 @@ class UniqueObjectValidator extends ConstraintValidator
      * @param mixed $value
      * @param Constraint $constraint
      * @return void
+     * @throws ConstraintDefinitionException
      */
     public function validate($value, Constraint $constraint): void
     {
@@ -36,7 +40,11 @@ class UniqueObjectValidator extends ConstraintValidator
         $fields = (array)$constraint->fields;
         $class = get_class($value);
         $queryClass = "{$class}Query";
-        $tableMapClass = $class::TABLE_MAP;
+        if (!is_a($value, ActiveRecordInterface::class)
+            || !is_a($queryClass, ModelCriteria::class, true)) {
+            throw new ConstraintDefinitionException('The value must be a Propel model with a query class.');
+        }
+        $tableMapClass = get_class($value)::TABLE_MAP;
         $classFields = $tableMapClass::getFieldnames(TableMap::TYPE_FIELDNAME);
 
         // ensure at least one field is selected
@@ -77,7 +85,6 @@ class UniqueObjectValidator extends ConstraintValidator
                     '{{ fields }}' => implode($constraint->messageFieldSeparator, $fieldParts)
                 ])
                 ->addViolation();
-
         }
     }
 }

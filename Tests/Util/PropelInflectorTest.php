@@ -21,7 +21,7 @@ use Propel\Bundle\PropelBundle\Util\PropelInflector;
 class PropelInflectorTest extends TestCase
 {
     /**
-     * @return array
+     * @return list<array{string|null, string|null}>
      */
     public static function dataProviderForTestCamelize(): array
     {

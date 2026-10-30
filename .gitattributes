@@ -1,5 +1,7 @@
 # Normalize text files to LF
 * text=auto eol=lf
+*.stub text
+*.stubphp text
 *.bat text eol=crlf
 *.cmd text eol=crlf
 
@@ -16,5 +18,8 @@
 /phpunit.dist.xml export-ignore
 /phpunit-legacy.dist.xml export-ignore
 /psalm.dist.xml export-ignore
+/psalm-baseline.xml export-ignore
+/Resources/phpstan export-ignore
+/Resources/psalm export-ignore
 /Tests export-ignore
 /CHANGELOG.md export-ignore

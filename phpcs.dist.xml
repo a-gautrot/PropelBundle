@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="PropelBundle">
-    <description>PSR-2 with short arrays and variable-first comparisons for PropelBundle sources.</description>
+    <description>PSR-2 coding standard for PropelBundle</description>
     <file>.</file>
     <arg name="extensions" value="php"/>
     <exclude-pattern>*/vendor/*</exclude-pattern>
@@ -9,4 +9,16 @@
     <rule ref="PSR2"/>
     <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
     <rule ref="Generic.ControlStructures.DisallowYodaConditions"/>
+    <rule ref="Squiz.Strings.DoubleQuoteUsage">
+        <exclude name="Squiz.Strings.DoubleQuoteUsage.NotRequired"/>
+    </rule>
+    <rule ref="Generic.PHP.ForbiddenFunctions">
+        <message>Use concatenation with the dot operator instead of %s().</message>
+        <properties>
+            <property name="forbiddenFunctions" type="array">
+                <element key="sprintf" value="string concatenation"/>
+                <element key="vsprintf" value="string concatenation"/>
+            </property>
+        </properties>
+    </rule>
 </ruleset>

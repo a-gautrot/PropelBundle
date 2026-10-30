@@ -10,18 +10,24 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Propel\Generator\Command\SqlBuildCommand as PropelSqlBuildCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
 
 /**
  * # SqlBuildCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class SqlBuildCommand extends WrappedCommand
 {
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
     protected function configure(): void
     {
@@ -37,15 +43,18 @@ class SqlBuildCommand extends WrappedCommand
 
     /**
      * @return Command
+     * @throws LogicException
      */
     protected function createSubCommandInstance(): Command
     {
-        return new \Propel\Generator\Command\SqlBuildCommand();
+        return new PropelSqlBuildCommand();
     }
 
     /**
      * @param InputInterface $input
-     * @return array
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException
+     * @throws ParameterNotFoundException
      */
     protected function getSubCommandArguments(InputInterface $input): array
     {

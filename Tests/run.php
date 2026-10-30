@@ -11,9 +11,16 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 $legacy = version_compare(Version::id(), '10.0.0', '<');
 $configuration = $legacy ? 'phpunit-legacy.dist.xml' : 'phpunit.dist.xml';
 
+$arguments = array_slice($_SERVER['argv'], 1);
+if ($legacy) {
+    $arguments = array_values(array_filter($arguments, static function (string $argument): bool {
+        return !in_array($argument, ['--display-deprecations', '--display-phpunit-deprecations'], true);
+    }));
+}
+
 $_SERVER['argv'] = array_merge(
     [$_SERVER['argv'][0], '--configuration', dirname(__DIR__) . '/' . $configuration],
-    array_slice($_SERVER['argv'], 1)
+    $arguments
 );
 $_SERVER['argc'] = count($_SERVER['argv']);
 

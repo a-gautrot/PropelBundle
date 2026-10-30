@@ -8,7 +8,6 @@ use Propel\Bundle\PropelBundle\Util\PropelInflector;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
-use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ArgumentValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
@@ -25,6 +24,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  *
  * @author     Jérémie Augustin <jeremie.augustin@pixel-cookers.com>
+ * @api
  */
 class PropelValueResolver implements ArgumentValueResolverInterface
 {
@@ -83,15 +83,22 @@ class PropelValueResolver implements ArgumentValueResolverInterface
         // An optional Sensio conversion may already have resolved this argument to null.
         $converted = $request->attributes->get('_propel_converted', []);
         if (!empty($converted[$argument->getName()])) {
-            return [$request->attributes->get($argument->getName())];
+            $resolved = $request->attributes->get($argument->getName());
+            if ($resolved !== null && !$resolved instanceof ActiveRecordInterface) {
+                throw new LogicException('The converted argument must be a Propel object or null.');
+            }
+            return [$resolved];
         }
 
         $existing = $request->attributes->get($argument->getName());
-        if ($existing instanceof $class) {
+        if ($class !== null && $existing instanceof $class && $existing instanceof ActiveRecordInterface) {
             return [$existing];
         }
 
-        $classQuery = "{$class}Query";
+        $classQuery = $class . 'Query';
+        if ($class === null || !is_a($class, ActiveRecordInterface::class, true)) {
+            throw new LogicException('The converted class must implement ActiveRecordInterface.');
+        }
         $classTableMap = $class::TABLE_MAP;
         $this->pk = 'id';
         $this->filters = [];
@@ -99,7 +106,7 @@ class PropelValueResolver implements ArgumentValueResolverInterface
         $this->hasWith = false;
 
         if (!class_exists($classQuery)) {
-            throw new Exception("The $classQuery Query class does not exist");
+            throw new Exception('The ' . $classQuery . ' Query class does not exist');
         }
 
         $tableMap = new $classTableMap();
@@ -168,7 +175,11 @@ class PropelValueResolver implements ArgumentValueResolverInterface
         }
 
         if ($object === null && !$argument->isNullable()) {
-            throw new NotFoundHttpException("$class object not found.");
+            throw new NotFoundHttpException($class . ' object not found.');
+        }
+
+        if ($object !== null && !$object instanceof ActiveRecordInterface) {
+            throw new LogicException('The query must return a Propel object or null.');
         }
 
         $request->attributes->set($argument->getName(), $object);
@@ -187,6 +198,9 @@ class PropelValueResolver implements ArgumentValueResolverInterface
      */
     protected function getQuery(string $classQuery): ModelCriteria
     {
+        if (!is_a($classQuery, ModelCriteria::class, true)) {
+            throw new LogicException('The query class must extend ModelCriteria.');
+        }
         $query = $classQuery::create();
 
         foreach ($this->withs as $with) {
@@ -196,8 +210,12 @@ class PropelValueResolver implements ArgumentValueResolverInterface
                     $this->hasWith = true;
                 } else {
                     $invalidWith = var_export($with, true);
-                    throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
-                            only string relation name (e.g. \"Book\") or an array with two keys (e.g. {\"Book\", \"LEFT_JOIN\"}) are allowed");
+                    throw new Exception(
+                        'ParamConverter : "with" parameter "' . $invalidWith
+                        . '" is invalid,' . "\n"
+                        . '                            only string relation name (e.g. "Book") '
+                        . 'or an array with two keys (e.g. {"Book", "LEFT_JOIN"}) are allowed'
+                    );
                 }
             } else {
                 $query->joinWith($with);
@@ -228,8 +246,11 @@ class PropelValueResolver implements ArgumentValueResolverInterface
                 return Criteria::INNER_JOIN;
             default:
                 $invalidWith = var_export($with, true);
-                throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
-                only \"left\", \"right\" or \"inner\" are allowed for join option");
+                throw new Exception(
+                    'ParamConverter : "with" parameter "' . $invalidWith
+                    . '" is invalid,' . "\n"
+                    . '                only "left", "right" or "inner" are allowed for join option'
+                );
         }
     }
 
@@ -267,6 +288,7 @@ class PropelValueResolver implements ArgumentValueResolverInterface
      * @return ActiveRecordInterface|false|null
      *
      * @throws Exception
+     * @psalm-suppress PossiblyUnusedParam Retained for compatibility with subclasses overriding this method.
      */
     protected function findOneBy(string $classQuery, Request $request)
     {
@@ -302,7 +324,7 @@ class PropelValueResolver implements ArgumentValueResolverInterface
     public function supports(Request $request, ArgumentMetadata $argument): bool
     {
         $classname = $argument->getType();
-        if (!$classname) {
+        if ($classname === null || $classname === '') {
             return false;
         }
 
@@ -310,12 +332,6 @@ class PropelValueResolver implements ArgumentValueResolverInterface
             return false;
         }
 
-        // Propel Class?
-        $class = new ReflectionClass($classname);
-        if ($class->implementsInterface('\Propel\Runtime\ActiveRecord\ActiveRecordInterface')) {
-            return true;
-        }
-
-        return false;
+        return is_a($classname, ActiveRecordInterface::class, true);
     }
 }

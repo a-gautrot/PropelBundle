@@ -8,7 +8,6 @@ use Propel\Bundle\PropelBundle\Util\PropelInflector;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
-use ReflectionClass;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,6 +24,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  *
  * @author     Jérémie Augustin <jeremie.augustin@pixel-cookers.com>
+ * @api
  * @deprecated since Symfony 6.2, following the deprecation of SensioFrameworkExtraBundle.
  *             Use Propel\Bundle\PropelBundle\Request\ArgumentResolver\PropelValueResolver for new controllers.
  */
@@ -52,7 +52,7 @@ class PropelParamConverter implements ParamConverterInterface
      * list of with option use to hydrate related object
      * @var array<string|array<array-key, string>>
      */
-    protected array $withs;
+    protected array $withs = [];
 
     /**
      * name of method use to call a query method
@@ -78,7 +78,15 @@ class PropelParamConverter implements ParamConverterInterface
     public function apply(Request $request, ParamConverter $configuration): bool
     {
         $class = $configuration->getClass();
-        $classQuery = "{$class}Query";
+        $classQuery = $class . 'Query';
+        if (!is_a($class, ActiveRecordInterface::class, true)) {
+            throw new LogicException('The converted class must implement ActiveRecordInterface.');
+        }
+        $existing = $request->attributes->get($configuration->getName());
+        if ($existing instanceof $class) {
+            return true;
+        }
+
         $classTableMap = $class::TABLE_MAP;
         $this->pk = 'id';
         $this->hasWith = false;
@@ -86,7 +94,7 @@ class PropelParamConverter implements ParamConverterInterface
         $this->exclude = [];
 
         if (!class_exists($classQuery)) {
-            throw new Exception("The $classQuery Query class does not exist");
+            throw new Exception('The ' . $classQuery . ' Query class does not exist');
         }
 
         $tableMap = new $classTableMap();
@@ -100,7 +108,7 @@ class PropelParamConverter implements ParamConverterInterface
         $options = $configuration->getOptions();
 
         // Check request attributes for converter options, if there are non provided.
-        if (empty($options) && $request->attributes->has('propel_converter') && $configuration instanceof ParamConverter) {
+        if (empty($options) && $request->attributes->has('propel_converter')) {
             $converterOption = $request->attributes->get('propel_converter');
             if (!empty($converterOption[$configuration->getName()])) {
                 $options = $converterOption[$configuration->getName()];
@@ -155,7 +163,11 @@ class PropelParamConverter implements ParamConverterInterface
         }
 
         if ($object === null && $configuration->isOptional() === false) {
-            throw new NotFoundHttpException("{$configuration->getClass()} object not found.");
+            throw new NotFoundHttpException($configuration->getClass() . ' object not found.');
+        }
+
+        if ($object !== null && !$object instanceof ActiveRecordInterface) {
+            throw new LogicException('The query must return a Propel model or null.');
         }
 
         $request->attributes->set($configuration->getName(), $object);
@@ -177,6 +189,9 @@ class PropelParamConverter implements ParamConverterInterface
      */
     protected function getQuery(string $classQuery): ModelCriteria
     {
+        if (!is_a($classQuery, ModelCriteria::class, true)) {
+            throw new LogicException('The query class must extend ModelCriteria.');
+        }
         $query = $classQuery::create();
 
         foreach ($this->withs as $with) {
@@ -186,8 +201,12 @@ class PropelParamConverter implements ParamConverterInterface
                     $this->hasWith = true;
                 } else {
                     $invalidWith = var_export($with, true);
-                    throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
-                            only string relation name (e.g. \"Book\") or an array with two keys (e.g. {\"Book\", \"LEFT_JOIN\"}) are allowed");
+                    throw new Exception(
+                        'ParamConverter : "with" parameter "' . $invalidWith
+                        . '" is invalid,' . "\n"
+                        . '                            only string relation name (e.g. "Book") '
+                        . 'or an array with two keys (e.g. {"Book", "LEFT_JOIN"}) are allowed'
+                    );
                 }
             } else {
                 $query->joinWith($with);
@@ -218,8 +237,11 @@ class PropelParamConverter implements ParamConverterInterface
                 return Criteria::INNER_JOIN;
             default:
                 $invalidWith = var_export($with, true);
-                throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
-                only \"left\", \"right\" or \"inner\" are allowed for join option");
+                throw new Exception(
+                    'ParamConverter : "with" parameter "' . $invalidWith
+                    . '" is invalid,' . "\n"
+                    . '                only "left", "right" or "inner" are allowed for join option'
+                );
         }
     }
 
@@ -257,6 +279,7 @@ class PropelParamConverter implements ParamConverterInterface
      * @return ActiveRecordInterface|false|null
      *
      * @throws Exception
+     * @psalm-suppress PossiblyUnusedParam Retained for compatibility with subclasses overriding this method.
      */
     protected function findOneBy(string $classQuery, Request $request)
     {
@@ -291,7 +314,7 @@ class PropelParamConverter implements ParamConverterInterface
     public function supports(ParamConverter $configuration): bool
     {
         $classname = $configuration->getClass();
-        if (!$classname) {
+        if ($classname === '') {
             return false;
         }
 
@@ -299,12 +322,6 @@ class PropelParamConverter implements ParamConverterInterface
             return false;
         }
 
-        // Propel Class?
-        $class = new ReflectionClass($classname);
-        if ($class->implementsInterface('\Propel\Runtime\ActiveRecord\ActiveRecordInterface')) {
-            return true;
-        }
-
-        return false;
+        return is_a($classname, ActiveRecordInterface::class, true);
     }
 }

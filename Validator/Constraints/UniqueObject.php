@@ -12,7 +12,8 @@ namespace Propel\Bundle\PropelBundle\Validator\Constraints;
 
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
-use Symfony\Component\Validator\Exception\UnexpectedTypeException;
+use Symfony\Component\Validator\Exception\InvalidOptionsException;
+use Symfony\Component\Validator\Exception\MissingOptionsException;
 
 /**
  * # UniqueObject
@@ -20,6 +21,8 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
  *
  * @author Maxime AILLOUD <maxime.ailloud@gmail.com>
  * @author Marek Kalnik <marekk@theodo.fr>
+ * @api
+ * @psalm-suppress PropertyNotSetInConstructor Symfony initializes groups lazily through Constraint::__get().
  */
 class UniqueObject extends Constraint
 {
@@ -34,7 +37,7 @@ class UniqueObject extends Constraint
     public string $messageFieldSeparator = ' and ';
 
     /**
-     * @var array|string
+     * @var array<array-key, mixed>|string
      */
     public $fields = [];
 
@@ -45,21 +48,16 @@ class UniqueObject extends Constraint
 
     /**
      * @param mixed $options
+     * @throws ConstraintDefinitionException
+     * @throws InvalidOptionsException
+     * @throws MissingOptionsException
      */
     public function __construct($options = null)
     {
         parent::__construct($options);
 
-        if (!is_array($this->fields) && !is_string($this->fields)) {
-            throw new UnexpectedTypeException($this->fields, 'array');
-        }
-
         if (empty($this->fields)) {
             throw new ConstraintDefinitionException("At least one field must be specified.");
-        }
-
-        if ($this->errorPath !== null && !is_string($this->errorPath)) {
-            throw new UnexpectedTypeException($this->errorPath, 'string or null');
         }
     }
 

@@ -65,6 +65,7 @@ YAML;
     }
 
     /**
+     * @return void
      * @throws Exception
      */
     public function testYamlLoadOneToManyExternalReference(): void

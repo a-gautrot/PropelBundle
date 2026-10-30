@@ -10,8 +10,11 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use InvalidArgumentException as BaseInvalidArgumentException;
 use Propel\Generator\Command\DatabaseReverseCommand as BaseDatabaseReverseCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -19,11 +22,13 @@ use Symfony\Component\Console\Input\InputOption;
 /**
  * # DatabaseReverseCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class DatabaseReverseCommand extends WrappedCommand
 {
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
     protected function configure(): void
     {
@@ -40,6 +45,7 @@ class DatabaseReverseCommand extends WrappedCommand
 
     /**
      * @return Command
+     * @throws LogicException
      */
     protected function createSubCommandInstance(): Command
     {
@@ -48,7 +54,9 @@ class DatabaseReverseCommand extends WrappedCommand
 
     /**
      * @param InputInterface $input
-     * @return array
+     * @return array<string, mixed>
+     * @throws BaseInvalidArgumentException
+     * @throws InvalidArgumentException
      */
     protected function getSubCommandArguments(InputInterface $input): array
     {

@@ -10,20 +10,32 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use JsonException;
+use LogicException;
+use Propel\Generator\Command\SqlInsertCommand as PropelSqlInsertCommand;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException as ConsoleLogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 
 /**
  * # SqlInsertCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class SqlInsertCommand extends WrappedCommand
 {
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
     protected function configure(): void
     {
@@ -37,10 +49,11 @@ class SqlInsertCommand extends WrappedCommand
 
     /**
      * @return Command
+     * @throws ConsoleLogicException
      */
     protected function createSubCommandInstance(): Command
     {
-        return new \Propel\Generator\Command\SqlInsertCommand();
+        return new PropelSqlInsertCommand();
     }
 
     /**
@@ -48,6 +61,13 @@ class SqlInsertCommand extends WrappedCommand
      * @param OutputInterface $output
      * @return int
      * @throws ExceptionInterface
+     * @throws JsonException
+     * @throws LogicException
+     * @throws RuntimeException
+     * @throws ParameterNotFoundException
+     * @throws ServiceNotFoundException
+     * @throws IOException
+     * @throws DirectoryNotFoundException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -61,7 +81,9 @@ class SqlInsertCommand extends WrappedCommand
 
     /**
      * @param InputInterface $input
-     * @return array
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException
+     * @throws ParameterNotFoundException
      */
     protected function getSubCommandArguments(InputInterface $input): array
     {

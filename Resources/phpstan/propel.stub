@@ -1,0 +1,46 @@
+<?php
+
+namespace Propel\Runtime\ActiveRecord {
+    /**
+     * @method mixed getByName(string $name, string $type = 'phpName')
+     * @method mixed getPrimaryKey()
+     * @method array<array-key, mixed> toArray(string $keyType = 'phpName', bool $includeLazyLoadColumns = true, array<array-key, mixed> $alreadyDumpedObjects = [], bool $includeForeignObjects = false)
+     * @method $this fromArray(array<array-key, mixed> $data, string $keyType = 'phpName')
+     * @method bool equals(?object $other)
+     * @method $this setByPosition(int $position, mixed $value)
+     * @method int save(?\Propel\Runtime\Connection\ConnectionInterface $connection = null)
+     */
+    interface ActiveRecordInterface
+    {
+    }
+}
+
+namespace Propel\Runtime\Map {
+    /**
+     * @method static int doDeleteAll(?\Propel\Runtime\Connection\ConnectionInterface $connection = null)
+     * @method static list<string> getFieldnames(string $type = 'phpName')
+     */
+    class TableMap
+    {
+    }
+}
+
+namespace Propel\Runtime\ActiveQuery {
+    class Criteria
+    {
+    }
+
+    /**
+     * @method static static create(?string $modelAlias = null, ?Criteria $criteria = null)
+     * @method $this filterByPrimaryKey(mixed $key)
+     */
+    class ModelCriteria
+    {
+    }
+}
+
+namespace Propel\Runtime\Connection {
+    interface ConnectionInterface
+    {
+    }
+}

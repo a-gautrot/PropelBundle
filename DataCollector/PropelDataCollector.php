@@ -23,6 +23,7 @@ use Throwable;
  * The Propel Data Collector class collects information.
  *
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class PropelDataCollector extends DataCollector
 {
@@ -66,7 +67,7 @@ class PropelDataCollector extends DataCollector
     /**
      * Returns queries.
      *
-     * @return Data<int, array{sql: string, connection: string, time: int|float, memory: int, trace: TraceStub}> Queries
+     * @return Data Queries
      */
     public function getQueries(): Data
     {
@@ -110,7 +111,7 @@ class PropelDataCollector extends DataCollector
      */
     public function getTime()
     {
-        $time = 0;
+        $time = 0.0;
         foreach ($this->data['queries'] as $query) {
             $time += (float)$query['time'];
         }

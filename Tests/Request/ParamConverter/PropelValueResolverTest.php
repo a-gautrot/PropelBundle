@@ -559,4 +559,21 @@ XML;
         $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor', $author,
             'param "author" should be an instance of "Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor"');
     }
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testResolverRejectsNonModelQueryResult(): void
+    {
+        $request = new Request([], [], [
+            'propel_converter' => ['book' => ['query_method' => 'filterBySlug']],
+        ]);
+        $argument = new ArgumentMetadata('book', Book::class, false, false, null);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The query must return a Propel object or null.');
+
+        (new PropelValueResolver())->resolve($request, $argument);
+    }
+
 }

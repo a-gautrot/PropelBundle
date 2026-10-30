@@ -4,11 +4,11 @@
 
 <!-- TOC -->
 
+* [5.2.1](#521)
 * [5.2.0](#520)
     * [5.2.0.1](#5201)
     * [5.2.0.2](#5202)
     * [5.2.0.3](#5203)
-    * [5.2.0.4](#5204)
 
 <!-- TOC -->
 
@@ -40,10 +40,15 @@
 * Updated `composer.json`
 * Removed more deprecated content
 
-### 5.2.0.4
+## 5.2.1
 
+* Updated `composer.json`
 * Updated the project's source code
-    * Updated `composer.json`
-    * Optimized the lib with gitattributes
-* Added deprecation warnings for XML schemas
+    * Trimmed the package with gitattributes
+    * Updated with support from PHPStan, Psalm, and PHPCS
 * Added a way to migrate from Sensio to Symfony
+* Added deprecation warnings for XML schemas
+* Fixed fixture path validation, SQL result handling, and static type declarations
+* Updated unit tests
+    * Now uses Docker for some UTs
+    * Fixed UTs for its Book schema

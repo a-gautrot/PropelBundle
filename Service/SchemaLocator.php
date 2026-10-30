@@ -11,14 +11,19 @@
 namespace Propel\Bundle\PropelBundle\Service;
 
 use App\AppBundle;
+use LogicException;
 use SplFileInfo;
 use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
  * # SchemaLocator
+ * @api
  */
 class SchemaLocator
 {
@@ -31,14 +36,14 @@ class SchemaLocator
      */
     protected FileLocatorInterface $fileLocator;
     /**
-     * @var array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: string, loaderScriptDir: string}}
+     * @var array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: string|null, loaderScriptDir: string}}
      */
     protected array $configuration;
 
     /**
      * @param ContainerInterface $container
      * @param FileLocatorInterface $fileLocator
-     * @param array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: string, loaderScriptDir: string}} $configuration
+     * @param array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: string|null, loaderScriptDir: string}} $configuration
      */
     public function __construct(ContainerInterface $container, FileLocatorInterface $fileLocator, array $configuration)
     {
@@ -51,6 +56,8 @@ class SchemaLocator
      * @param array<string, BundleInterface> $bundles
      *
      * @return array<string, array{?BundleInterface, SplFileInfo}>
+     * @throws ServiceCircularReferenceException
+     * @throws ServiceNotFoundException
      */
     public function locateFromBundlesAndConfiguration(array $bundles): array
     {
@@ -90,6 +97,8 @@ class SchemaLocator
      * @param BundleInterface $bundle
      *
      * @return array<string, array{BundleInterface, SplFileInfo}>
+     * @throws LogicException
+     * @throws DirectoryNotFoundException
      */
     public function locateFromBundle(BundleInterface $bundle): array
     {

@@ -21,6 +21,7 @@ use Symfony\Component\Form\FormEvents;
  * Event Listener class for propel_translation
  *
  * @author Patrick Kaufmann
+ * @api
  */
 class TranslationFormListener implements EventSubscriberInterface
 {
@@ -44,7 +45,7 @@ class TranslationFormListener implements EventSubscriberInterface
     }
 
     /**
-     * @return array[]
+     * @return array<string, array{string, int}>
      */
     public static function getSubscribedEvents(): array
     {

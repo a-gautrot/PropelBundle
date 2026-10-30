@@ -13,6 +13,7 @@ namespace Propel\Bundle\PropelBundle\Form\EventListener;
 
 use ArrayAccess;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Form\Exception\RuntimeException;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -23,6 +24,7 @@ use Traversable;
  * Listener class for propel_translatable_collection
  *
  * @author Patrick Kaufmann
+ * @api
  */
 class TranslationCollectionFormListener implements EventSubscriberInterface
 {
@@ -46,7 +48,7 @@ class TranslationCollectionFormListener implements EventSubscriberInterface
     }
 
     /**
-     * @return array[]
+     * @return array<string, array{string, int}>
      */
     public static function getSubscribedEvents(): array
     {
@@ -58,6 +60,8 @@ class TranslationCollectionFormListener implements EventSubscriberInterface
     /**
      * @param FormEvent $event
      * @return void
+     * @throws RuntimeException
+     * @throws UnexpectedTypeException
      */
     public function preSetData(FormEvent $event): void
     {
@@ -68,8 +72,10 @@ class TranslationCollectionFormListener implements EventSubscriberInterface
             return;
         }
 
-        if (!is_array($data) && !($data instanceof Traversable && $data instanceof ArrayAccess)) {
-            throw new UnexpectedTypeException($data, 'array or (\Traversable and \ArrayAccess)');
+        if (!is_array($data)) {
+            if (!$data instanceof Traversable || !$data instanceof ArrayAccess) {
+                throw new UnexpectedTypeException($data, 'array or (\Traversable and \ArrayAccess)');
+            }
         }
 
         //get the class name of the i18nClass
@@ -112,6 +118,9 @@ class TranslationCollectionFormListener implements EventSubscriberInterface
                     throw new UnexpectedTypeException($rootData, 'Propel i18n object');
                 }
 
+                if (!class_exists($this->i18nClass)) {
+                    throw new UnexpectedTypeException($this->i18nClass, 'Propel i18n class');
+                }
                 $newTranslation = new $this->i18nClass();
                 $newTranslation->setLocale($lang);
 

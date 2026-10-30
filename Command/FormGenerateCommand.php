@@ -11,22 +11,32 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use App\AppBundle;
+use InvalidArgumentException as BaseInvalidArgumentException;
+use JsonException;
+use LogicException as BaseLogicException;
 use Propel\Bundle\PropelBundle\Form\FormBuilder;
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Generator\Config\GeneratorConfig;
 use Propel\Generator\Manager\ModelManager;
 use Propel\Generator\Model\Database;
 use Propel\Generator\Model\Table;
+use RuntimeException;
 use SplFileInfo;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
+use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
  * # FormGenerateCommand
  * @author William DURAND <william.durand1@gmail.com>
+ * @api
  */
 class FormGenerateCommand extends AbstractCommand
 {
@@ -39,6 +49,7 @@ class FormGenerateCommand extends AbstractCommand
 
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
     protected function configure(): void
     {
@@ -63,6 +74,12 @@ EOT
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
+     * @throws BaseInvalidArgumentException
+     * @throws JsonException
+     * @throws BaseLogicException
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
+     * @throws LogicException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -78,7 +95,7 @@ EOT
         if (!$schemas) {
             $output->writeln("No <comment>*schemas.xml</comment> files found in bundle <comment>{$bundle->getName()}</comment>.");
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         }
 
         $manager = $this->getModelManager($input, $schemas);
@@ -89,7 +106,7 @@ EOT
             }
         }
 
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 
     /**
@@ -99,6 +116,8 @@ EOT
      * @param array<string, array{?BundleInterface, SplFileInfo}> $schemas A list of schemas.
      *
      * @return ModelManager
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
      */
     protected function getModelManager(InputInterface $input, array $schemas): ModelManager
     {
@@ -121,13 +140,15 @@ EOT
      * @param InputInterface $input An InputInterface instance.
      *
      * @return GeneratorConfig
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
      */
     protected function getGeneratorConfig(InputInterface $input): GeneratorConfig
     {
         $generatorConfig = null;
 
         if ($input->getOption('platform') !== null) {
-            $generatorConfig['propel']['generator']['platformClass'] = $input->getOption('platform');
+            $generatorConfig = ['propel' => ['generator' => ['platformClass' => $input->getOption('platform')]]];
         }
 
         return new GeneratorConfig("{$this->getCacheDir()}/propel.json", $generatorConfig);
@@ -141,6 +162,8 @@ EOT
      * @param string[] $models The models to build.
      * @param OutputInterface $output An OutputInterface instance
      * @param boolean $force Override files if present.
+     * @return void
+     * @throws IOException
      */
     protected function createFormTypeFromDatabase(BundleInterface $bundle, Database $database, array $models, OutputInterface $output, bool $force = false): void
     {
@@ -153,7 +176,7 @@ EOT
 
             $file = new SplFileInfo("$dir/{$table->getPhpName()}Type.php");
 
-            if (!file_exists($file) || $force === true) {
+            if (!file_exists($file->getPathname()) || $force === true) {
                 $this->writeFormType($bundle, $table, $file, $force, $output);
             } else {
                 $output->writeln(sprintf('File <comment>%-60s</comment> exists, skipped. Try the <info>--force</info> option.', $this->getRelativeFileName($file)));
@@ -168,6 +191,7 @@ EOT
      * @param OutputInterface $output An OutputInterface instance.
      *
      * @return string The path to the created directory.
+     * @throws IOException
      */
     protected function createDirectory(BundleInterface $bundle, OutputInterface $output): string
     {
@@ -195,6 +219,9 @@ EOT
      * @param SplFileInfo $file File representing the FormType.
      * @param boolean $force Is the write forced?
      * @param OutputInterface $output An OutputInterface instance.
+     * @return void
+     * @throws RuntimeException
+     * @throws ParameterNotFoundException
      */
     protected function writeFormType(BundleInterface $bundle, Table $table, SplFileInfo $file, bool $force, OutputInterface $output): void
     {
@@ -208,9 +235,20 @@ EOT
     /**
      * @param SplFileInfo $file
      * @return string
+     * @throws RuntimeException
+     * @throws ParameterNotFoundException
      */
     protected function getRelativeFileName(SplFileInfo $file): string
     {
-        return substr(str_replace(realpath("{$this->getContainer()->getParameter('kernel.project_dir')}/../"), '', $file), 1);
+        $projectDir = $this->getContainer()->getParameter('kernel.project_dir');
+        if (!is_string($projectDir)) {
+            throw new RuntimeException('The kernel.project_dir parameter must be a string.');
+        }
+        $parentDir = realpath("$projectDir/../");
+        if ($parentDir === false) {
+            throw new RuntimeException('The parent project directory does not exist.');
+        }
+
+        return substr(str_replace($parentDir, '', $file->getPathname()), 1);
     }
 }

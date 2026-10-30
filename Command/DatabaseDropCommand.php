@@ -10,9 +10,14 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use InvalidArgumentException as BaseInvalidArgumentException;
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
+use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ServiceContainer\StandardServiceContainer;
+use RuntimeException;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -22,11 +27,13 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Useful to drop a database.
  *
  * @author William DURAND
+ * @api
  */
 class DatabaseDropCommand extends AbstractCommand
 {
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
     protected function configure(): void
     {
@@ -51,13 +58,17 @@ EOT
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
+     * @throws BaseInvalidArgumentException
+     * @throws ConnectionException
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$input->getOption('force')) {
             $output->writeln('<error>You have to use the "--force" option to drop the database.</error>');
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         }
 
         if ($this->getKernel()->getEnvironment() === 'prod') {
@@ -79,7 +90,7 @@ EOT
         if ($dbName === null) {
             $output->writeln('<error>No database name found.</error>');
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         } else {
             $query = "DROP DATABASE $dbName;";
         }
@@ -95,11 +106,14 @@ EOT
 
 
         $statement = $connection->prepare($query);
+        if ($statement === false) {
+            throw new RuntimeException('Cannot prepare the database query.');
+        }
         $statement->execute();
 
         $output->writeln("<info>Database <comment>$dbName</comment> has been dropped.</info>");
 
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 
     /**

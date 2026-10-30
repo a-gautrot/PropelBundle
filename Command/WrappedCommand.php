@@ -10,11 +10,19 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use JsonException;
+use LogicException;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 
 /**
  * # WrappedCommand
@@ -24,6 +32,7 @@ abstract class WrappedCommand extends AbstractCommand
 {
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
     protected function configure(): void
     {
@@ -37,6 +46,13 @@ abstract class WrappedCommand extends AbstractCommand
      * @return int
      *
      * @throws ExceptionInterface
+     * @throws JsonException
+     * @throws LogicException
+     * @throws RuntimeException
+     * @throws ParameterNotFoundException
+     * @throws ServiceNotFoundException
+     * @throws IOException
+     * @throws DirectoryNotFoundException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -51,6 +67,7 @@ abstract class WrappedCommand extends AbstractCommand
     /**
      * Returns all the arguments and options needed by the Propel sub-command.
      *
+     * @param InputInterface $input
      * @return array<string, mixed>
      */
     abstract protected function getSubCommandArguments(InputInterface $input): array;

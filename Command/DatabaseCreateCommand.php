@@ -11,9 +11,13 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException;
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
+use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ServiceContainer\StandardServiceContainer;
+use RuntimeException;
+use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,11 +27,14 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Useful to create a database.
  *
  * @author William DURAND
+ * @api
  */
 class DatabaseCreateCommand extends AbstractCommand
 {
     /**
-     * @see Command
+     * @return void
+     * @throws ConsoleInvalidArgumentException
+     * @see \Symfony\Component\Console\Command\Command
      */
     protected function configure(): void
     {
@@ -38,8 +45,13 @@ class DatabaseCreateCommand extends AbstractCommand
     }
 
     /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
      * @throws InvalidArgumentException When the target directory does not exist
-     * @see Command
+     * @throws ConnectionException
+     * @throws RuntimeException
+     * @see \Symfony\Component\Console\Command\Command
      *
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -51,7 +63,7 @@ class DatabaseCreateCommand extends AbstractCommand
         if ($dbName === null) {
             $output->writeln('<error>No database name found.</error>');
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         } else {
             $query = "CREATE DATABASE $dbName;";
         }
@@ -67,12 +79,15 @@ class DatabaseCreateCommand extends AbstractCommand
         $connection = Propel::getConnection($connectionName);
 
         $statement = $connection->prepare($query);
+        if ($statement === false) {
+            throw new RuntimeException('Cannot prepare the database query.');
+        }
         $statement->execute();
 
         $output->writeln("<info>Database <comment>$dbName</comment> has been created.</info>");
 
         // s 5.1 expect integer to be returned. Introduces Command::SUCCESS and Command::FAILURE constants
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 
     /**

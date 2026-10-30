@@ -11,7 +11,10 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use Propel\Generator\Command\ModelBuildCommand as BaseModelBuildCommand;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -19,11 +22,13 @@ use Symfony\Component\Console\Input\InputOption;
 /**
  * # ModelBuildCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class ModelBuildCommand extends WrappedCommand
 {
     /**
      * @return void
+     * @throws InvalidArgumentException
      */
     protected function configure(): void
     {
@@ -39,6 +44,7 @@ class ModelBuildCommand extends WrappedCommand
 
     /**
      * @return Command
+     * @throws LogicException
      */
     protected function createSubCommandInstance(): Command
     {
@@ -47,7 +53,8 @@ class ModelBuildCommand extends WrappedCommand
 
     /**
      * @param InputInterface $input
-     * @return string[]
+     * @return array<string, string>
+     * @throws RuntimeException
      */
     protected function getSubCommandArguments(InputInterface $input): array
     {

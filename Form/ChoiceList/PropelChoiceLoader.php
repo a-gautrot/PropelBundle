@@ -14,7 +14,9 @@ use PDO;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
+use Propel\Runtime\Exception\LogicException;
 use Propel\Runtime\Map\ColumnMap;
+use Propel\Runtime\Map\Exception\ColumnNotFoundException;
 use Symfony\Component\Form\ChoiceList\ChoiceListInterface;
 use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
 use Symfony\Component\Form\ChoiceList\Loader\ChoiceLoaderInterface;
@@ -23,6 +25,7 @@ use Symfony\Component\Form\ChoiceList\Loader\ChoiceLoaderInterface;
  * @author William Durand <william.durand1@gmail.com>
  * @author Toni Uebernickel <tuebernickel@gmail.com>
  * @author Moritz Schroeder <moritz.schroeder@molabs.de>
+ * @api
  */
 class PropelChoiceLoader implements ChoiceLoaderInterface
 {
@@ -62,16 +65,18 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
      * @param string $class
      * @param ModelCriteria $queryObject
      * @param string|null $useAsIdentifier
+     * @throws LogicException
+     * @throws ColumnNotFoundException
      */
     public function __construct(ChoiceListFactoryInterface $factory, string $class, ModelCriteria $queryObject, ?string $useAsIdentifier = null)
     {
         $this->factory = $factory;
         $this->class = $class;
         $this->query = $queryObject;
-        if ($useAsIdentifier) {
-            $this->identifier = [$this->query->getTableMap()->getColumn($useAsIdentifier)];
+        if ($useAsIdentifier !== null && $useAsIdentifier !== '') {
+            $this->identifier = [$this->query->getTableMapOrFail()->getColumn($useAsIdentifier)];
         } else {
-            $this->identifier = $this->query->getTableMap()->getPrimaryKeys();
+            $this->identifier = $this->query->getTableMapOrFail()->getPrimaryKeys();
         }
         if (count($this->identifier) === 1 && $this->isScalar(current($this->identifier))) {
             $this->identifierAsIndex = true;
@@ -98,9 +103,10 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
     }
 
     /**
-     * @param array $values
+     * @param array<array-key, mixed> $values
      * @param callable|null $value
-     * @return array
+     * @return array<array-key, mixed>
+     * @throws LogicException
      */
     public function loadChoicesForValues(array $values, ?callable $value = null): array
     {
@@ -110,8 +116,9 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
         }
 
         // Optimize performance in case we have a single-field identifier
-        if (!$this->choiceList && $this->identifierAsIndex && current($this->identifier) instanceof ColumnMap) {
-            $phpName = current($this->identifier)->getPhpName();
+        $identifier = current($this->identifier);
+        if (!$this->choiceList && $this->identifierAsIndex && $identifier instanceof ColumnMap) {
+            $phpName = $identifier->getPhpName();
             $query = clone $this->query;
             $unorderedObjects = $query->filterBy($phpName, $values, Criteria::IN);
             $objectsById = [];
@@ -143,7 +150,7 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
      *
      * @param object $model The model for which to get the identifier
      *
-     * @return array
+     * @return list<mixed>
      */
     private function getIdentifierValues(object $model): array
     {
@@ -151,14 +158,15 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
             return [];
         }
 
-        if (count($this->identifier) === 1 && current($this->identifier) instanceof ColumnMap) {
-            $phpName = current($this->identifier)->getPhpName();
+        if (count($this->identifier) === 1) {
+            $identifier = array_values($this->identifier)[0];
+            $phpName = $identifier->getPhpName();
             if (method_exists($model, "get$phpName")) {
                 return [$model->{"get$phpName"}()];
             }
         }
 
-        if ($model instanceof ActiveRecordInterface) {
+        if ($model instanceof ActiveRecordInterface && method_exists($model, 'getPrimaryKey')) {
             return [$model->getPrimaryKey()];
         }
 
@@ -183,9 +191,9 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
     }
 
     /**
-     * @param array $choices
+     * @param array<array-key, mixed> $choices
      * @param callable|null $value
-     * @return array|string[]
+     * @return string[]
      */
     public function loadValuesForChoices(array $choices, ?callable $value = null): array
     {

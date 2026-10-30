@@ -14,6 +14,7 @@ namespace Propel\Bundle\PropelBundle\Form\Type;
 use Propel\Bundle\PropelBundle\Form\EventListener\TranslationFormListener;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
@@ -22,11 +23,17 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
  * Translation type class
  *
  * @author Patrick Kaufmann
+ * @api
+ * @template TData
+ * @extends AbstractType<TData>
  */
 class TranslationType extends AbstractType
 {
     /**
      * {@inheritdoc}
+     * @param FormBuilderInterface<TData|null> $builder
+     * @param array<array-key, mixed> $options
+     * @return void
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -37,6 +44,9 @@ class TranslationType extends AbstractType
 
     /**
      * {@inheritdoc}
+     * @param OptionsResolver $resolver
+     * @return void
+     * @throws AccessException
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
@@ -46,11 +56,18 @@ class TranslationType extends AbstractType
         ]);
     }
 
+    /**
+     * @return string
+     */
     public function getName(): string
     {
         return $this->getBlockPrefix();
     }
 
+
+    /**
+     * @return string
+     */
     public function getBlockPrefix(): string
     {
         return 'propel_translation';

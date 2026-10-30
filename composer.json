@@ -38,29 +38,47 @@
   "require": {
     "php": ">=7.4",
     "ext-json": "*",
+    "ext-pdo": "*",
     "ext-simplexml": "*",
     "propel/propel": "~2.0.0-beta4",
     "sensio/framework-extra-bundle": "^6.2",
-    "symfony/cache": "^5.4.46",
-    "symfony/config": "^5.4.19",
-    "symfony/console": "^5.4.19",
-    "symfony/dependency-injection": "^5.4.42",
-    "symfony/framework-bundle": "^5.4.19",
-    "symfony/http-foundation": "^5.4.49",
-    "symfony/http-kernel": "^5.4.19",
-    "symfony/routing": "^5.4.52",
-    "symfony/security-bundle": "^5.4.19",
-    "symfony/security-core": "^5.4.19",
-    "symfony/security-http": "^5.4.52",
-    "symfony/translation": "^5.4.42",
-    "symfony/validator": "^5.4.42",
-    "symfony/var-exporter": "^v5.4.19",
-    "symfony/yaml": "^5.4.51"
+    "symfony/cache": "~5.4.52",
+    "symfony/config": "~5.4.19",
+    "symfony/console": "~5.4.19",
+    "symfony/dependency-injection": "~5.4.42",
+    "symfony/framework-bundle": "~5.4.19",
+    "symfony/http-foundation": "~5.4.54",
+    "symfony/http-kernel": "~5.4.20",
+    "symfony/polyfill-php80": "^1.16",
+    "symfony/routing": "~5.4.53",
+    "symfony/security-bundle": "~5.4.20",
+    "symfony/security-core": "~5.4.19",
+    "symfony/security-http": "~5.4.53",
+    "symfony/translation": "~5.4.42",
+    "symfony/validator": "~5.4.43",
+    "symfony/var-exporter": "~5.4.19",
+    "symfony/yaml": "~5.4.54"
+  },
+  "conflict": {
+    "symfony/clock": "<5.4||>=6.0",
+    "symfony/error-handler": "<5.4||>=6.0",
+    "symfony/event-dispatcher": "<5.4||>=6.0",
+    "symfony/filesystem": "<5.4||>=6.0",
+    "symfony/finder": "<5.4||>=6.0",
+    "symfony/options-resolver": "<5.4||>=6.0",
+    "symfony/password-hasher": "<5.4||>=6.0",
+    "symfony/property-access": "<5.4||>=6.0",
+    "symfony/property-info": "<5.4||>=6.0",
+    "symfony/security-csrf": "<5.4||>=6.0",
+    "symfony/security-guard": "<5.4||>=6.0",
+    "symfony/string": "<5.4||>=6.0",
+    "symfony/twig-bridge": "<5.4.31||>=6.0",
+    "symfony/twig-bundle": "<5.4||>=6.0",
+    "symfony/var-dumper": "<5.4||>=6.0"
   },
   "require-dev": {
     "ext-dom": "*",
     "ext-libxml": "*",
-    "ext-pdo": "*",
     "ext-pdo_sqlite": "*",
     "fakerphp/faker": "^1.24",
     "mikey179/vfsstream": "^1.6.12",
@@ -70,14 +88,13 @@
     "phpstan/phpstan-symfony": "^2.0",
     "phpunit/phpunit": ">=9.6.33",
     "squizlabs/php_codesniffer": "^4.0.1",
-    "symfony/form": "^5.4.19",
-    "symfony/profiler-pack": "^1.0.4",
-    "symfony/stopwatch": "^5.4.19",
-    "symfony/twig-bridge": "^5.4.31",
-    "symfony/twig-bundle": "^5.4.19",
-    "symfony/web-profiler-bundle": "^5.4",
+    "symfony/form": "~5.4.19",
+    "symfony/stopwatch": "~5.4.19",
+    "symfony/twig-bridge": "~5.4.31",
+    "symfony/twig-bundle": "~5.4.19",
+    "symfony/web-profiler-bundle": "~5.4.0",
     "twig/twig": "<=3.19||^3.26",
-    "vimeo/psalm": ">=0.3"
+    "psalm/phar": "^5.26.1||^6.20.4"
   },
   "config": {
     "allow-plugins": {
@@ -92,12 +109,15 @@
     }
   },
   "extra": {
+    "symfony": {
+      "require": "5.4.*"
+    }
   },
   "scripts": {
     "test": "@php Tests/run.php",
     "test:coverage": "@test --coverage-clover Tests/coverage.xml --log-junit Tests/junit.xml",
     "phpstan": "vendor/bin/phpstan analyse -c phpstan.dist.neon",
-    "psalm": "@php vendor/vimeo/psalm/psalm --config=psalm.dist.xml",
+    "psalm": "@php vendor/psalm/phar/psalm.phar --config=psalm.dist.xml",
     "phpcs": "phpcs --standard=phpcs.dist.xml"
   }
 }

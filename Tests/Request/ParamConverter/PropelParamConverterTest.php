@@ -5,6 +5,7 @@ namespace Propel\Bundle\PropelBundle\Tests\Request\ParamConverter;
 use Exception;
 use LogicException;
 use Propel\Bundle\PropelBundle\Request\ParamConverter\PropelParamConverter;
+use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book;
 use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
 use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Propel\Runtime\Connection\ConnectionWrapper;
@@ -460,4 +461,37 @@ XML;
         $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor', $author,
             'param "author" should be an instance of "Propel\Bundle\PropelBundle\Tests\Request\ParamConverter\MyAuthor"');
     }
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testConverterPreservesExistingModelArgument(): void
+    {
+        $book = new Book();
+        $request = new Request([], [], ['id' => 2, 'book' => $book]);
+        $configuration = new ParamConverter(['class' => Book::class, 'name' => 'book']);
+
+        $this->assertTrue((new PropelParamConverter())->apply($request, $configuration));
+        $this->assertSame($book, $request->attributes->get('book'));
+    }
+
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testConverterRejectsNonModelQueryResult(): void
+    {
+        $request = new Request();
+        $configuration = new ParamConverter([
+            'class' => Book::class,
+            'name' => 'book',
+            'options' => ['query_method' => 'filterBySlug'],
+        ]);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The query must return a Propel model or null.');
+
+        (new PropelParamConverter())->apply($request, $configuration);
+    }
+
 }

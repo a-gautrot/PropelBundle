@@ -11,18 +11,22 @@
 
 namespace Propel\Bundle\PropelBundle\Form\Type;
 
+use InvalidArgumentException;
 use PDO;
 use Propel\Bundle\PropelBundle\Form\ChoiceList\PropelChoiceLoader;
 use Propel\Bundle\PropelBundle\Form\DataTransformer\CollectionToArrayTransformer;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\Map\ColumnMap;
+use Stringable;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
 use Symfony\Component\Form\ChoiceList\Factory\DefaultChoiceListFactory;
 use Symfony\Component\Form\ChoiceList\Factory\PropertyAccessDecorator;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
+use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -54,6 +58,9 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
  *      ;
  *   }
  * </code>
+ * @api
+ * @template TData
+ * @extends AbstractType<TData>
  */
 class ModelType extends AbstractType
 {
@@ -85,11 +92,15 @@ class ModelType extends AbstractType
      *
      * @return string The string representation of the object.
      *
+     * @throws InvalidArgumentException
      * @internal This method is public to be usable as callback. It should not
      *           be used in user code.
      */
     public static function createChoiceLabel(object $choice): string
     {
+        if (!$choice instanceof Stringable) {
+            throw new InvalidArgumentException('A choice must implement __toString() or define a label property.');
+        }
         return (string)$choice;
     }
 
@@ -106,6 +117,7 @@ class ModelType extends AbstractType
      *                           ID here.
      *
      * @return string The field name.
+     * @psalm-suppress PossiblyUnusedParam The form callback signature includes the choice and key.
      *
      * @internal This method is public to be usable as callback. It should not
      *           be used in user code.
@@ -116,8 +128,8 @@ class ModelType extends AbstractType
     }
 
     /**
-     * @param FormBuilderInterface $builder
-     * @param array $options
+     * @param FormBuilderInterface<TData|null> $builder
+     * @param array<array-key, mixed> $options
      * @return void
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -131,13 +143,14 @@ class ModelType extends AbstractType
     /**
      * @param OptionsResolver $resolver
      * @return void
+     * @throws AccessException
+     * @throws UndefinedOptionsException
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $choiceLoader = function (Options $options): ?PropelChoiceLoader {
             // Unless the choices are given explicitly, load them on demand
             if ($options['choices'] === null) {
-
                 return new PropelChoiceLoader(
                     $this->choiceListFactory,
                     $options['class'],
@@ -154,9 +167,9 @@ class ModelType extends AbstractType
             /** @var ModelCriteria $query */
             $query = $options['query'];
             if ($options['index_property']) {
-                $identifier = [$query->getTableMap()->getColumn($options['index_property'])];
+                $identifier = [$query->getTableMapOrFail()->getColumn($options['index_property'])];
             } else {
-                $identifier = $query->getTableMap()->getPrimaryKeys();
+                $identifier = $query->getTableMapOrFail()->getPrimaryKeys();
             }
             /** @var ColumnMap $firstIdentifier */
             $firstIdentifier = current($identifier);
@@ -171,14 +184,14 @@ class ModelType extends AbstractType
             /** @var ModelCriteria $query */
             $query = $options['query'];
             if ($options['index_property']) {
-                $identifier = [$query->getTableMap()->getColumn($options['index_property'])];
+                $identifier = [$query->getTableMapOrFail()->getColumn($options['index_property'])];
             } else {
-                $identifier = $query->getTableMap()->getPrimaryKeys();
+                $identifier = $query->getTableMapOrFail()->getPrimaryKeys();
             }
             /** @var ColumnMap $firstIdentifier */
             $firstIdentifier = current($identifier);
             if (count($identifier) === 1 && in_array($firstIdentifier->getPdoType(), [PDO::PARAM_BOOL, PDO::PARAM_INT, PDO::PARAM_STR])) {
-                return function ($object) use ($firstIdentifier) {
+                return function (mixed $object) use ($firstIdentifier): mixed {
                     if ($object) {
                         return call_user_func([$object, 'get' . ucfirst($firstIdentifier->getPhpName())]);
                     }
@@ -188,7 +201,7 @@ class ModelType extends AbstractType
             return null;
         };
 
-        $queryNormalizer = function (Options $options, $query) {
+        $queryNormalizer = function (Options $options, mixed $query): mixed {
             if ($query === null) {
                 $queryClass = "{$options['class']}Query";
                 if (!class_exists($queryClass)) {
@@ -204,7 +217,7 @@ class ModelType extends AbstractType
             return $query;
         };
 
-        $choiceLabelNormalizer = function (Options $options, $choiceLabel) {
+        $choiceLabelNormalizer = function (Options $options, mixed $choiceLabel): mixed {
             if ($choiceLabel === null) {
                 if ($options['property'] == null) {
                     $choiceLabel = [__CLASS__, 'createChoiceLabel'];
@@ -213,10 +226,10 @@ class ModelType extends AbstractType
                     /** @var ModelCriteria $query */
                     $query = $options['query'];
 
-                    $choiceLabel = function (object $choice) use ($valueProperty, $query) {
+                    $choiceLabel = function (object $choice) use ($valueProperty, $query): mixed {
                         $getter = 'get' . ucfirst($valueProperty);
                         if (!method_exists($choice, $getter)) {
-                            $getter = 'get' . ucfirst($query->getTableMap()->getColumn($valueProperty)->getPhpName());
+                            $getter = 'get' . ucfirst($query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName());
                         }
 
                         return call_user_func([$choice, $getter]);

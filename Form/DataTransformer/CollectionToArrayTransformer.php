@@ -22,13 +22,15 @@ use Symfony\Component\Form\Exception\TransformationFailedException;
  * @author Pierre-Yves Lebecq <py.lebecq@gmail.com>
  *
  * @implements DataTransformerInterface<ObjectCollection, array>
+ * @api
  */
 class CollectionToArrayTransformer implements DataTransformerInterface
 {
     /**
      * @param mixed $value
      *
-     * @return array
+     * @return array<array-key, mixed>
+     * @throws TransformationFailedException
      */
     public function transform($value): array
     {
@@ -44,9 +46,10 @@ class CollectionToArrayTransformer implements DataTransformerInterface
     }
 
     /**
-     * @param array|string|null $value
+     * @param mixed $value
      *
      * @return ObjectCollection
+     * @throws TransformationFailedException
      */
     public function reverseTransform($value): ObjectCollection
     {

@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Logger;
 
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 use Stringable;
@@ -19,6 +20,7 @@ use Symfony\Component\VarDumper\Caster\TraceStub;
 /**
  * # PropelLogger
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class PropelLogger implements LoggerInterface
 {
@@ -59,7 +61,8 @@ class PropelLogger implements LoggerInterface
      *
      * @param mixed $level
      * @param string|Stringable $message
-     * @param array $context
+     * @param array<array-key, mixed> $context
+     * @return void
      */
     public function log($level, $message, array $context = []): void
     {

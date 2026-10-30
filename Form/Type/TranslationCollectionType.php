@@ -15,6 +15,7 @@ use Propel\Bundle\PropelBundle\Form\EventListener\TranslationCollectionFormListe
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -23,13 +24,17 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  * form type for i18n-columns in propel
  *
  * @author Patrick Kaufmann
+ * @api
+ * @template TData
+ * @extends AbstractType<TData>
  */
 class TranslationCollectionType extends AbstractType
 {
     /**
-     * @param FormBuilderInterface $builder
-     * @param array $options
+     * @param FormBuilderInterface<TData|null> $builder
+     * @param array<array-key, mixed> $options
      * @return void
+     * @throws MissingOptionsException
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -47,6 +52,7 @@ class TranslationCollectionType extends AbstractType
     /**
      * @param OptionsResolver $resolver
      * @return void
+     * @throws AccessException
      */
     public function configureOptions(OptionsResolver $resolver): void
     {

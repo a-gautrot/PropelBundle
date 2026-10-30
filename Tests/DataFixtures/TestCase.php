@@ -32,7 +32,7 @@ class TestCase extends BaseTestCase
     /**
      * The list of created temp files to be removed.
      *
-     * @var array
+     * @var list<string>
      */
     protected array $tmpFiles = [];
 

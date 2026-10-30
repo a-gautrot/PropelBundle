@@ -31,7 +31,7 @@ class SchemaLocatorTest extends TestCase
     private ContainerBuilder $container;
 
     /**
-     * @var array
+     * @var array<array-key, mixed>
      */
     private array $configuration;
 

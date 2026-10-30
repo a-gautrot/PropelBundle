@@ -12,8 +12,12 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException;
 use PDO;
+use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Runtime\Adapter\Pdo\MysqlAdapter;
+use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
+use RuntimeException;
+use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -22,6 +26,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * # TableDropCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class TableDropCommand extends AbstractCommand
 {
@@ -29,6 +34,7 @@ class TableDropCommand extends AbstractCommand
 
     /**
      * @return void
+     * @throws ConsoleInvalidArgumentException
      */
     protected function configure(): void
     {
@@ -44,6 +50,9 @@ class TableDropCommand extends AbstractCommand
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
+     * @throws ConnectionException
+     * @throws RuntimeException
+     * @throws ConsoleInvalidArgumentException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -53,13 +62,13 @@ class TableDropCommand extends AbstractCommand
         if (!$adapter instanceof MysqlAdapter) {
             $output->writeln('<error>This command is MySQL only.</error>');
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         }
 
         if (!$input->getOption('force')) {
             $output->writeln('<error>You have to use the "--force" option to drop some tables.</error>');
 
-            return \Propel\Generator\Command\AbstractCommand::CODE_ERROR;
+            return PropelAbstractCommand::CODE_ERROR;
         }
 
         $tablesToDelete = $input->getArgument('table');
@@ -83,13 +92,16 @@ class TableDropCommand extends AbstractCommand
         }
 
         $showStatement = $connection->prepare('SHOW TABLES;');
+        if ($showStatement === false) {
+            throw new RuntimeException('Cannot list the database tables.');
+        }
         $showStatement->execute();
 
         $allTables = $showStatement->fetchAll(PDO::FETCH_COLUMN);
 
         if ($nbTable) {
             foreach ($tablesToDelete as $tableToDelete) {
-                if (!array_search($tableToDelete, $allTables)) {
+                if (!in_array($tableToDelete, $allTables, true)) {
                     throw new InvalidArgumentException("Table $tableToDelete doesn't exist in the database.");
                 }
             }
@@ -99,7 +111,7 @@ class TableDropCommand extends AbstractCommand
 
         $connection->exec('SET FOREIGN_KEY_CHECKS = 0;');
 
-        array_walk($tablesToDelete, function (string &$table, $key, MysqlAdapter $dbAdapter): void {
+        array_walk($tablesToDelete, function (string &$table, int|string $key, MysqlAdapter $dbAdapter): void {
             $table = $dbAdapter->quoteIdentifierTable($table);
         }, $adapter);
 
@@ -115,6 +127,6 @@ class TableDropCommand extends AbstractCommand
 
         $connection->exec('SET FOREIGN_KEY_CHECKS = 1;');
 
-        return \Propel\Generator\Command\AbstractCommand::CODE_SUCCESS;
+        return PropelAbstractCommand::CODE_SUCCESS;
     }
 }
