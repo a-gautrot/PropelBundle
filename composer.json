@@ -62,7 +62,7 @@
     "ext-pdo": "*",
     "ext-pdo_sqlite": "*",
     "fakerphp/faker": "^1.0",
-    "mikey179/vfsstream": "^1.6",
+    "mikey179/vfsstream": "^1.6.12",
     "phpstan/extension-installer": "^1.4",
     "phpstan/phpstan": "^2.0",
     "phpstan/phpstan-deprecation-rules": "^2.0",
