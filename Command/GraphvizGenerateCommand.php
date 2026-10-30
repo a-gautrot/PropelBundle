@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Override;
 use Propel\Generator\Command\GraphvizGenerateCommand as BaseGraphvizGenerateCommand;
 use Symfony\Component\Console\Command\Command;
@@ -23,7 +24,7 @@ use Symfony\Component\Console\Input\InputOption;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
-#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:graphviz:generate', description: 'Generate Graphviz files (.dot)')]
+#[AsCommand(name: 'propel:graphviz:generate', description: 'Generate Graphviz files (.dot)')]
 class GraphvizGenerateCommand extends WrappedCommand
 {
     /**

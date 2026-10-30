@@ -54,7 +54,6 @@ class PropelExtension extends Extension
 
         // Load services
         if (!$container->hasDefinition('propel')) {
-            /** @psalm-suppress DeprecatedMethod XML services remain supported on the required Symfony 6.4. */
             $this->loadXmlResources($container);
 
             $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
@@ -92,7 +91,7 @@ class PropelExtension extends Extension
      * @param ContainerBuilder $container
      * @return void
      * @throws Exception
-     * @deprecated since Symfony 7.4; migrate Symfony service definitions to PHP or YAML before upgrading to Symfony 8.0.
+     * @deprecated XML services are supported on Symfony 6.4; migrate them before upgrading to Symfony 8.0.
      */
     private function loadXmlResources(ContainerBuilder $container): void
     {

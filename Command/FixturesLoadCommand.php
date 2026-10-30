@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use ArrayIterator;
 use InvalidArgumentException;
 use LogicException;
@@ -41,7 +42,7 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
  * @author William DURAND <william.durand1@gmail.com>
  * @api
  */
-#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:fixtures:load', description: 'Load XML, SQL and/or YAML fixtures')]
+#[AsCommand(name: 'propel:fixtures:load', description: 'Load XML, SQL and/or YAML fixtures')]
 class FixturesLoadCommand extends AbstractCommand
 {
     /**

@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Override;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException;
@@ -26,7 +27,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
-#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:build', description: 'Hub for Propel build commands (Model classes, SQL)')]
+#[AsCommand(name: 'propel:build', description: 'Hub for Propel build commands (Model classes, SQL)')]
 class BuildCommand extends Command
 {
     /**

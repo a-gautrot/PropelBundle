@@ -15,6 +15,7 @@ use Override;
 use Propel\Common\Config\PropelConfiguration;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Connection\DebugPDO;
+use Propel\Runtime\Util\Profiler;
 use RuntimeException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 

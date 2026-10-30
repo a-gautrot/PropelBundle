@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use App\AppBundle;
 use InvalidArgumentException as BaseInvalidArgumentException;
 use JsonException;
@@ -39,7 +40,7 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
  * @author William DURAND <william.durand1@gmail.com>
  * @api
  */
-#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:form:generate', description: 'Generate Form types stubs based on the schema.xml')]
+#[AsCommand(name: 'propel:form:generate', description: 'Generate Form types stubs based on the schema.xml')]
 class FormGenerateCommand extends AbstractCommand
 {
     /**
@@ -181,7 +182,7 @@ EOT
             if (!file_exists($file->getPathname()) || $force === true) {
                 $this->writeFormType($bundle, $table, $file, $force, $output);
             } else {
-                $output->writeln(sprintf('File <comment>%-60s</comment> exists, skipped. Try the <info>--force</info> option.', $this->getRelativeFileName($file)));
+                $output->writeln('File <comment>' . str_pad($this->getRelativeFileName($file), 60) . '</comment> exists, skipped. Try the <info>--force</info> option.');
             }
         }
     }

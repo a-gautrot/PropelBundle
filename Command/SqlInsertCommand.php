@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use JsonException;
 use LogicException;
 use Override;
@@ -32,7 +33,7 @@ use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
-#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:sql:insert', description: 'Insert SQL statements')]
+#[AsCommand(name: 'propel:sql:insert', description: 'Insert SQL statements')]
 class SqlInsertCommand extends WrappedCommand
 {
     /**
@@ -78,7 +79,7 @@ class SqlInsertCommand extends WrappedCommand
             return parent::execute($input, $output);
         } else {
             $output->writeln('<error>You have to use --force to execute all SQL statements.</error>');
-            return \Symfony\Component\Console\Command\Command::FAILURE;
+            return Command::FAILURE;
         }
     }
 

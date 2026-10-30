@@ -11,6 +11,7 @@
 
 namespace Propel\Bundle\PropelBundle\Form\Type;
 
+use Closure;
 use InvalidArgumentException;
 use Override;
 use PDO;
@@ -166,8 +167,7 @@ class ModelType extends AbstractType
             return null;
         };
 
-        $choiceName = function (Options $options): ?array {
-
+        $choiceName = function (Options $options): ?Closure {
             /** @var ModelCriteria $query */
             $query = $options['query'];
             if ($options['index_property']) {

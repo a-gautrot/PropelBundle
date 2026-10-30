@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Override;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException as BaseRuntimeException;
@@ -29,7 +30,7 @@ use Symfony\Component\Filesystem\Filesystem;
  * @author William DURAND <william.durand1@gmail.com>
  * @api
  */
-#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:fixtures:dump', description: 'Dump data from database into YAML fixtures file.')]
+#[AsCommand(name: 'propel:fixtures:dump', description: 'Dump data from database into YAML fixtures file.')]
 class FixturesDumpCommand extends AbstractCommand
 {
     /**

@@ -47,6 +47,10 @@
     "symfony/framework-bundle": "^6.4",
     "symfony/http-foundation": "^6.4",
     "symfony/http-kernel": "^6.4",
+    "symfony/polyfill-php82": "^1.0",
+    "symfony/polyfill-php83": "^1.0",
+    "symfony/polyfill-php84": "^1.0",
+    "symfony/polyfill-php85": "^1.0",
     "symfony/security-bundle": "^6.4",
     "symfony/security-core": "^6.4",
     "symfony/validator": "^6.4",
@@ -105,8 +109,10 @@
   "scripts": {
     "test": "@php Tests/run.php",
     "test:coverage": "@test --coverage-clover Tests/coverage.xml --log-junit Tests/junit.xml",
-    "phpstan": "vendor/bin/phpstan analyse -c phpstan.dist.neon",
-    "psalm": "vendor/bin/psalm --config=psalm.dist.xml",
-    "phpcs": "phpcs --standard=phpcs.dist.xml"
+    "phpstan": "@php vendor/bin/phpstan analyse -c phpstan.dist.neon --memory-limit=1G",
+    "psalm": "@php -d memory_limit=1G vendor/bin/psalm.phar --config=psalm.dist.xml",
+    "phpcs": "@php vendor/bin/phpcs --standard=phpcs.dist.xml",
+    "rector": "@php vendor/bin/rector process",
+    "rector:check": "@rector --dry-run"
   }
 }

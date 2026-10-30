@@ -43,14 +43,16 @@ class PropelUserProvider implements UserProviderInterface
      * @param string $class The User model class.
      * @param string|null $property The property to use to retrieve a user.
      */
-    public function __construct(/**
-     * A Model class name.
-     */
-        protected string  $class, /**
-     * A property to use to retrieve the user.
-     */
-        protected ?string $property = null)
-    {
+    public function __construct(
+        /**
+         * A Model class name.
+         */
+        protected string  $class,
+        /**
+         * A property to use to retrieve the user.
+         */
+        protected ?string $property = null
+    ) {
         $this->queryClass = "{$this->class}Query";
     }
 

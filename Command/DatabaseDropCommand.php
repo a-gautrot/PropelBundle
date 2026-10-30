@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use InvalidArgumentException as BaseInvalidArgumentException;
 use Override;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
@@ -30,7 +31,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author William DURAND
  * @api
  */
-#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:database:drop', description: 'Drop a given database or the default one.')]
+#[AsCommand(name: 'propel:database:drop', description: 'Drop a given database or the default one.')]
 class DatabaseDropCommand extends AbstractCommand
 {
     /**

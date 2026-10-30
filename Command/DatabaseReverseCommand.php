@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use InvalidArgumentException as BaseInvalidArgumentException;
 use Override;
 use Propel\Generator\Command\DatabaseReverseCommand as BaseDatabaseReverseCommand;
@@ -25,7 +26,7 @@ use Symfony\Component\Console\Input\InputOption;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
-#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:database:reverse', description: 'Reverse-engineer a XML schema file based on given database')]
+#[AsCommand(name: 'propel:database:reverse', description: 'Reverse-engineer a XML schema file based on given database')]
 class DatabaseReverseCommand extends WrappedCommand
 {
     /**

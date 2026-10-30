@@ -11,6 +11,9 @@
 
 namespace Propel\Bundle\PropelBundle\Form;
 
+use Propel\Bundle\PropelBundle\Form\Type\ModelType;
+use Propel\Bundle\PropelBundle\Form\Type\TranslationCollectionType;
+use Propel\Bundle\PropelBundle\Form\Type\TranslationType;
 use Override;
 use Symfony\Component\Form\AbstractExtension;
 use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
@@ -60,9 +63,9 @@ class PropelExtension extends AbstractExtension
     protected function loadTypes(): array
     {
         return [
-            new Type\ModelType($this->propertyAccessor, $this->choiceListFactory),
-            new Type\TranslationCollectionType(),
-            new Type\TranslationType()
+            new ModelType($this->propertyAccessor, $this->choiceListFactory),
+            new TranslationCollectionType(),
+            new TranslationType()
         ];
     }
 

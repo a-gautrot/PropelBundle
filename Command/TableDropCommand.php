@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use InvalidArgumentException;
 use Override;
 use PDO;
@@ -29,7 +30,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
-#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:table:drop', description: 'Drop a given table or all tables in the database.')]
+#[AsCommand(name: 'propel:table:drop', description: 'Drop a given table or all tables in the database.')]
 class TableDropCommand extends AbstractCommand
 {
     use FormattingHelpers;

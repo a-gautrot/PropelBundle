@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Override;
 use Propel\Generator\Command\MigrationDiffCommand as BaseMigrationCommand;
 use Symfony\Component\Console\Command\Command;
@@ -24,7 +25,7 @@ use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
-#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:migration:diff', description: 'Generate diff classes')]
+#[AsCommand(name: 'propel:migration:diff', description: 'Generate diff classes')]
 class MigrationDiffCommand extends WrappedCommand
 {
     /**

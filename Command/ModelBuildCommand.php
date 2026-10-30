@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Override;
 use Propel\Generator\Command\ModelBuildCommand as BaseModelBuildCommand;
 use RuntimeException;
@@ -25,7 +26,7 @@ use Symfony\Component\Console\Input\InputOption;
  * @author Kévin Gomez <contact@kevingomez.fr>
  * @api
  */
-#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:model:build', description: 'Build the model classes based on Propel XML schemas')]
+#[AsCommand(name: 'propel:model:build', description: 'Build the model classes based on Propel XML schemas')]
 class ModelBuildCommand extends WrappedCommand
 {
     /**

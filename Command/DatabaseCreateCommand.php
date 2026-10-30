@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use InvalidArgumentException;
 use Override;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
@@ -30,7 +31,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author William DURAND
  * @api
  */
-#[\Symfony\Component\Console\Attribute\AsCommand(name: 'propel:database:create', description: 'Create a given database or the default one.')]
+#[AsCommand(name: 'propel:database:create', description: 'Create a given database or the default one.')]
 class DatabaseCreateCommand extends AbstractCommand
 {
     /**

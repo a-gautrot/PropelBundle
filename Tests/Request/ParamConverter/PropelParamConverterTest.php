@@ -447,7 +447,7 @@ XML;
         $services = $container->findTaggedServiceIds('controller.argument_value_resolver');
         $this->assertCount(1, $services);
 
-        $resolver = new ArgumentResolver(argumentMetadataFactory: null, argumentValueResolvers: array_merge(
+        $resolver = new ArgumentResolver(argumentValueResolvers: array_merge(
             [$container->get(array_key_first($services))],
             [...ArgumentResolver::getDefaultArgumentValueResolvers()]
         ));
