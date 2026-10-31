@@ -18,6 +18,7 @@
 /phpunit.dist.xml export-ignore
 /psalm.dist.xml export-ignore
 /psalm-baseline.xml export-ignore
+/Resources/meta export-ignore
 /Resources/phpstan export-ignore
 /Resources/psalm export-ignore
 /Tests export-ignore
