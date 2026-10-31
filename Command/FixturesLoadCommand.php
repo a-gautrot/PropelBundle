@@ -14,7 +14,6 @@ use ArrayIterator;
 use InvalidArgumentException;
 use LogicException;
 use Override;
-use Propel\Bundle\PropelBundle\DataFixtures\Loader\DataLoaderInterface;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException;
 use SplFileInfo;
@@ -137,9 +136,9 @@ EOT
                 'The directory where XML, SQL and/or YAML fixtures files are located',
                 $this->defaultFixturesDir
             )
-            ->addOption('xml', '', InputOption::VALUE_NONE, 'Load XML fixtures')
-            ->addOption('sql', '', InputOption::VALUE_NONE, 'Load SQL fixtures')
-            ->addOption('yml', '', InputOption::VALUE_NONE, 'Load YAML fixtures')
+            ->addOption('xml', null, InputOption::VALUE_NONE, 'Load XML fixtures')
+            ->addOption('sql', null, InputOption::VALUE_NONE, 'Load SQL fixtures')
+            ->addOption('yml', null, InputOption::VALUE_NONE, 'Load YAML fixtures')
             ->addOption(
                 'connection',
                 null,
@@ -403,11 +402,7 @@ EOT
             return null;
         }
 
-        if (!$loader instanceof DataLoaderInterface) {
-            throw new RuntimeException('The fixture loader service must implement DataLoaderInterface.');
-        }
-        $files = array_map(static fn(SplFileInfo $file): string => $file->getPathname(), iterator_to_array($datas));
-        $nb = $loader->load($files, $connectionName);
+        $nb = $loader->load(iterator_to_array($datas), $connectionName);
 
         $fixtureType = strtoupper($type);
         $plural = $nb > 1 ? 's' : '';

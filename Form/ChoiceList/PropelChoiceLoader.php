@@ -64,7 +64,7 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
      * PropelChoiceListLoader constructor.
      * @param ChoiceListFactoryInterface $factory
      * @param string $class
-     * @param ModelCriteria $queryObject
+     * @param ModelCriteria $query
      * @param string|null $useAsIdentifier
      * @throws LogicException
      * @throws ColumnNotFoundException
@@ -72,13 +72,13 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
     public function __construct(
         ChoiceListFactoryInterface $factory,
         string                     $class,
-        ModelCriteria              $queryObject,
+        ModelCriteria              $query,
         ?string                    $useAsIdentifier = null
     )
     {
         $this->factory = $factory;
         $this->class = $class;
-        $this->query = $queryObject;
+        $this->query = $query;
         if ($useAsIdentifier !== null && $useAsIdentifier !== '') {
             $this->identifier = [$this->query->getTableMapOrFail()->getColumn($useAsIdentifier)];
         } else {

@@ -18,6 +18,7 @@ use Propel\Bundle\PropelBundle\Form\ChoiceList\PropelChoiceLoader;
 use Propel\Bundle\PropelBundle\Form\DataTransformer\CollectionToArrayTransformer;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\Map\ColumnMap;
+use Stringable;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
 use Symfony\Component\Form\ChoiceList\Factory\DefaultChoiceListFactory;
@@ -79,8 +80,7 @@ class ModelType extends AbstractType
     public function __construct(
         ?PropertyAccessorInterface  $propertyAccessor = null,
         ?ChoiceListFactoryInterface $choiceListFactory = null
-    )
-    {
+    ) {
         $this->choiceListFactory = $choiceListFactory ?: new PropertyAccessDecorator(
             new DefaultChoiceListFactory(),
             $propertyAccessor
@@ -102,7 +102,7 @@ class ModelType extends AbstractType
      */
     public static function createChoiceLabel(object $choice): string
     {
-        if (!method_exists($choice, '__toString')) {
+        if (!$choice instanceof Stringable) {
             throw new InvalidArgumentException('A choice must implement __toString() or define a label property.');
         }
         return (string)$choice;
@@ -168,7 +168,7 @@ class ModelType extends AbstractType
             return null;
         };
 
-        $choiceName = function (Options $options): ?array {
+        $choiceName = function (Options $options): ?callable {
             /** @var ModelCriteria $query */
             $query = $options['query'];
             if ($options['index_property']) {
@@ -179,7 +179,7 @@ class ModelType extends AbstractType
             /** @var ColumnMap $firstIdentifier */
             $firstIdentifier = current($identifier);
             if (count($identifier) === 1 && $firstIdentifier->getPdoType() === PDO::PARAM_INT) {
-                return [self::class, 'createChoiceName'];
+                return self::createChoiceName(...);
             }
             return null;
         };
@@ -221,9 +221,6 @@ class ModelType extends AbstractType
                     );
                 }
                 $query = new $queryClass();
-            }
-            if (!$query instanceof ModelCriteria) {
-                throw new InvalidOptionsException('The query class must extend ModelCriteria.');
             }
             return $query;
         };

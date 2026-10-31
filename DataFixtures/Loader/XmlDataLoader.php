@@ -42,14 +42,11 @@ class XmlDataLoader extends AbstractDataLoader
     {
         $array = [];
         if ($xml instanceof SimpleXMLElement) {
-            $classes = $xml->xpath('*[namespace-uri() = namespace-uri(..)]');
-            foreach (is_array($classes) ? $classes : [] as $value) {
-                $key = $value->getName();
+            foreach ($xml as $key => $value) {
+                $key = (string)$key;
                 // First make a valid key which is the Ns (Namespace) attribute
                 // + the element name (the class name)
-                $attributes = $value->xpath('@*[namespace-uri() = ""]');
-                foreach (is_array($attributes) ? $attributes : [] as $subvalue) {
-                    $subkey = $subvalue->getName();
+                foreach ($value->attributes() ?? [] as $subkey => $subvalue) {
                     if ($subkey === 'Namespace') {
                         $key = "$subvalue\\$key";
                         break;
@@ -57,14 +54,12 @@ class XmlDataLoader extends AbstractDataLoader
                 }
 
                 $array[$key] = [];
-                $elements = $value->xpath('*[namespace-uri() = namespace-uri(..)]');
-                foreach (is_array($elements) ? $elements : [] as $elementValue) {
-                    $elementKey = $elementValue->getName();
+                foreach ($value as $elementKey => $elementValue) {
+                    $elementKey = (string)$elementKey;
                     $array[$key][$elementKey] = [];
 
-                    $attributes = $elementValue->xpath('@*[namespace-uri() = ""]');
-                    foreach (is_array($attributes) ? $attributes : [] as $subvalue) {
-                        $array[$key][$elementKey][$subvalue->getName()] = (string)$subvalue;
+                    foreach ($elementValue->attributes() ?? [] as $subkey => $subvalue) {
+                        $array[$key][$elementKey][(string)$subkey] = (string)$subvalue;
                     }
                 }
             }

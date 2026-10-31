@@ -59,9 +59,7 @@ class PropelDataCollector extends DataCollector
     /**
      * Creates an array of Build objects.
      *
-     * @return array<int, array{
-     *     sql: string, connection: string, time: int|float, memory: int, trace: TraceStub
-     * }> An array of Build objects
+     * @return array<int, array{sql: string, connection: string, time: int|float, memory: int, trace: TraceStub}>
      */
     private function buildQueries(): array
     {
@@ -71,9 +69,7 @@ class PropelDataCollector extends DataCollector
     /**
      * Returns queries.
      *
-     * @return Data&iterable<array-key, array{
-     *     sql: string, connection: string, time: int|float, memory: int, trace: TraceStub
-     * }> Queries
+     * @return Data Queries
      */
     public function getQueries(): Data
     {

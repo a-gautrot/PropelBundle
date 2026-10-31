@@ -11,7 +11,6 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use Override;
-use Propel\Bundle\PropelBundle\DataFixtures\Dumper\DataDumperInterface;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException as BaseRuntimeException;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -102,9 +101,6 @@ EOT
 
         $filename = "$path/fixtures_" . time() . '.yml';
         $dumper = $this->getContainer()->get('propel.dumper.yaml');
-        if (!$dumper instanceof DataDumperInterface) {
-            throw new BaseRuntimeException('The propel.dumper.yaml service must implement DataDumperInterface.');
-        }
 
         $dumper->dump($filename, $input->getOption('connection'));
 

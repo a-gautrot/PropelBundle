@@ -33,7 +33,7 @@ return RectorConfig::configure()
         __DIR__ . '/Tests/Fixtures/Model',
     ])
     ->withPhpVersion(PhpVersion::PHP_74)
-    ->withPhpSets()
+    ->withPhpSets(false, false, false, false, true)
     ->withSets([
         SymfonySetList::COMPOSER_BASED,
         SymfonySetList::SYMFONY_CODE_QUALITY,

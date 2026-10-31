@@ -123,7 +123,7 @@ class TableDropCommand extends AbstractCommand
 
         $connection->exec('SET FOREIGN_KEY_CHECKS = 0;');
 
-        array_walk($tablesToDelete, function (string &$table, int $key, MysqlAdapter $dbAdapter): void {
+        array_walk($tablesToDelete, function (string &$table, $key, MysqlAdapter $dbAdapter): void {
             $table = $dbAdapter->quoteIdentifierTable($table);
         }, $adapter);
 

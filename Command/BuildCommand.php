@@ -39,9 +39,9 @@ class BuildCommand extends Command
             ->setName('propel:build')
             ->setDescription('Hub for Propel build commands (Model classes, SQL)')
             ->setDefinition([
-                new InputOption('classes', '', InputOption::VALUE_NONE, 'Build only classes'),
-                new InputOption('sql', '', InputOption::VALUE_NONE, 'Build only SQL'),
-                new InputOption('insert-sql', '', InputOption::VALUE_NONE, 'Build all and insert SQL'),
+                new InputOption('classes', null, InputOption::VALUE_NONE, 'Build only classes'),
+                new InputOption('sql', null, InputOption::VALUE_NONE, 'Build only SQL'),
+                new InputOption('insert-sql', null, InputOption::VALUE_NONE, 'Build all and insert SQL'),
                 new InputOption(
                     'connection',
                     null,

@@ -89,7 +89,6 @@ class PropelFactory implements UserProviderFactoryInterface
         $builder
             ->children()
             ->scalarNode('class')->isRequired()->cannotBeEmpty()->end()
-            ->scalarNode('property')->defaultNull()->end()
-            ->end();
+            ->scalarNode('property')->defaultNull();
     }
 }

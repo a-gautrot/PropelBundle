@@ -66,7 +66,7 @@ class YamlDataLoader extends AbstractDataLoader
                 };
             } else {
                 /** @psalm-suppress UnusedVariable Available to PHP fixture templates through include. */
-                $faker = function (string $text): void {
+                $faker = function ($text): void {
                     echo "$text\n";
                 };
             }

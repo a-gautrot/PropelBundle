@@ -22,7 +22,7 @@ use Symfony\Component\Form\Exception\TransformationFailedException;
  * @author William Durand <william.durand1@gmail.com>
  * @author Pierre-Yves Lebecq <py.lebecq@gmail.com>
  *
- * @implements DataTransformerInterface<ObjectCollection, array<array-key, mixed>>
+ * @implements DataTransformerInterface<ObjectCollection, array>
  * @api
  */
 class CollectionToArrayTransformer implements DataTransformerInterface

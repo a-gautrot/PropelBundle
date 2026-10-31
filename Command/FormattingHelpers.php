@@ -45,8 +45,7 @@ trait FormattingHelpers
         OutputInterface $output,
         string          $question,
         bool            $default = true
-    ): bool
-    {
+    ): bool {
         $question = new Question($question);
         do {
             /** @var QuestionHelper $questionHelper */
