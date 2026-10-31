@@ -10,9 +10,9 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
-use Symfony\Component\Console\Attribute\AsCommand;
 use Override;
 use Propel\Generator\Command\GraphvizGenerateCommand as BaseGraphvizGenerateCommand;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException;
@@ -37,7 +37,12 @@ class GraphvizGenerateCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->addOption('output-dir', mode: InputOption::VALUE_REQUIRED, description: 'The output directory', default: BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY);
+            ->addOption(
+                'output-dir',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The output directory',
+                default: BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY
+            );
     }
 
     /**

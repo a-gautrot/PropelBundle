@@ -52,7 +52,8 @@ class PropelUserProvider implements UserProviderInterface
          * A property to use to retrieve the user.
          */
         protected ?string $property = null
-    ) {
+    )
+    {
         $this->queryClass = "{$this->class}Query";
     }
 

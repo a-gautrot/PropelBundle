@@ -56,7 +56,9 @@ class UniqueObjectValidator extends ConstraintValidator
 
         foreach ($fields as $fieldName) {
             if (!in_array($fieldName, $classFields)) {
-                throw new ConstraintDefinitionException("The field \"$fieldName\" doesn't exist in the \"$class\" class.");
+                throw new ConstraintDefinitionException(
+                    "The field \"$fieldName\" doesn't exist in the \"$class\" class."
+                );
             }
         }
 
@@ -75,7 +77,11 @@ class UniqueObjectValidator extends ConstraintValidator
             $fieldParts = [];
 
             foreach ($fields as $fieldName) {
-                $fieldPhpName = $tableMapClass::translateFieldname($fieldName, TableMap::TYPE_FIELDNAME, TableMap::TYPE_PHPNAME);
+                $fieldPhpName = $tableMapClass::translateFieldname(
+                    $fieldName,
+                    TableMap::TYPE_FIELDNAME,
+                    TableMap::TYPE_PHPNAME
+                );
                 $fieldParts[] = "$fieldPhpName \"{$value->getByName($fieldName, TableMap::TYPE_FIELDNAME)}\"";
             }
 

@@ -9,7 +9,8 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
  * # AppBundle
- * This class is made to simulate bundle containing base structure so we can work with no bundle architecture used from s4+
+ * This class simulates a bundle containing the base structure for applications
+ * using the bundle-less architecture introduced in Symfony 4.
  * @package App
  * @api
  */

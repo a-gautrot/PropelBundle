@@ -11,10 +11,10 @@
 
 namespace Propel\Bundle\PropelBundle\Form;
 
+use Override;
 use Propel\Bundle\PropelBundle\Form\Type\ModelType;
 use Propel\Bundle\PropelBundle\Form\Type\TranslationCollectionType;
 use Propel\Bundle\PropelBundle\Form\Type\TranslationType;
-use Override;
 use Symfony\Component\Form\AbstractExtension;
 use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
 use Symfony\Component\Form\ChoiceList\Factory\DefaultChoiceListFactory;
@@ -50,10 +50,16 @@ class PropelExtension extends AbstractExtension
      * @param PropertyAccessorInterface|null $propertyAccessor
      * @param ChoiceListFactoryInterface|null $choiceListFactory
      */
-    public function __construct(?PropertyAccessorInterface $propertyAccessor = null, ?ChoiceListFactoryInterface $choiceListFactory = null)
+    public function __construct(
+        ?PropertyAccessorInterface  $propertyAccessor = null,
+        ?ChoiceListFactoryInterface $choiceListFactory = null
+    )
     {
         $this->propertyAccessor = $propertyAccessor ?: PropertyAccess::createPropertyAccessor();
-        $this->choiceListFactory = $choiceListFactory ?: new PropertyAccessDecorator(new DefaultChoiceListFactory(), $this->propertyAccessor);
+        $this->choiceListFactory = $choiceListFactory ?: new PropertyAccessDecorator(
+            new DefaultChoiceListFactory(),
+            $this->propertyAccessor
+        );
     }
 
     /**

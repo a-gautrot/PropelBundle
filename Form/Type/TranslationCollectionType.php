@@ -47,7 +47,10 @@ class TranslationCollectionType extends AbstractType
             throw new MissingOptionsException('columns must be set');
         }
 
-        $listener = new TranslationCollectionFormListener($options['languages'], $options['entry_options']['data_class']);
+        $listener = new TranslationCollectionFormListener(
+            $options['languages'],
+            $options['entry_options']['data_class']
+        );
         $builder->addEventSubscriber($listener);
     }
 

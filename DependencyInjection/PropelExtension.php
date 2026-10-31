@@ -79,7 +79,9 @@ class PropelExtension extends Extension
         $debug = $container->getParameter('kernel.debug');
         $projectDir = $container->getParameter('kernel.project_dir');
         if (!is_bool($debug) || !is_string($projectDir)) {
-            throw new InvalidArgumentException('The kernel.debug and kernel.project_dir parameters have invalid types.');
+            throw new InvalidArgumentException(
+                'The kernel.debug and kernel.project_dir parameters have invalid types.'
+            );
         }
 
         return new Configuration($debug, $projectDir);

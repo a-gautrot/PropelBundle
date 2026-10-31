@@ -10,7 +10,6 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
-use Symfony\Component\Console\Attribute\AsCommand;
 use InvalidArgumentException as BaseInvalidArgumentException;
 use Override;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
@@ -19,6 +18,7 @@ use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ServiceContainer\StandardServiceContainer;
 use RuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -52,8 +52,16 @@ The <info>--connection</info> parameter allows you to change the connection to u
 The default connection is the active connection (propel.dbal.default_connection).
 EOT
             )
-            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
-            ->addOption('force', mode: InputOption::VALUE_NONE, description: 'Set this parameter to execute this action.');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'force',
+                mode: InputOption::VALUE_NONE,
+                description: 'Set this parameter to execute this action.'
+            );
     }
 
     /**
@@ -75,7 +83,11 @@ EOT
         }
 
         if ($this->getKernel()->getEnvironment() === 'prod') {
-            $this->writeSection($output, 'WARNING: you are about to drop a database in production !', 'bg=red;fg=white');
+            $this->writeSection(
+                $output,
+                'WARNING: you are about to drop a database in production !',
+                'bg=red;fg=white'
+            );
 
             if ($this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', default: false) === false) {
                 $output->writeln('Aborted, nice decision !');

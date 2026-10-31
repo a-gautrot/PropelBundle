@@ -161,7 +161,9 @@ class PropelParamConverter implements ValueResolverInterface
                         //we find nothing but the object is optional
                         $object = null;
                     } else {
-                        throw new LogicException('Unable to guess how to get a Propel object from the request information.');
+                        throw new LogicException(
+                            'Unable to guess how to get a Propel object from the request information.'
+                        );
                     }
                 }
             }
@@ -228,7 +230,8 @@ class PropelParamConverter implements ValueResolverInterface
                 } else {
                     $invalidWith = var_export($with, return: true);
                     throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
-                            only string relation name (e.g. \"Book\") or an array with two keys (e.g. {\"Book\", \"LEFT_JOIN\"}) are allowed");
+                            only string relation name (e.g. \"Book\") or an array with two keys "
+                        . "(e.g. {\"Book\", \"LEFT_JOIN\"}) are allowed");
                 }
             } else {
                 $query->joinWith($with);

@@ -10,9 +10,9 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
-use Symfony\Component\Console\Attribute\AsCommand;
 use Override;
 use Propel\Generator\Command\MigrationStatusCommand as BaseMigrationCommand;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException;
@@ -38,8 +38,16 @@ class MigrationStatusCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
-            ->addOption('migration-table', mode: InputOption::VALUE_OPTIONAL, description: 'Migration table name (if none given, the configured table is used)')
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'migration-table',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Migration table name (if none given, the configured table is used)'
+            )
             ->addOption('output-dir', mode: InputOption::VALUE_OPTIONAL, description: 'The output directory');
     }
 

@@ -10,10 +10,10 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
-use Symfony\Component\Console\Attribute\AsCommand;
 use Override;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException as BaseRuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -57,8 +57,16 @@ The <info>--dir</info> parameter allows you to change the output directory.
 The default connection is the active connection (propel.dbal.default_connection).
 EOT
             )
-            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Set this parameter to define a connection to use')
-            ->addOption('dir', mode: InputOption::VALUE_OPTIONAL, description: 'Set this parameter to define a fixture directory');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Set this parameter to define a connection to use'
+            )
+            ->addOption(
+                'dir',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Set this parameter to define a fixture directory'
+            );
     }
 
     /**
@@ -81,7 +89,11 @@ EOT
 
         if (!file_exists($path)) {
             $output->writeln("<info>The $path folder does not exists.</info>");
-            if ($this->askConfirmation($input, $output, "<question>Do you want me to create it for you ?</question> [Yes]")) {
+            if ($this->askConfirmation(
+                $input,
+                $output,
+                "<question>Do you want me to create it for you ?</question> [Yes]"
+            )) {
                 $fs = new Filesystem();
                 $fs->mkdir($path);
                 $this->writeNewDirectory($output, $path);

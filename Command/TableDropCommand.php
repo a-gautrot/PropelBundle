@@ -10,7 +10,6 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
-use Symfony\Component\Console\Attribute\AsCommand;
 use InvalidArgumentException;
 use Override;
 use PDO;
@@ -19,6 +18,7 @@ use Propel\Runtime\Adapter\Pdo\MysqlAdapter;
 use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
 use RuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Exception\InvalidArgumentException as ConsoleInvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,9 +43,21 @@ class TableDropCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
-            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
-            ->addOption('force', mode: InputOption::VALUE_NONE, description: 'Set this parameter to execute this action.')
-            ->addArgument('table', InputArgument::IS_ARRAY, 'Set this parameter to défine which table to delete (default all the table in the database.');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'force',
+                mode: InputOption::VALUE_NONE,
+                description: 'Set this parameter to execute this action.'
+            )
+            ->addArgument(
+                'table',
+                InputArgument::IS_ARRAY,
+                'Set this parameter to défine which table to delete (default all the table in the database.'
+            );
     }
 
     /**

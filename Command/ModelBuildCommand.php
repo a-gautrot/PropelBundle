@@ -10,10 +10,10 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
-use Symfony\Component\Console\Attribute\AsCommand;
 use Override;
 use Propel\Generator\Command\ModelBuildCommand as BaseModelBuildCommand;
 use RuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException;
@@ -39,8 +39,16 @@ class ModelBuildCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
-            ->addOption('loader-script-dir', mode: InputOption::VALUE_OPTIONAL, description: 'Target folder of the database table map loader script. Defaults to paths.loaderScriptDir')
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'loader-script-dir',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Target folder of the database table map loader script. Defaults to paths.loaderScriptDir'
+            )
             ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to generate model classes from');
     }
 
