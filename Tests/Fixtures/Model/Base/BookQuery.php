@@ -2,18 +2,17 @@
 
 namespace Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Base;
 
-use Exception;
-use PDO;
+use \Exception;
+use \PDO;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Book as ChildBook;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\BookQuery as ChildBookQuery;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\Map\BookTableMap;
+use Propel\Runtime\Propel;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\Collection\Collection;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Exception\PropelException;
-use Propel\Runtime\Propel;
-use Propel\Runtime\Util\PropelModelPager;
 
 /**
  * Base class that represents a query for the `book` table.
@@ -78,7 +77,7 @@ use Propel\Runtime\Util\PropelModelPager;
  * @method     ChildBook[]|Collection findByAuthorId(int|array<int> $author_id) Return ChildBook objects filtered by the author_id column
  * @psalm-method Collection&\Traversable<ChildBook> findByAuthorId(int|array<int> $author_id) Return ChildBook objects filtered by the author_id column
  *
- * @method     ChildBook[]|PropelModelPager paginate($page = 1, $maxPerPage = 10, ?ConnectionInterface $con = null) Issue a SELECT query based on the current ModelCriteria and uses a page and a maximum number of results per page to compute an offset and a limit
+ * @method     ChildBook[]|\Propel\Runtime\Util\PropelModelPager paginate($page = 1, $maxPerPage = 10, ?ConnectionInterface $con = null) Issue a SELECT query based on the current ModelCriteria and uses a page and a maximum number of results per page to compute an offset and a limit
  * @psalm-method \Propel\Runtime\Util\PropelModelPager&\Traversable<ChildBook> paginate($page = 1, $maxPerPage = 10, ?ConnectionInterface $con = null) Issue a SELECT query based on the current ModelCriteria and uses a page and a maximum number of results per page to compute an offset and a limit
  */
 abstract class BookQuery extends ModelCriteria
@@ -155,12 +154,46 @@ abstract class BookQuery extends ModelCriteria
             return $this->findPkComplex($key, $con);
         }
 
-        if ((null !== ($obj = BookTableMap::getInstanceFromPool(null === $key || is_scalar($key) || is_callable([$key, '__toString']) ? (string)$key : $key)))) {
+        if ((null !== ($obj = BookTableMap::getInstanceFromPool(null === $key || is_scalar($key) || is_callable([$key, '__toString']) ? (string) $key : $key)))) {
             // the object is already in the instance pool
             return $obj;
         }
 
         return $this->findPkSimple($key, $con);
+    }
+
+    /**
+     * Find object by primary key using raw SQL to go fast.
+     * Bypass doSelect() and the object formatter by using generated code.
+     *
+     * @param mixed $key Primary key to use for the query
+     * @param ConnectionInterface $con A connection object
+     *
+     * @throws \Propel\Runtime\Exception\PropelException
+     *
+     * @return ChildBook A model object, or null if the key is not found
+     */
+    protected function findPkSimple($key, ConnectionInterface $con)
+    {
+        $sql = 'SELECT id, title, isbn, price, publisher_id, author_id FROM book WHERE id = :p0';
+        try {
+            $stmt = $con->prepare($sql);
+            $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
+            $stmt->execute();
+        } catch (Exception $e) {
+            Propel::log($e->getMessage(), Propel::LOG_ERR);
+            throw new PropelException(sprintf('Unable to execute SELECT statement [%s]', $sql), 0, $e);
+        }
+        $obj = null;
+        if ($row = $stmt->fetch(\PDO::FETCH_NUM)) {
+            /** @var ChildBook $obj */
+            $obj = new ChildBook();
+            $obj->hydrate($row);
+            BookTableMap::addInstanceToPool($obj, null === $key || is_scalar($key) || is_callable([$key, '__toString']) ? (string) $key : $key);
+        }
+        $stmt->closeCursor();
+
+        return $obj;
     }
 
     /**
@@ -180,55 +213,6 @@ abstract class BookQuery extends ModelCriteria
             ->doSelect($con);
 
         return $criteria->getFormatter()->init($criteria)->formatOne($dataFetcher);
-    }
-
-    /**
-     * Filter the query by primary key
-     *
-     * @param mixed $key Primary key to use for the query
-     *
-     * @return $this The current query, for fluid interface
-     */
-    public function filterByPrimaryKey($key)
-    {
-
-        $this->addUsingAlias(BookTableMap::COL_ID, $key, Criteria::EQUAL);
-
-        return $this;
-    }
-
-    /**
-     * Find object by primary key using raw SQL to go fast.
-     * Bypass doSelect() and the object formatter by using generated code.
-     *
-     * @param mixed $key Primary key to use for the query
-     * @param ConnectionInterface $con A connection object
-     *
-     * @return ChildBook A model object, or null if the key is not found
-     * @throws PropelException
-     *
-     */
-    protected function findPkSimple($key, ConnectionInterface $con)
-    {
-        $sql = 'SELECT id, title, isbn, price, publisher_id, author_id FROM book WHERE id = :p0';
-        try {
-            $stmt = $con->prepare($sql);
-            $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
-            $stmt->execute();
-        } catch (Exception $e) {
-            Propel::log($e->getMessage(), Propel::LOG_ERR);
-            throw new PropelException(sprintf('Unable to execute SELECT statement [%s]', $sql), 0, $e);
-        }
-        $obj = null;
-        if ($row = $stmt->fetch(PDO::FETCH_NUM)) {
-            /** @var ChildBook $obj */
-            $obj = new ChildBook();
-            $obj->hydrate($row);
-            BookTableMap::addInstanceToPool($obj, null === $key || is_scalar($key) || is_callable([$key, '__toString']) ? (string)$key : $key);
-        }
-        $stmt->closeCursor();
-
-        return $obj;
     }
 
     /**
@@ -253,6 +237,21 @@ abstract class BookQuery extends ModelCriteria
             ->doSelect($con);
 
         return $criteria->getFormatter()->init($criteria)->format($dataFetcher);
+    }
+
+    /**
+     * Filter the query by primary key
+     *
+     * @param mixed $key Primary key to use for the query
+     *
+     * @return $this The current query, for fluid interface
+     */
+    public function filterByPrimaryKey($key)
+    {
+
+        $this->addUsingAlias(BookTableMap::COL_ID, $key, Criteria::EQUAL);
+
+        return $this;
     }
 
     /**
@@ -547,7 +546,7 @@ abstract class BookQuery extends ModelCriteria
      * @param ConnectionInterface $con the connection to use
      * @return int The number of affected rows (if supported by underlying database driver).  This includes CASCADE-related rows
      *                         if supported by native driver or if emulated using Propel.
-     * @throws PropelException Any exceptions caught during processing will be
+     * @throws \Propel\Runtime\Exception\PropelException Any exceptions caught during processing will be
      *                         rethrown wrapped into a PropelException.
      */
     public function delete(?ConnectionInterface $con = null): int
