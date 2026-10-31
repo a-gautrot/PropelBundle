@@ -229,9 +229,11 @@ class PropelParamConverter implements ValueResolverInterface
                     $this->hasWith = true;
                 } else {
                     $invalidWith = var_export($with, return: true);
-                    throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
-                            only string relation name (e.g. \"Book\") or an array with two keys "
-                        . "(e.g. {\"Book\", \"LEFT_JOIN\"}) are allowed");
+                    throw new Exception(
+                        "ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,\n"
+                        . '                            only string relation name (e.g. "Book") '
+                        . 'or an array with two keys (e.g. {"Book", "LEFT_JOIN"}) are allowed'
+                    );
                 }
             } else {
                 $query->joinWith($with);

@@ -150,8 +150,8 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
             return [];
         }
 
-        $identifier = array_first($this->identifier);
-        if ($identifier !== null && count($this->identifier) === 1) {
+        if (count($this->identifier) === 1) {
+            $identifier = array_values($this->identifier)[0];
             $phpName = $identifier->getPhpName();
             if (method_exists($model, "get$phpName")) {
                 return [$model->{"get$phpName"}()];

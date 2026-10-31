@@ -70,7 +70,8 @@ class TranslationCollectionFormListener implements EventSubscriberInterface
         }
 
         //get the class name of the i18nClass
-        $dataClass = array_last(explode('\\', $this->i18nClass));
+        $temp = explode('\\', $this->i18nClass);
+        $dataClass = end($temp);
 
         $rootData = $form->getRoot()->getData();
         $foundData = false;

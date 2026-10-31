@@ -74,7 +74,7 @@ class UniqueObject extends Constraint
     }
 
     /**
-     * @return string
+     * @return self::CLASS_CONSTRAINT
      */
     #[Override]
     public function getTargets(): string

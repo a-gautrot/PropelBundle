@@ -45,8 +45,7 @@ trait FormattingHelpers
         OutputInterface $output,
         string          $question,
         bool            $default = true
-    ): bool
-    {
+    ): bool {
         $question = new Question($question);
         do {
             /** @var QuestionHelper $questionHelper */
@@ -117,8 +116,7 @@ trait FormattingHelpers
         OutputInterface $output,
         string|array    $text,
         string          $style = 'bg=blue;fg=white'
-    ): void
-    {
+    ): void {
         /** @var FormatterHelper $formatter */
         $formatter = $this->getRequiredHelperSet()->get('formatter');
 

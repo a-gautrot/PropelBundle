@@ -11,7 +11,6 @@
 
 namespace Propel\Bundle\PropelBundle\Form\Type;
 
-use Closure;
 use InvalidArgumentException;
 use Override;
 use PDO;
@@ -81,8 +80,7 @@ class ModelType extends AbstractType
     public function __construct(
         ?PropertyAccessorInterface  $propertyAccessor = null,
         ?ChoiceListFactoryInterface $choiceListFactory = null
-    )
-    {
+    ) {
         $this->choiceListFactory = $choiceListFactory ?: new PropertyAccessDecorator(
             new DefaultChoiceListFactory(),
             $propertyAccessor
@@ -170,7 +168,7 @@ class ModelType extends AbstractType
             return null;
         };
 
-        $choiceName = function (Options $options): ?Closure {
+        $choiceName = function (Options $options): ?callable {
             /** @var ModelCriteria $query */
             $query = $options['query'];
             if ($options['index_property']) {

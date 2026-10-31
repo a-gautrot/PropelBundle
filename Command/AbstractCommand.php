@@ -93,8 +93,7 @@ abstract class AbstractCommand extends Command
 
         if ($input->hasArgument('bundle')
             && !empty($input->getArgument('bundle'))
-            && str_starts_with($input->getArgument('bundle'), '@')
-        ) {
+            && str_starts_with($input->getArgument('bundle'), '@')) {
             $this->bundle = $this
                 ->getContainer()
                 ->get('kernel')
@@ -236,8 +235,8 @@ abstract class AbstractCommand extends Command
             } else {
                 $bundleName = $bundle ? $bundle->getName() : 'App';
                 throw new RuntimeException(
-                    "$bundleName : Please define a `package` attribute "
-                    . "or a `namespace` attribute for schema `{$finalSchema->getBaseName()}`"
+                    "$bundleName : Please define a `package` attribute or a `namespace` attribute for schema `"
+                    . $finalSchema->getBaseName() . '`'
                 );
             }
 
@@ -374,13 +373,13 @@ abstract class AbstractCommand extends Command
         }
 
         $result = '';
-        while ($to !== '' && !str_contains($from, $to)) {
+        while ($to && !str_contains($from, $to)) {
             $result .= '../';
             $position = strrpos($to, '/');
             $to = $position === false ? '' : substr($to, 0, $position);
         }
 
-        return $to === '' /*we reached root*/ ? $result . substr($from, 1) : $result . substr($from, strlen($to) + 1);
+        return !$to /*we reached root*/ ? $result . substr($from, 1) : $result . substr($from, strlen($to) + 1);
     }
 
     /**
@@ -489,8 +488,7 @@ abstract class AbstractCommand extends Command
         array           $parameters,
         InputInterface  $input,
         OutputInterface $output
-    ): int
-    {
+    ): int {
         // add the command's name to the parameters
         array_unshift($parameters, $this->getName());
 

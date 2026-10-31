@@ -105,8 +105,7 @@ class PropelBundle extends Bundle
 
             // load database maps
             if (file_exists("{$config['paths']['loaderScriptDir']}/loadDatabase.php")
-                && is_readable("{$config['paths']['loaderScriptDir']}/loadDatabase.php")
-            ) {
+                && is_readable("{$config['paths']['loaderScriptDir']}/loadDatabase.php")) {
                 /** @psalm-suppress UnresolvableInclude The path comes from the validated application configuration. */
                 require_once("{$config['paths']['loaderScriptDir']}/loadDatabase.php");
             }

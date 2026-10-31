@@ -240,11 +240,10 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
 
                         if ($column->isForeignKey() && $value !== null) {
                             $relatedTable = $this->getDatabaseMap()->getTable($column->getRelatedTableName());
-                            if (isset($this->object_references[$this->cleanObjectRef(
-                                    "{$relatedTable->getClassname()}_$value"
-                                )])) {
+                            $reference = $this->cleanObjectRef("{$relatedTable->getClassname()}_$value");
+                            if (isset($this->object_references[$reference])) {
                                 $value = $this
-                                    ->object_references[$this->cleanObjectRef("{$relatedTable->getClassname()}_$value")]
+                                    ->object_references[$reference]
                                     ->getByName($column->getRelatedName(), TableMap::TYPE_COLNAME);
                             } else {
                                 $relatedClass = $this->cleanObjectRef($relatedTable->getClassNameOrFail());

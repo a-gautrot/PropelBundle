@@ -180,8 +180,7 @@ EOT
         array           $models,
         OutputInterface $output,
         bool            $force = false
-    ): void
-    {
+    ): void {
         $dir = $this->createDirectory($bundle, $output);
 
         foreach ($database->getTables() as $table) {
@@ -247,8 +246,7 @@ EOT
         SplFileInfo     $file,
         bool            $force,
         OutputInterface $output
-    ): void
-    {
+    ): void {
         $formBuilder = new FormBuilder();
         $formTypeContent = $formBuilder->buildFormType($bundle, $table, self::DEFAULT_FORM_TYPE_DIRECTORY);
 

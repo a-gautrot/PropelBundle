@@ -250,8 +250,7 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
         string    $tableName,
         ColumnMap $column,
         ?string   $in = null
-    ): array
-    {
+    ): array {
         // Avoid SQL injection via string-based query concatenation for $tableName, $columnName, and $in
         if (!preg_match('/^\w+$/', $tableName)) {
             throw new ValueError("Invalid table name: $tableName");

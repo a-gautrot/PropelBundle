@@ -39,8 +39,7 @@ class SchemaLocator
         protected ContainerInterface   $container,
         protected FileLocatorInterface $fileLocator,
         protected array                $configuration
-    )
-    {
+    ) {
     }
 
     /**
