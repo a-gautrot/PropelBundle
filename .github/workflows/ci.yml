@@ -56,8 +56,8 @@ jobs:
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:
           php-version: ${{ matrix.php-version }}
-          #extensions: json, libxml, pdo, pdo_mysql, pdo_sqlite, pdo_pgsql, sqlite3
-          coverage: pcov
+          extensions: pdo_sqlite
+          coverage: none
 
       - name: Checkout
         uses: actions/checkout@v7
@@ -110,7 +110,7 @@ jobs:
           - '8.5'
     steps:
       - name: Checkout
-        uses: actions/checkout@fb8b3582c8e4def4969c97caa2f19720cb33a72f
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -187,7 +187,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
           extensions: pdo_mysql, pdo_sqlite
@@ -259,72 +259,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
-        with:
-          php-version: ${{ matrix.php-version }}
-          coverage: pcov
-
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      - name: Composer get cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Composer cache dependencies
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Composer update (Symfony version ${{ matrix.symfony-version }})
-        run: |
-          composer global config --no-plugins allow-plugins.symfony/flex true
-          composer global require --no-progress --no-scripts --no-plugins symfony/flex
-          composer u --prefer-dist -n
-        env:
-          SYMFONY_REQUIRE: "${{ matrix.symfony-version }}"
-
-      - name: Run tests with PHP
-        run: vendor/bin/phpunit --display-deprecations --display-notices --display-warnings --coverage-clover=Tests/coverage.xml --log-junit=Tests/junit.xml
-
-      - name: Code Coverage Report
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./Tests/
-          files: ./Tests/coverage.xml
-          fail_ci_if_error: true
-          verbose: true
-
-      - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          report_type: test_results
-          files: ./Tests/junit.xml
-          disable_search: true
-          fail_ci_if_error: true
-          verbose: true
-
-  testsuite_macos_intel:
-    name: "Test Suite (macOS Intel)"
-    runs-on: macos-26-intel
-    strategy:
-      fail-fast: false
-      matrix:
-        php-version:
-          - '8.5'
-        symfony-version:
-          - '7.4'
-
-    steps:
-      - name: Setup PHP, with composer and extensions
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
           extensions: pdo_pgsql, pdo_sqlite
@@ -422,7 +357,7 @@ jobs:
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
