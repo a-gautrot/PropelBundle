@@ -182,8 +182,7 @@ class FormGenerateCommand extends AbstractCommand
         array           $models,
         OutputInterface $output,
         bool            $force = false
-    ): void
-    {
+    ): void {
         $dir = $this->createDirectory($bundle, $output);
 
         foreach ($database->getTables() as $table) {
@@ -249,8 +248,7 @@ class FormGenerateCommand extends AbstractCommand
         SplFileInfo     $file,
         bool            $force,
         OutputInterface $output
-    ): void
-    {
+    ): void {
         $formBuilder = new FormBuilder();
         $formTypeContent = $formBuilder->buildFormType($bundle, $table, self::DEFAULT_FORM_TYPE_DIRECTORY);
 

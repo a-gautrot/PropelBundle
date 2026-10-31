@@ -488,8 +488,7 @@ abstract class AbstractCommand extends Command
         array           $parameters,
         InputInterface  $input,
         OutputInterface $output
-    ): int
-    {
+    ): int {
         // add the command's name to the parameters
         array_unshift($parameters, $this->getName());
 

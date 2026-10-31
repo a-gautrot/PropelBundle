@@ -17,7 +17,6 @@ use Propel\Bundle\PropelBundle\Tests\Fixtures\Item;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\TranslatableItem;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\TranslatableItemI18n;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormExtensionInterface;

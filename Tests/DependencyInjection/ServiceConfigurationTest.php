@@ -62,11 +62,12 @@ class ServiceConfigurationTest extends TestCase
                 (new YamlFileLoader($container, $locator))->load($resource . '.yml');
             }
 
-            self::assertEquals(
-                $xmlContainer->getParameterBag()->all(),
-                $container->getParameterBag()->all(),
-                $resource
-            );
+            $xmlParameters = $xmlContainer->getParameterBag()->all();
+            $parameters = $container->getParameterBag()->all();
+            // Loader metadata varies between Symfony versions and configuration formats.
+            unset($xmlParameters['.container.known_envs'], $parameters['.container.known_envs']);
+
+            self::assertEquals($xmlParameters, $parameters, $resource);
             self::assertSame(
                 array_keys($xmlContainer->getDefinitions()),
                 array_keys($container->getDefinitions()),
