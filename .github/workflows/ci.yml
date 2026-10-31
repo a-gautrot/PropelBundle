@@ -45,7 +45,7 @@ jobs:
           - name: macOS Intel
             runner: macos-26-intel
         include:
-          - php-version: '8.2'
+          - php-version: '8.4'
             platform:
               name: Linux x64
               runner: ubuntu-26.04
@@ -104,8 +104,6 @@ jobs:
           - macos-26
           - macos-26-intel
         php-version:
-          - '8.2'
-          - '8.3'
           - '8.4'
           - '8.5'
     steps:
