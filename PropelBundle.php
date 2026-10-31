@@ -13,6 +13,9 @@ namespace Propel\Bundle\PropelBundle;
 use Exception;
 use LogicException as BaseLogicException;
 use Override;
+use Propel\Bundle\PropelBundle\Adapter\MssqlAdapter;
+use Propel\Bundle\PropelBundle\Adapter\OracleAdapter;
+use Propel\Bundle\PropelBundle\Adapter\SqlsrvAdapter;
 use Propel\Bundle\PropelBundle\DependencyInjection\Security\UserProvider\PropelFactory;
 use Propel\Runtime\Connection\ConnectionManagerPrimaryReplica;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
@@ -100,7 +103,14 @@ class PropelBundle extends Bundle
                 $manager->setConfiguration($connection);
             }
 
-            $serviceContainer->setAdapterClass($name, $connection['adapter']);
+            // Uses the bundle's adapter instead of Propel's for some DBs
+            $adapterClass = match ($connection['adapter']) {
+                'mssql' => MssqlAdapter::class,
+                'sqlsrv' => SqlsrvAdapter::class,
+                'oracle' => OracleAdapter::class,
+                default => $connection['adapter'],
+            };
+            $serviceContainer->setAdapterClass($name, $adapterClass);
             $serviceContainer->setConnectionManager($manager);
 
             // load database maps

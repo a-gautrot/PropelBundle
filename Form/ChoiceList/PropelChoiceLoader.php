@@ -62,8 +62,7 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
         protected string                     $class,
         protected ModelCriteria              $query,
         ?string                              $useAsIdentifier = null
-    )
-    {
+    ) {
         if ($useAsIdentifier !== null && $useAsIdentifier !== '') {
             $this->identifier = [$this->query->getTableMapOrFail()->getColumn($useAsIdentifier)];
         } else {

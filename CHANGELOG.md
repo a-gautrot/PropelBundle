@@ -5,6 +5,7 @@
 <!-- TOC -->
 
 * [6.1.1](#611)
+    * [6.1.1.1](#6111)
 * [6.1.0](#610)
     * [6.1.0.1](#6101)
     * [6.1.0.2](#6102)
@@ -50,3 +51,7 @@
     * Now uses Docker for some UTs
     * Fixed UTs for its Book schema
 * Fixed fixture path validation, SQL result handling, and static type declarations
+
+### 6.1.1.1
+
+* Added support for Microsoft SQL Server and Oracle
