@@ -30,12 +30,13 @@ use Symfony\Component\HttpKernel\Profiler\Profiler;
 class PropelExtension extends Extension
 {
     /**
-     * @param array<array-key, array<array-key, mixed>> $configs
+     * @param array<array-key, mixed> $configs
      * @param ContainerBuilder $container
      * @return void
      *
      * @throws Exception
      */
+    #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = $this->getConfiguration($configs, $container);
@@ -72,12 +73,15 @@ class PropelExtension extends Extension
      * @throws InvalidArgumentException
      * @throws ParameterNotFoundException
      */
+    #[\Override]
     public function getConfiguration(array $config, ContainerBuilder $container): Configuration
     {
         $debug = $container->getParameter('kernel.debug');
         $projectDir = $container->getParameter('kernel.project_dir');
         if (!is_bool($debug) || !is_string($projectDir)) {
-            throw new InvalidArgumentException('The kernel.debug and kernel.project_dir parameters have invalid types.');
+            throw new InvalidArgumentException(
+                'The kernel.debug and kernel.project_dir parameters have invalid types.'
+            );
         }
 
         return new Configuration($debug, $projectDir);
@@ -89,7 +93,6 @@ class PropelExtension extends Extension
      * @param ContainerBuilder $container
      * @return void
      * @throws Exception
-     * @deprecated since Symfony 7.4; migrate Symfony service definitions to PHP or YAML before upgrading to Symfony 8.0.
      */
     private function loadXmlResources(ContainerBuilder $container): void
     {
@@ -107,6 +110,7 @@ class PropelExtension extends Extension
      *
      * @deprecated since Symfony 7.4, to be removed in Symfony 8.0 together with XML support.
      */
+    #[\Override]
     public function getXsdValidationBasePath(): string
     {
         return __DIR__ . '/../Resources/config/schema';
@@ -119,6 +123,7 @@ class PropelExtension extends Extension
      *
      * @return string The alias
      */
+    #[\Override]
     public function getAlias(): string
     {
         return 'propel';

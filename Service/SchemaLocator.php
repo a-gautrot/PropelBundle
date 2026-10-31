@@ -36,14 +36,20 @@ class SchemaLocator
      */
     protected FileLocatorInterface $fileLocator;
     /**
-     * @var array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: string|null, loaderScriptDir: string}}
+     * @var array{paths: array{
+     *     schemaDir: string, sqlDir: string, migrationDir: string,
+     *     composerDir: string|null, loaderScriptDir: string
+     * }}
      */
     protected array $configuration;
 
     /**
      * @param ContainerInterface $container
      * @param FileLocatorInterface $fileLocator
-     * @param array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: string|null, loaderScriptDir: string}} $configuration
+     * @param array{paths: array{
+     *     schemaDir: string, sqlDir: string, migrationDir: string,
+     *     composerDir: string|null, loaderScriptDir: string
+     * }} $configuration
      */
     public function __construct(ContainerInterface $container, FileLocatorInterface $fileLocator, array $configuration)
     {
@@ -103,7 +109,8 @@ class SchemaLocator
     public function locateFromBundle(BundleInterface $bundle): array
     {
         // no bundle/bundle
-        $dir = ($bundle->getName() === AppBundle::NAME) ? "{$bundle->getPath()}/config" : "{$bundle->getPath()}/Resources/config";
+        $dir = ($bundle->getName() === AppBundle::NAME)
+            ? "{$bundle->getPath()}/config" : "{$bundle->getPath()}/Resources/config";
 
         $finalSchemas = [];
 
@@ -136,7 +143,9 @@ class SchemaLocator
 
         $schemaPath = str_replace(
         // no bundle/bundle
-            $bundle->getPath() . DIRECTORY_SEPARATOR . ($bundle->getName() == AppBundle::NAME ? '' : 'Resources' . DIRECTORY_SEPARATOR) . 'config' . DIRECTORY_SEPARATOR,
+            $bundle->getPath() . DIRECTORY_SEPARATOR
+                . ($bundle->getName() == AppBundle::NAME ? '' : 'Resources' . DIRECTORY_SEPARATOR)
+                . 'config' . DIRECTORY_SEPARATOR,
             '',
             $schema->getRealPath()
         );

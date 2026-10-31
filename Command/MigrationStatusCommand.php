@@ -29,6 +29,7 @@ class MigrationStatusCommand extends WrappedCommand
      * @return void
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -36,8 +37,18 @@ class MigrationStatusCommand extends WrappedCommand
         $this
             ->setName('propel:migration:status')
             ->setDescription('Get migration status')
-            ->addOption('connection', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('migration-table', null, InputOption::VALUE_OPTIONAL, 'Migration table name (if none given, the configured table is used)', null)
+            ->addOption(
+                'connection',
+                null,
+                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'migration-table',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Migration table name (if none given, the configured table is used)'
+            )
             ->addOption('output-dir', null, InputOption::VALUE_OPTIONAL, 'The output directory');
     }
 
@@ -45,6 +56,7 @@ class MigrationStatusCommand extends WrappedCommand
      * @return Command
      * @throws LogicException
      */
+    #[\Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseMigrationCommand();
@@ -56,6 +68,7 @@ class MigrationStatusCommand extends WrappedCommand
      * @throws InvalidArgumentException
      * @throws ParameterNotFoundException
      */
+    #[\Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $config = $this->getConfig();

@@ -1,17 +1,18 @@
 <?xml version="1.0"?>
 <ruleset name="PropelBundle">
     <description>PSR-2 coding standard for PropelBundle</description>
+
     <file>.</file>
     <arg name="extensions" value="php"/>
-    <exclude-pattern>*/vendor/*</exclude-pattern>
-    <exclude-pattern>*/Tests/*</exclude-pattern>
+
     <exclude-pattern>*/Resources/*</exclude-pattern>
+    <exclude-pattern>*/Tests/*</exclude-pattern>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+
     <rule ref="PSR2"/>
+
     <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
     <rule ref="Generic.ControlStructures.DisallowYodaConditions"/>
-    <rule ref="Squiz.Strings.DoubleQuoteUsage">
-        <exclude name="Squiz.Strings.DoubleQuoteUsage.NotRequired"/>
-    </rule>
     <rule ref="Generic.PHP.ForbiddenFunctions">
         <message>Use concatenation with the dot operator instead of %s()</message>
         <properties>
@@ -20,5 +21,9 @@
                 <element key="vsprintf" value="string concatenation"/>
             </property>
         </properties>
+    </rule>
+    <rule ref="Squiz.Strings.DoubleQuoteUsage">
+        <exclude name="Squiz.Strings.DoubleQuoteUsage.ContainsVar"/>
+        <exclude name="Squiz.Strings.DoubleQuoteUsage.NotRequired"/>
     </rule>
 </ruleset>

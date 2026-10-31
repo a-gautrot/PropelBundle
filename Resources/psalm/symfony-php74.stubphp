@@ -1,0 +1,37 @@
+<?php
+
+// Symfony 5.4 supports newer runtimes too, but enum parameter values cannot
+// exist on this branch's PHP 7.4 analysis target. These are analysis-only stubs.
+namespace Symfony\Component\DependencyInjection {
+    interface ContainerInterface extends \Psr\Container\ContainerInterface
+    {
+        /** @return array<array-key, mixed>|bool|float|int|string|null */
+        public function getParameter(string $name);
+    }
+
+    class Container implements ContainerInterface
+    {
+        /** @return array<array-key, mixed>|bool|float|int|string|null */
+        public function getParameter(string $name) {}
+    }
+}
+
+namespace Symfony\Bundle\FrameworkBundle\Controller {
+    abstract class AbstractController
+    {
+        /** @return array<array-key, mixed>|bool|float|int|string|null */
+        protected function getParameter(string $name) {}
+    }
+}
+
+namespace Symfony\Component\Config {
+    interface FileLocatorInterface
+    {
+        /**
+         * @template TFirst of bool
+         * @param TFirst $first
+         * @return (TFirst is true ? string : array<array-key, string>)
+         */
+        public function locate(string $name, ?string $currentPath = null, bool $first = true) {}
+    }
+}

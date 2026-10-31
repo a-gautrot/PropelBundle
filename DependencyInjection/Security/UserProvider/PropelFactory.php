@@ -54,6 +54,7 @@ class PropelFactory implements UserProviderFactoryInterface
      * @return void
      * @throws BadMethodCallException
      */
+    #[\Override]
     public function create(ContainerBuilder $container, string $id, array $config): void
     {
         $container
@@ -65,6 +66,7 @@ class PropelFactory implements UserProviderFactoryInterface
     /**
      * @return string
      */
+    #[\Override]
     public function getKey(): string
     {
         return $this->key;
@@ -77,6 +79,7 @@ class PropelFactory implements UserProviderFactoryInterface
      * @psalm-suppress PossiblyNullReference Symfony's end() returns the configured parent builder.
      * @psalm-suppress UndefinedInterfaceMethod Symfony's fluent builder loses the concrete parent type at end().
      */
+    #[\Override]
     public function addConfiguration(NodeDefinition $builder): void
     {
         if (!$builder instanceof ParentNodeDefinitionInterface) {

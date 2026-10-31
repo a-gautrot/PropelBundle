@@ -51,6 +51,7 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @return TypeGuess|null
      * @throws ColumnNotFoundException
      */
+    #[\Override]
     public function guessType(string $class, string $property): ?TypeGuess
     {
         if (!$table = $this->getTable($class)) {
@@ -116,7 +117,11 @@ class TypeGuesser implements FormTypeGuesserInterface
                     $choices = $column->getValueSet();
                     $labels = array_map('ucfirst', $choices);
 
-                    return new TypeGuess(ChoiceType::class, ['choices' => array_combine($choices, $labels)], Guess::MEDIUM_CONFIDENCE);
+                    return new TypeGuess(
+                        ChoiceType::class,
+                        ['choices' => array_combine($choices, $labels)],
+                        Guess::MEDIUM_CONFIDENCE
+                    );
                 }
                 return new TypeGuess(TextType::class, [], Guess::MEDIUM_CONFIDENCE);
             case PropelTypes::VARCHAR:
@@ -180,6 +185,7 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @return ValueGuess|null
      * @throws ColumnNotFoundException
      */
+    #[\Override]
     public function guessRequired(string $class, string $property): ?ValueGuess
     {
         if ($column = $this->getColumn($class, $property)) {
@@ -195,6 +201,7 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @return ValueGuess|null
      * @throws ColumnNotFoundException
      */
+    #[\Override]
     public function guessMaxLength(string $class, string $property): ?ValueGuess
     {
         if ($column = $this->getColumn($class, $property)) {
@@ -219,6 +226,7 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @return ValueGuess|null
      * @throws ColumnNotFoundException
      */
+    #[\Override]
     public function guessPattern(string $class, string $property): ?ValueGuess
     {
         if ($column = $this->getColumn($class, $property)) {

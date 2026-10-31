@@ -31,6 +31,7 @@ class BuildCommand extends Command
      * @return void
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -40,7 +41,12 @@ class BuildCommand extends Command
                 new InputOption('classes', '', InputOption::VALUE_NONE, 'Build only classes'),
                 new InputOption('sql', '', InputOption::VALUE_NONE, 'Build only SQL'),
                 new InputOption('insert-sql', '', InputOption::VALUE_NONE, 'Build all and insert SQL'),
-                new InputOption('connection', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
+                new InputOption(
+                    'connection',
+                    null,
+                    InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                    'Connection to use. Example: default, bookstore'
+                )
             ]);
     }
 
@@ -53,6 +59,7 @@ class BuildCommand extends Command
      * @see Command
      *
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $application = $this->getApplication();

@@ -36,6 +36,7 @@ class TranslationCollectionType extends AbstractType
      * @return void
      * @throws MissingOptionsException
      */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if (!isset($options['entry_options']['data_class'])) {
@@ -45,7 +46,10 @@ class TranslationCollectionType extends AbstractType
             throw new MissingOptionsException('columns must be set');
         }
 
-        $listener = new TranslationCollectionFormListener($options['languages'], $options['entry_options']['data_class']);
+        $listener = new TranslationCollectionFormListener(
+            $options['languages'],
+            $options['entry_options']['data_class']
+        );
         $builder->addEventSubscriber($listener);
     }
 
@@ -54,6 +58,7 @@ class TranslationCollectionType extends AbstractType
      * @return void
      * @throws AccessException
      */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired(['languages']);
@@ -72,6 +77,7 @@ class TranslationCollectionType extends AbstractType
     /**
      * @return string|null
      */
+    #[\Override]
     public function getParent(): ?string
     {
         return CollectionType::class;
@@ -88,6 +94,7 @@ class TranslationCollectionType extends AbstractType
     /**
      * @return string
      */
+    #[\Override]
     public function getBlockPrefix(): string
     {
         return 'propel_translation_collection';

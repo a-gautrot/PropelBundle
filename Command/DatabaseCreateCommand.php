@@ -36,12 +36,18 @@ class DatabaseCreateCommand extends AbstractCommand
      * @throws ConsoleInvalidArgumentException
      * @see \Symfony\Component\Console\Command\Command
      */
+    #[\Override]
     protected function configure(): void
     {
         $this
             ->setName('propel:database:create')
             ->setDescription('Create a given database or the default one.')
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a connection to use');
+            ->addOption(
+                'connection',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Set this parameter to define a connection to use'
+            );
     }
 
     /**
@@ -54,6 +60,7 @@ class DatabaseCreateCommand extends AbstractCommand
      * @see \Symfony\Component\Console\Command\Command
      *
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $connectionName = $input->getOption('connection') ?: $this->getDefaultConnection();

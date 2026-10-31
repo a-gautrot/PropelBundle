@@ -25,6 +25,7 @@ class XmlDataLoader extends AbstractDataLoader
      * @param string $file
      * @return array<string, array<string, array<string, string>>>
      */
+    #[\Override]
     protected function transformDataToArray(string $file): array
     {
         $xml = simplexml_load_file($file);
@@ -40,11 +41,14 @@ class XmlDataLoader extends AbstractDataLoader
     {
         $array = [];
         if ($xml instanceof SimpleXMLElement) {
-            foreach ($xml as $key => $value) {
-                $key = (string)$key;
+            $classes = $xml->xpath('*[namespace-uri() = namespace-uri(..)]');
+            foreach (is_array($classes) ? $classes : [] as $value) {
+                $key = $value->getName();
                 // First make a valid key which is the Ns (Namespace) attribute
                 // + the element name (the class name)
-                foreach ($value->attributes() ?? [] as $subkey => $subvalue) {
+                $attributes = $value->xpath('@*[namespace-uri() = ""]');
+                foreach (is_array($attributes) ? $attributes : [] as $subvalue) {
+                    $subkey = $subvalue->getName();
                     if ($subkey === 'Namespace') {
                         $key = "$subvalue\\$key";
                         break;
@@ -52,12 +56,14 @@ class XmlDataLoader extends AbstractDataLoader
                 }
 
                 $array[$key] = [];
-                foreach ($value as $elementKey => $elementValue) {
-                    $elementKey = (string)$elementKey;
+                $elements = $value->xpath('*[namespace-uri() = namespace-uri(..)]');
+                foreach (is_array($elements) ? $elements : [] as $elementValue) {
+                    $elementKey = $elementValue->getName();
                     $array[$key][$elementKey] = [];
 
-                    foreach ($elementValue->attributes() ?? [] as $subkey => $subvalue) {
-                        $array[$key][$elementKey][(string)$subkey] = (string)$subvalue;
+                    $attributes = $elementValue->xpath('@*[namespace-uri() = ""]');
+                    foreach (is_array($attributes) ? $attributes : [] as $subvalue) {
+                        $array[$key][$elementKey][$subvalue->getName()] = (string)$subvalue;
                     }
                 }
             }

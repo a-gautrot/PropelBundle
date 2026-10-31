@@ -25,7 +25,6 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  *
  * @author William DURAND <william.durand1@gmail.com>
  * @api
- * @implements UserProviderInterface<UserInterface>
  */
 class PropelUserProvider implements UserProviderInterface
 {
@@ -71,6 +70,7 @@ class PropelUserProvider implements UserProviderInterface
      * @throws UserNotFoundException
      * @deprecated since Symfony 5.3, use loadUserByIdentifier() instead
      */
+    #[\Override]
     public function loadUserByUsername(string $username): UserInterface
     {
         return $this->loadUserByIdentifier($username);
@@ -114,6 +114,7 @@ class PropelUserProvider implements UserProviderInterface
      * @param UserInterface $user
      * @return UserInterface
      */
+    #[\Override]
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof $this->class) {
@@ -133,6 +134,7 @@ class PropelUserProvider implements UserProviderInterface
      * @param string $class
      * @return bool
      */
+    #[\Override]
     public function supportsClass(string $class): bool
     {
         return $class === $this->class;

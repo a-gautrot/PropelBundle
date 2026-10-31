@@ -4,11 +4,14 @@ includes:
 parameters:
   level: 6
   phpVersion: 70400
-  stubFiles:
-    - Resources/phpstan/propel.stub
+
   paths:
     - ./
+
   excludePaths:
     - Resources/skeleton
     - Tests
     - vendor
+
+  stubFiles:
+    - Resources/phpstan/propel.stub

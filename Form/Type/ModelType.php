@@ -17,7 +17,6 @@ use Propel\Bundle\PropelBundle\Form\ChoiceList\PropelChoiceLoader;
 use Propel\Bundle\PropelBundle\Form\DataTransformer\CollectionToArrayTransformer;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\Map\ColumnMap;
-use Stringable;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
 use Symfony\Component\Form\ChoiceList\Factory\DefaultChoiceListFactory;
@@ -76,8 +75,10 @@ class ModelType extends AbstractType
      * @param PropertyAccessorInterface|null $propertyAccessor
      * @param ChoiceListFactoryInterface|null $choiceListFactory
      */
-    public function __construct(?PropertyAccessorInterface $propertyAccessor = null, ?ChoiceListFactoryInterface $choiceListFactory = null)
-    {
+    public function __construct(
+        ?PropertyAccessorInterface $propertyAccessor = null,
+        ?ChoiceListFactoryInterface $choiceListFactory = null
+    ) {
         $this->choiceListFactory = $choiceListFactory ?: new PropertyAccessDecorator(
             new DefaultChoiceListFactory(),
             $propertyAccessor
@@ -99,7 +100,7 @@ class ModelType extends AbstractType
      */
     public static function createChoiceLabel(object $choice): string
     {
-        if (!$choice instanceof Stringable) {
+        if (!method_exists($choice, '__toString')) {
             throw new InvalidArgumentException('A choice must implement __toString() or define a label property.');
         }
         return (string)$choice;
@@ -133,6 +134,7 @@ class ModelType extends AbstractType
      * @param array<array-key, mixed> $options
      * @return void
      */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if ($options['multiple']) {
@@ -147,6 +149,7 @@ class ModelType extends AbstractType
      * @throws AccessException
      * @throws UndefinedOptionsException
      */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $choiceLoader = function (Options $options): ?PropelChoiceLoader {
@@ -191,8 +194,14 @@ class ModelType extends AbstractType
             }
             /** @var ColumnMap $firstIdentifier */
             $firstIdentifier = current($identifier);
-            if (count($identifier) === 1 && in_array($firstIdentifier->getPdoType(), [PDO::PARAM_BOOL, PDO::PARAM_INT, PDO::PARAM_STR])) {
-                return function ($object) use ($firstIdentifier) {
+            if (count($identifier) === 1
+                && in_array($firstIdentifier->getPdoType(), [PDO::PARAM_BOOL, PDO::PARAM_INT, PDO::PARAM_STR])
+            ) {
+                /**
+                 * @param object|null $object
+                 * @return mixed
+                 */
+                return function (?object $object) use ($firstIdentifier) {
                     if ($object) {
                         return call_user_func([$object, 'get' . ucfirst($firstIdentifier->getPhpName())]);
                     }
@@ -202,12 +211,18 @@ class ModelType extends AbstractType
             return null;
         };
 
-        $queryNormalizer = function (Options $options, $query) {
+        /**
+         * @param ModelCriteria|null $query
+         * @return ModelCriteria
+         */
+        $queryNormalizer = function (Options $options, ?ModelCriteria $query): ModelCriteria {
             if ($query === null) {
                 $queryClass = "{$options['class']}Query";
                 if (!class_exists($queryClass)) {
                     if (empty($options['class'])) {
-                        throw new MissingOptionsException('The "class" parameter is empty, you should provide the model class');
+                        throw new MissingOptionsException(
+                            'The "class" parameter is empty, you should provide the model class'
+                        );
                     }
                     throw new InvalidOptionsException(
                         "The query class \"$queryClass\" is not found, you should provide the FQCN of the model class"
@@ -215,31 +230,41 @@ class ModelType extends AbstractType
                 }
                 $query = new $queryClass();
             }
+            if (!$query instanceof ModelCriteria) {
+                throw new InvalidOptionsException('The query class must extend ModelCriteria.');
+            }
             return $query;
         };
 
-        $choiceLabelNormalizer = function (Options $options, $choiceLabel) {
-            if ($choiceLabel === null) {
-                if ($options['property'] == null) {
-                    $choiceLabel = [self::class, 'createChoiceLabel'];
-                } else {
-                    $valueProperty = $options['property'];
-                    /** @var ModelCriteria $query */
-                    $query = $options['query'];
+        $choiceLabelNormalizer =
+            /**
+             * @param string|bool|callable|\Symfony\Component\PropertyAccess\PropertyPathInterface|null $choiceLabel
+             * @return string|bool|callable|\Symfony\Component\PropertyAccess\PropertyPathInterface|null
+             */
+            function (Options $options, $choiceLabel) {
+                if ($choiceLabel === null) {
+                    if ($options['property'] == null) {
+                        $choiceLabel = [self::class, 'createChoiceLabel'];
+                    } else {
+                        $valueProperty = $options['property'];
+                        /** @var ModelCriteria $query */
+                        $query = $options['query'];
 
-                    $choiceLabel = function (object $choice) use ($valueProperty, $query) {
-                        $getter = 'get' . ucfirst($valueProperty);
-                        if (!method_exists($choice, $getter)) {
-                            $getter = 'get' . ucfirst($query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName());
-                        }
+                        $choiceLabel = /** @return mixed */ function (object $choice) use ($valueProperty, $query) {
+                            $getter = 'get' . ucfirst($valueProperty);
+                            if (!method_exists($choice, $getter)) {
+                                $getter = 'get' . ucfirst(
+                                    $query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName()
+                                );
+                            }
 
-                        return call_user_func([$choice, $getter]);
-                    };
+                            return call_user_func([$choice, $getter]);
+                        };
+                    }
                 }
-            }
 
-            return $choiceLabel;
-        };
+                return $choiceLabel;
+            };
 
         $resolver->setDefaults([
             'query' => null,
@@ -263,6 +288,7 @@ class ModelType extends AbstractType
     /**
      * @return string
      */
+    #[\Override]
     public function getBlockPrefix(): string
     {
         return 'model';
@@ -271,6 +297,7 @@ class ModelType extends AbstractType
     /**
      * @return string|null
      */
+    #[\Override]
     public function getParent(): ?string
     {
         return ChoiceType::class;

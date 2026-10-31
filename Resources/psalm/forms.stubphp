@@ -3,6 +3,25 @@
 namespace Symfony\Component\Form;
 
 /**
+ * @template T
+ * @template R
+ */
+interface DataTransformerInterface
+{
+    /**
+     * @param T|null $value
+     * @return R
+     */
+    public function transform($value);
+
+    /**
+     * @param R|null $value
+     * @return T
+     */
+    public function reverseTransform($value);
+}
+
+/**
  * @template TData
  */
 interface FormTypeInterface

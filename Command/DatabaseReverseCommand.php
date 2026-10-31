@@ -30,6 +30,7 @@ class DatabaseReverseCommand extends WrappedCommand
      * @return void
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -38,15 +39,34 @@ class DatabaseReverseCommand extends WrappedCommand
             ->setName('propel:database:reverse')
             ->setDescription('Reverse-engineer a XML schema file based on given database')
             ->addArgument('connection', InputArgument::REQUIRED, 'Connection to use. Example: "default"')
-            ->addOption('output-dir', null, InputOption::VALUE_REQUIRED, 'The output directory', BaseDatabaseReverseCommand::DEFAULT_OUTPUT_DIRECTORY)
-            ->addOption('database-name', null, InputOption::VALUE_REQUIRED, 'The database name to reverse', BaseDatabaseReverseCommand::DEFAULT_DATABASE_NAME)
-            ->addOption('schema-name', null, InputOption::VALUE_REQUIRED, 'The schema name to generate', BaseDatabaseReverseCommand::DEFAULT_SCHEMA_NAME);
+            ->addOption(
+                'output-dir',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'The output directory',
+                BaseDatabaseReverseCommand::DEFAULT_OUTPUT_DIRECTORY
+            )
+            ->addOption(
+                'database-name',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'The database name to reverse',
+                BaseDatabaseReverseCommand::DEFAULT_DATABASE_NAME
+            )
+            ->addOption(
+                'schema-name',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'The schema name to generate',
+                BaseDatabaseReverseCommand::DEFAULT_SCHEMA_NAME
+            );
     }
 
     /**
      * @return Command
      * @throws LogicException
      */
+    #[\Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseDatabaseReverseCommand();
@@ -58,6 +78,7 @@ class DatabaseReverseCommand extends WrappedCommand
      * @throws BaseInvalidArgumentException
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         return [

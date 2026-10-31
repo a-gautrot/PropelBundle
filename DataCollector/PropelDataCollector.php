@@ -46,6 +46,7 @@ class PropelDataCollector extends DataCollector
      * @param Throwable|null $exception
      * @return void
      */
+    #[\Override]
     public function collect(Request $request, Response $response, ?Throwable $exception = null): void
     {
         $this->data = [
@@ -57,7 +58,9 @@ class PropelDataCollector extends DataCollector
     /**
      * Creates an array of Build objects.
      *
-     * @return array<int, array{sql: string, connection: string, time: int|float, memory: int, trace: TraceStub}> An array of Build objects
+     * @return array<int, array{
+     *     sql: string, connection: string, time: int|float, memory: int, trace: TraceStub
+     * }> An array of Build objects
      */
     private function buildQueries(): array
     {
@@ -67,7 +70,9 @@ class PropelDataCollector extends DataCollector
     /**
      * Returns queries.
      *
-     * @return Data Queries
+     * @return Data&iterable<array-key, array{
+     *     sql: string, connection: string, time: int|float, memory: int, trace: TraceStub
+     * }> Queries
      */
     public function getQueries(): Data
     {
@@ -89,6 +94,7 @@ class PropelDataCollector extends DataCollector
      *
      * @return string The collector name.
      */
+    #[\Override]
     public function getName(): string
     {
         return 'propel';
@@ -122,6 +128,7 @@ class PropelDataCollector extends DataCollector
     /**
      * @return void
      */
+    #[\Override]
     public function reset(): void
     {
         $this->data = [];

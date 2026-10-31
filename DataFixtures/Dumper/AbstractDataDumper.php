@@ -38,6 +38,7 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
      * @throws RuntimeException
      * @throws DirectoryNotFoundException
      */
+    #[\Override]
     public function dump(?string $filename, ?string $connectionName = null): void
     {
         if ($filename === null || $filename === '') {
@@ -162,12 +163,14 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
                                     $foreignKeys[$col] = $columnValue;
                                     $primaryKeys[$col] = "{$relatedTable->getPhpName()}_$columnValue";
                                 } else {
-                                    $values[$col] = strlen($columnValue) ? "{$relatedTable->getPhpName()}_$columnValue" : '';
+                                    $values[$col] = strlen($columnValue)
+                                        ? "{$relatedTable->getPhpName()}_$columnValue" : '';
                                 }
                             } elseif (!$isPrimaryKey || !$tableMap->isUseIdGenerator()) {
                                 if (!empty($columnValue) && $column->getType() === PropelTypes::PHP_ARRAY) {
                                     $serialized = substr($columnValue, 2, -2);
-                                    $columnValue = $serialized ? explode(' | ', $serialized) : [];
+                                    $columnValue = $serialized !== false && $serialized !== ''
+                                        ? explode(' | ', $serialized) : [];
                                 }
 
                                 // We did not want auto incremented primary keys
@@ -242,8 +245,12 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
      * @throws RuntimeException
      * @throws ValueError
      */
-    protected function fixOrderingOfForeignKeyDataInSameTable(array $resultsSets, string $tableName, ColumnMap $column, ?string $in = null): array
-    {
+    protected function fixOrderingOfForeignKeyDataInSameTable(
+        array $resultsSets,
+        string $tableName,
+        ColumnMap $column,
+        ?string $in = null
+    ): array {
         // Avoid SQL injection via string-based query concatenation for $tableName, $columnName, and $in
         if (!preg_match('/^\w+$/', $tableName)) {
             throw new ValueError("Invalid table name: $tableName");

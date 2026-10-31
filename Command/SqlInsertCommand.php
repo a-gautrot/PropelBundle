@@ -37,6 +37,7 @@ class SqlInsertCommand extends WrappedCommand
      * @return void
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -44,13 +45,19 @@ class SqlInsertCommand extends WrappedCommand
             ->setDescription('Insert SQL statements')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action.')
             ->addOption('sql-dir', null, InputOption::VALUE_REQUIRED, 'The SQL files directory')
-            ->addOption('connection', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore');
+            ->addOption(
+                'connection',
+                null,
+                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                'Connection to use. Example: default, bookstore'
+            );
     }
 
     /**
      * @return Command
      * @throws ConsoleLogicException
      */
+    #[\Override]
     protected function createSubCommandInstance(): Command
     {
         return new PropelSqlInsertCommand();
@@ -69,6 +76,7 @@ class SqlInsertCommand extends WrappedCommand
      * @throws IOException
      * @throws DirectoryNotFoundException
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('force')) {
@@ -85,6 +93,7 @@ class SqlInsertCommand extends WrappedCommand
      * @throws InvalidArgumentException
      * @throws ParameterNotFoundException
      */
+    #[\Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $config = $this->getConfig();

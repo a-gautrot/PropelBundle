@@ -13,6 +13,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 use ArrayIterator;
 use InvalidArgumentException;
 use LogicException;
+use Propel\Bundle\PropelBundle\DataFixtures\Loader\DataLoaderInterface;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException;
 use SplFileInfo;
@@ -76,6 +77,7 @@ class FixturesLoadCommand extends AbstractCommand
      * @throws ConsoleInvalidArgumentException
      * @see \Symfony\Component\Console\Command\Command
      */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -89,13 +91,15 @@ The <info>propel:fixtures:load</info> loads <info>XML</info>, <info>SQL</info> a
 The <info>--connection</info> parameter allows you to change the connection to use.
 The default connection is the active connection (propel.dbal.default_connection).
 
-The <info>--dir</info> parameter allows you to change the directory that contains <info>XML</info> or/and <info>SQL</info> fixtures files <comment>(default: propel/fixtures)</comment>.
+The <info>--dir</info> parameter allows you to change the directory that contains
+<info>XML</info> or/and <info>SQL</info> fixtures files <comment>(default: propel/fixtures)</comment>.
 
 The <info>--xml</info> parameter allows you to load only <info>XML</info> fixtures.
 The <info>--sql</info> parameter allows you to load only <info>SQL</info> fixtures.
 The <info>--yml</info> parameter allows you to load only <info>YAML</info> fixtures.
 
-You can mix <info>--xml</info>, <info>--sql</info> and <info>--yml</info> parameters to load XML, YAML and SQL fixtures at the same time.
+You can mix <info>--xml</info>, <info>--sql</info> and <info>--yml</info> parameters
+to load XML, YAML and SQL fixtures at the same time.
 If none of this parameter is set, all XML, YAML and SQL files in the directory will be load.
 
 XML fixtures files are the same XML files you can get with the command <info>propel:data-dump</info>:
@@ -135,7 +139,12 @@ EOT
             ->addOption('xml', '', InputOption::VALUE_NONE, 'Load XML fixtures')
             ->addOption('sql', '', InputOption::VALUE_NONE, 'Load SQL fixtures')
             ->addOption('yml', '', InputOption::VALUE_NONE, 'Load YAML fixtures')
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a connection to use');
+            ->addOption(
+                'connection',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Set this parameter to define a connection to use'
+            );
     }
 
     /**
@@ -150,6 +159,7 @@ EOT
      * @throws ServiceNotFoundException
      * @throws IOException
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($this->bundle !== null) {
@@ -223,7 +233,8 @@ EOT
 
         $this->prepareCache($tmpdir);
 
-        $connectionName = $input->getOption('connection') ?: $this->getContainer()->getParameter('propel.dbal.default_connection');
+        $connectionName = $input->getOption('connection')
+            ?: $this->getContainer()->getParameter('propel.dbal.default_connection');
         if (!is_string($connectionName)) {
             throw new InvalidArgumentException('The connection name must be a string.');
         }
@@ -267,7 +278,9 @@ EOT
     protected function getFixtureFiles(string $type = 'sql', ?string $in = null)
     {
         $finder = new Finder();
-        $finder->sort(fn(SplFileInfo $a, SplFileInfo $b): int => strcmp($a->getPathname(), $b->getPathname()))->name("*.$type");
+        $finder
+            ->sort(fn(SplFileInfo $a, SplFileInfo $b): int => strcmp($a->getPathname(), $b->getPathname()))
+            ->name("*.$type");
 
         $files = $finder->in($in ?? $this->absoluteFixturesPath);
 
@@ -277,7 +290,11 @@ EOT
 
         $finalFixtureFiles = [];
         foreach ($files as $file) {
-            $fixtureFilePath = str_replace($this->getFixturesPath($this->bundle) . DIRECTORY_SEPARATOR, '', $file->getRealPath());
+            $fixtureFilePath = str_replace(
+                $this->getFixturesPath($this->bundle) . DIRECTORY_SEPARATOR,
+                '',
+                $file->getRealPath()
+            );
             $logicalName = "@{$this->bundle->getName()}/Resources/fixtures/$fixtureFilePath";
             $finalFixtureFiles[] = new SplFileInfo($this->getFileLocator()->locate($logicalName));
         }
@@ -385,7 +402,11 @@ EOT
             return null;
         }
 
-        $nb = $loader->load(iterator_to_array($datas), $connectionName);
+        if (!$loader instanceof DataLoaderInterface) {
+            throw new RuntimeException('The fixture loader service must implement DataLoaderInterface.');
+        }
+        $files = array_map(static fn(SplFileInfo $file): string => $file->getPathname(), iterator_to_array($datas));
+        $nb = $loader->load($files, $connectionName);
 
         $fixtureType = strtoupper($type);
         $plural = $nb > 1 ? 's' : '';

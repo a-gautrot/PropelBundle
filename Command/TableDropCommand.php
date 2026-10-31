@@ -36,14 +36,24 @@ class TableDropCommand extends AbstractCommand
      * @return void
      * @throws ConsoleInvalidArgumentException
      */
+    #[\Override]
     protected function configure(): void
     {
         $this
             ->setName('propel:table:drop')
             ->setDescription('Drop a given table or all tables in the database.')
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
+            ->addOption(
+                'connection',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Connection to use. Example: default, bookstore'
+            )
             ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action.')
-            ->addArgument('table', InputArgument::IS_ARRAY, 'Set this parameter to défine which table to delete (default all the table in the database.');
+            ->addArgument(
+                'table',
+                InputArgument::IS_ARRAY,
+                'Set this parameter to défine which table to delete (default all the table in the database.'
+            );
     }
 
     /**
@@ -54,6 +64,7 @@ class TableDropCommand extends AbstractCommand
      * @throws RuntimeException
      * @throws ConsoleInvalidArgumentException
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $connection = Propel::getConnection($input->getOption('connection'));
@@ -111,7 +122,7 @@ class TableDropCommand extends AbstractCommand
 
         $connection->exec('SET FOREIGN_KEY_CHECKS = 0;');
 
-        array_walk($tablesToDelete, function (string &$table, $key, MysqlAdapter $dbAdapter): void {
+        array_walk($tablesToDelete, function (string &$table, int $key, MysqlAdapter $dbAdapter): void {
             $table = $dbAdapter->quoteIdentifierTable($table);
         }, $adapter);
 

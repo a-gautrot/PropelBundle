@@ -89,16 +89,19 @@ abstract class AbstractCommand extends Command
      * @throws ServiceCircularReferenceException
      * @throws ServiceNotFoundException
      */
+    #[\Override]
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         $this->input = $input;
         $this->output = $output;
         $this->cacheDir = "{$this->getKernel()->getCacheDir()}/propel";
 
-        if ($input->hasArgument('bundle') && !empty($input->getArgument('bundle')) && str_starts_with($input->getArgument('bundle'), '@')) {
+        if ($input->hasArgument('bundle')
+            && !empty($input->getArgument('bundle'))
+            && str_starts_with($input->getArgument('bundle'), '@')
+        ) {
             $this->bundle = $this
-                ->getContainer()
-                ->get('kernel')
+                ->getKernel()
                 ->getBundle(substr($input->getArgument('bundle'), 1));
         }
     }
@@ -208,7 +211,8 @@ abstract class AbstractCommand extends Command
             [$bundle, $finalSchema] = $schema;
 
             if ($bundle) {
-                $file = $cacheDir . DIRECTORY_SEPARATOR . 'bundle-' . $bundle->getName() . '-' . $finalSchema->getBaseName();
+                $file = $cacheDir . DIRECTORY_SEPARATOR . 'bundle-'
+                    . $bundle->getName() . '-' . $finalSchema->getBaseName();
             } else {
                 $file = $cacheDir . DIRECTORY_SEPARATOR . 'app-' . $finalSchema->getBaseName();
             }
@@ -236,7 +240,8 @@ abstract class AbstractCommand extends Command
             } else {
                 $bundleName = $bundle ? $bundle->getName() : 'App';
                 throw new RuntimeException(
-                    "$bundleName : Please define a `package` attribute or a `namespace` attribute for schema `{$finalSchema->getBaseName()}`"
+                    "$bundleName : Please define a `package` attribute "
+                    . "or a `namespace` attribute for schema `{$finalSchema->getBaseName()}`"
                 );
             }
 
@@ -248,12 +253,16 @@ abstract class AbstractCommand extends Command
                     // match the input values
                     $filesystem->remove($file);
                     $connectionNames = implode(',', $connections);
-                    $this->output->writeln("<info>Skipped schema {$finalSchema->getPathname()} due to database name missmatch ({$database['name']} not in [$connectionNames]).</info>");
+                    $this->output->writeln(
+                        "<info>Skipped schema {$finalSchema->getPathname()} due to database name missmatch "
+                        . "({$database['name']} not in [$connectionNames]).</info>"
+                    );
                     continue;
                 }
             }
 
-            foreach ($database->table ?? [] as $table) {
+            $tables = $database->xpath('*[local-name() = "table" and namespace-uri() = namespace-uri(..)]');
+            foreach (is_array($tables) ? $tables : [] as $table) {
                 if (isset($table['package'])) {
                     $table['package'] = $table['package'];
                 } elseif (isset($table['namespace'])) {
@@ -370,13 +379,13 @@ abstract class AbstractCommand extends Command
         }
 
         $result = '';
-        while ($to && !str_contains($from, $to)) {
+        while ($to !== '' && !str_contains($from, $to)) {
             $result .= '../';
             $position = strrpos($to, '/');
             $to = $position === false ? '' : substr($to, 0, $position);
         }
 
-        return !$to /*we reached root*/ ? $result . substr($from, 1) : $result . substr($from, strlen($to) + 1);
+        return $to === '' /*we reached root*/ ? $result . substr($from, 1) : $result . substr($from, strlen($to) + 1);
     }
 
     /**
@@ -417,7 +426,16 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * @return array{paths: array{schemaDir: string, sqlDir: string, migrationDir: string, composerDir: ?string, loaderScriptDir: string}, database: array{connections: array<string, array<string, mixed>>}, runtime: array{defaultConnection: string, logging: bool}, migrations: array{tableName: string, parserClass: string}, generator: array<string, mixed>}
+     * @return array{
+     *     paths: array{
+     *         schemaDir: string, sqlDir: string, migrationDir: string,
+     *         composerDir: ?string, loaderScriptDir: string
+     *     },
+     *     database: array{connections: array<string, array<string, mixed>>},
+     *     runtime: array{defaultConnection: string, logging: bool},
+     *     migrations: array{tableName: string, parserClass: string},
+     *     generator: array<string, mixed>
+     * }
      * @throws ParameterNotFoundException
      */
     protected function getConfig(): array
@@ -471,8 +489,12 @@ abstract class AbstractCommand extends Command
      * @throws ExceptionInterface
      * @throws RuntimeException
      */
-    protected function runCommand(Command $command, array $parameters, InputInterface $input, OutputInterface $output): int
-    {
+    protected function runCommand(
+        Command $command,
+        array $parameters,
+        InputInterface $input,
+        OutputInterface $output
+    ): int {
         // add the command's name to the parameters
         array_unshift($parameters, $this->getName());
 

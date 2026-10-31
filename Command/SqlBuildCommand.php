@@ -29,6 +29,7 @@ class SqlBuildCommand extends WrappedCommand
      * @return void
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -38,13 +39,19 @@ class SqlBuildCommand extends WrappedCommand
             ->setDescription('Build SQL files')
             ->addOption('sql-dir', null, InputOption::VALUE_REQUIRED, 'The SQL files directory')
             ->addOption('overwrite', null, InputOption::VALUE_NONE, '')
-            ->addOption('connection', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore');
+            ->addOption(
+                'connection',
+                null,
+                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                'Connection to use. Example: default, bookstore'
+            );
     }
 
     /**
      * @return Command
      * @throws LogicException
      */
+    #[\Override]
     protected function createSubCommandInstance(): Command
     {
         return new PropelSqlBuildCommand();
@@ -56,6 +63,7 @@ class SqlBuildCommand extends WrappedCommand
      * @throws InvalidArgumentException
      * @throws ParameterNotFoundException
      */
+    #[\Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $config = $this->getConfig();

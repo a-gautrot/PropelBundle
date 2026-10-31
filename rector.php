@@ -3,11 +3,14 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use Rector\DeadCode\Rector\ClassMethod\RemoveArgumentFromDefaultParentCallRector;
+use Rector\DeadCode\Rector\MethodCall\RemoveNullArgOnNullDefaultParamRector;
 use Rector\Symfony\Set\SymfonySetList;
 use Rector\ValueObject\PhpVersion;
 
 return RectorConfig::configure()
     ->withPaths([
+        __DIR__ . '/AppBundle.php',
         __DIR__ . '/Command',
         __DIR__ . '/Controller',
         __DIR__ . '/DataCollector',
@@ -15,6 +18,7 @@ return RectorConfig::configure()
         __DIR__ . '/DependencyInjection',
         __DIR__ . '/Form',
         __DIR__ . '/Logger',
+        __DIR__ . '/PropelBundle.php',
         __DIR__ . '/Request',
         __DIR__ . '/Resources',
         __DIR__ . '/Security',
@@ -22,14 +26,23 @@ return RectorConfig::configure()
         __DIR__ . '/Tests',
         __DIR__ . '/Twig',
         __DIR__ . '/Util',
-        __DIR__ . '/Validator'
+        __DIR__ . '/Validator',
     ])
     ->withSkip([
-        __DIR__ . '/Tests/Fixtures/Model',
         __DIR__ . '/Resources/skeleton',
+        __DIR__ . '/Tests/Fixtures/Model',
     ])
-    ->withPhpLevel(PhpVersion::PHP_74)
-    ->withSets([SymfonySetList::SYMFONY_CODE_QUALITY])
-    ->withTypeCoverageLevel(0)
+    ->withPhpVersion(PhpVersion::PHP_74)
+    ->withPhpSets()
+    ->withSets([
+        SymfonySetList::COMPOSER_BASED,
+        SymfonySetList::SYMFONY_CODE_QUALITY,
+    ])
+    ->withCodeQualityLevel(0)
     ->withDeadCodeLevel(0)
-    ->withCodeQualityLevel(0);
+    ->withTypeCoverageLevel(0)
+    ->withRules([
+        RemoveArgumentFromDefaultParentCallRector::class,
+        RemoveNullArgOnNullDefaultParamRector::class,
+    ])
+    ->withImportNames();

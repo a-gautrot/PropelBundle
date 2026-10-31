@@ -55,6 +55,7 @@ class Configuration extends PropelConfiguration
      * @psalm-suppress PossiblyNullReference Symfony's end() returns the configured parent builder.
      * @psalm-suppress UndefinedInterfaceMethod Symfony's fluent builder loses the concrete parent type at end().
      */
+    #[\Override]
     protected function addPathsSection(ArrayNodeDefinition $node): void
     {
         $node
@@ -78,6 +79,7 @@ class Configuration extends PropelConfiguration
      * @psalm-suppress PossiblyNullReference Symfony's end() returns the configured parent builder.
      * @psalm-suppress UndefinedInterfaceMethod Symfony's fluent builder loses the concrete parent type at end().
      */
+    #[\Override]
     protected function addRuntimeSection(ArrayNodeDefinition $node): void
     {
         $node
@@ -152,6 +154,7 @@ class Configuration extends PropelConfiguration
      * @psalm-suppress UndefinedMethod ExprBuilder::end() returns the connections ArrayNodeDefinition.
      * @throws RuntimeException
      */
+    #[\Override]
     protected function addDatabaseSection(ArrayNodeDefinition $node): void
     {
         $validAdapters = ['mysql', 'pgsql', 'sqlite', 'mssql', 'sqlsrv', 'oracle'];
@@ -169,7 +172,9 @@ class Configuration extends PropelConfiguration
                                 ->then(function (array $connections): array {
                                     foreach (array_keys($connections) as $name) {
                                         if (str_contains($name, '.')) {
-                                            throw new InvalidArgumentException('Dots are not allowed in connection names');
+                                            throw new InvalidArgumentException(
+                                                'Dots are not allowed in connection names'
+                                            );
                                         }
                                     }
 
@@ -183,17 +188,24 @@ class Configuration extends PropelConfiguration
                             ->fixXmlConfig('slave')
                             ->fixXmlConfig('model_path')
                                 ->children()
-                                    ->scalarNode('classname')->defaultValue($this->debug ? DebugPDO::class : ConnectionWrapper::class)->end()
+                                    ->scalarNode('classname')
+                                        ->defaultValue($this->debug ? DebugPDO::class : ConnectionWrapper::class)
+                                    ->end()
                                     ->scalarNode('adapter')
                                         ->isRequired()
                                         ->cannotBeEmpty()
                                         ->beforeNormalization()
                                             ->ifString()
-                                            ->then(fn(string $v): ?string => preg_replace('/^pdo_/', '', strtolower($v)))
+                                            ->then(
+                                                fn(string $v): ?string => preg_replace('/^pdo_/', '', strtolower($v))
+                                            )
                                         ->end()
                                         ->validate()
                                             ->ifNotInArray($validAdapters)
-                                            ->thenInvalid('The adapter %s is not supported. Please choose one of ' . implode(', ', $validAdapters))
+                                            ->thenInvalid(
+                                                'The adapter %s is not supported. Please choose one of '
+                                                . implode(', ', $validAdapters)
+                                            )
                                         ->end()
                                     ->end()
                                     ->scalarNode('dsn')
@@ -257,7 +269,10 @@ class Configuration extends PropelConfiguration
                                 ->arrayNode('mysql')
                                     ->addDefaultsIfNotSet()
                                     ->children()
-                                        ->scalarNode('tableType')->defaultValue('InnoDB')->treatNullLike('InnoDB')->end()
+                                        ->scalarNode('tableType')
+                                            ->defaultValue('InnoDB')
+                                            ->treatNullLike('InnoDB')
+                                        ->end()
                                         ->scalarNode('tableEngineKeyword')->defaultValue('ENGINE')->end()
                                         ->scalarNode('uuidColumnType')->defaultValue('binary')->end()
                                     ->end()
@@ -272,7 +287,9 @@ class Configuration extends PropelConfiguration
                                 ->arrayNode('oracle')
                                     ->addDefaultsIfNotSet()
                                     ->children()
-                                        ->scalarNode('autoincrementSequencePattern')->defaultValue('${table}_SEQ')->end()
+                                        ->scalarNode('autoincrementSequencePattern')
+                                            ->defaultValue('${table}_SEQ')
+                                        ->end()
                                     ->end()
                                 ->end()
                             ->end()

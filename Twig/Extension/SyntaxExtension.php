@@ -26,6 +26,7 @@ class SyntaxExtension extends AbstractExtension
     /**
      * @return TwigFilter[]
      */
+    #[\Override]
     public function getFilters(): array
     {
         return [
@@ -80,7 +81,7 @@ class SyntaxExtension extends AbstractExtension
         }
 
         $significantDecimals = (int)floor((float)$significantFigures - log10(abs($number)));
-        $magnitude = 10.0 ** $significantDecimals;
+        $magnitude = 10.0 ** (float)$significantDecimals;
         $shifted = round($number * $magnitude);
 
         return number_format($shifted / $magnitude, $significantDecimals);

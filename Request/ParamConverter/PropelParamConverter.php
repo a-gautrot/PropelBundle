@@ -75,6 +75,7 @@ class PropelParamConverter implements ParamConverterInterface
      * @throws NotFoundHttpException
      * @throws Exception
      */
+    #[\Override]
     public function apply(Request $request, ParamConverter $configuration): bool
     {
         $class = $configuration->getClass();
@@ -156,7 +157,9 @@ class PropelParamConverter implements ParamConverterInterface
                         //we find nothing but the object is optional
                         $object = null;
                     } else {
-                        throw new LogicException('Unable to guess how to get a Propel object from the request information.');
+                        throw new LogicException(
+                            'Unable to guess how to get a Propel object from the request information.'
+                        );
                     }
                 }
             }
@@ -311,6 +314,7 @@ class PropelParamConverter implements ParamConverterInterface
      *
      * @return bool
      */
+    #[\Override]
     public function supports(ParamConverter $configuration): bool
     {
         $classname = $configuration->getClass();

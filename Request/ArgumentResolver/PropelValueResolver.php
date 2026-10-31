@@ -73,6 +73,7 @@ class PropelValueResolver implements ArgumentValueResolverInterface
      * @throws NotFoundHttpException
      * @throws Exception
      */
+    #[\Override]
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
         if (!$this->supports($request, $argument)) {
@@ -168,7 +169,9 @@ class PropelValueResolver implements ArgumentValueResolverInterface
                         //we find nothing but the object is optional
                         $object = null;
                     } else {
-                        throw new LogicException('Unable to guess how to get a Propel object from the request information.');
+                        throw new LogicException(
+                            'Unable to guess how to get a Propel object from the request information.'
+                        );
                     }
                 }
             }
@@ -193,6 +196,7 @@ class PropelValueResolver implements ArgumentValueResolverInterface
      *
      * @return bool
      */
+    #[\Override]
     public function supports(Request $request, ArgumentMetadata $argument): bool
     {
         $classname = $argument->getType();

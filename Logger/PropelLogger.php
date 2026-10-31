@@ -10,9 +10,9 @@
 
 namespace Propel\Bundle\PropelBundle\Logger;
 
+use Propel\Runtime\Connection\ConnectionInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
-use Stringable;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\VarDumper\Caster\TraceStub;
 
@@ -59,17 +59,23 @@ class PropelLogger implements LoggerInterface
      * Logs with an arbitrary level.
      *
      * @param mixed $level
-     * @param string|Stringable $message
+     * @param string|object $message
      * @param array<array-key, mixed> $context
      * @return void
      */
+    #[\Override]
     public function log($level, $message, array $context = []): void
     {
         if ($this->logger === null) {
             return;
         }
 
+        if (is_object($message) && !method_exists($message, '__toString')) {
+            throw new \InvalidArgumentException('The log message must implement __toString().');
+        }
+        $message = (string)$message;
         $add = true;
+        $event = null;
         $trace = debug_backtrace();
 
         if ($this->stopwatch !== null) {
@@ -88,13 +94,17 @@ class PropelLogger implements LoggerInterface
         }
 
         // $trace[2] has no 'object' key if an exception is thrown while executing a query
-        if ($add && isset($event) && isset($trace[2]['object'])) {
+        if ($add
+            && $event !== null
+            && isset($trace[2]['object'])
+            && $trace[2]['object'] instanceof ConnectionInterface
+        ) {
             $connection = $trace[2]['object'];
 
             $this->queries[] = [
                 'sql' => $message,
-                'connection' => $connection->getName(),
-                'time' => $event->getDuration() / 1000,
+                'connection' => $connection->getName() ?? '',
+                'time' => (float)$event->getDuration() / 1000.0,
                 'memory' => $event->getMemory(),
                 'trace' => new TraceStub($trace),
             ];

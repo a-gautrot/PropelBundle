@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Propel\Bundle\PropelBundle\DataFixtures\Dumper\DataDumperInterface;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException as BaseRuntimeException;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -40,6 +41,7 @@ class FixturesDumpCommand extends AbstractCommand
      * @throws InvalidArgumentException
      * @see \Symfony\Component\Console\Command\Command
      */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -55,7 +57,12 @@ The <info>--dir</info> parameter allows you to change the output directory.
 The default connection is the active connection (propel.dbal.default_connection).
 EOT
             )
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a connection to use')
+            ->addOption(
+                'connection',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Set this parameter to define a connection to use'
+            )
             ->addOption('dir', null, InputOption::VALUE_OPTIONAL, 'Set this parameter to define a fixture directory');
     }
 
@@ -71,6 +78,7 @@ EOT
      * @throws ServiceNotFoundException
      * @throws IOException
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $fixtureDir = $input->getOption('dir') ?: $this->defaultFixturesDir;
@@ -78,7 +86,11 @@ EOT
 
         if (!file_exists($path)) {
             $output->writeln("<info>The $path folder does not exists.</info>");
-            if ($this->askConfirmation($input, $output, "<question>Do you want me to create it for you ?</question> [Yes]")) {
+            if ($this->askConfirmation(
+                $input,
+                $output,
+                "<question>Do you want me to create it for you ?</question> [Yes]"
+            )) {
                 $fs = new Filesystem();
                 $fs->mkdir($path);
                 $this->writeNewDirectory($output, $path);
@@ -89,6 +101,9 @@ EOT
 
         $filename = "$path/fixtures_" . time() . '.yml';
         $dumper = $this->getContainer()->get('propel.dumper.yaml');
+        if (!$dumper instanceof DataDumperInterface) {
+            throw new BaseRuntimeException('The propel.dumper.yaml service must implement DataDumperInterface.');
+        }
 
         $dumper->dump($filename, $input->getOption('connection'));
 

@@ -38,6 +38,7 @@ class PropelBundle extends Bundle
     /**
      * @return void
      */
+    #[\Override]
     public function boot(): void
     {
         if ($this->container === null) {
@@ -102,7 +103,9 @@ class PropelBundle extends Bundle
             $serviceContainer->setConnectionManager($manager);
 
             // load database maps
-            if (file_exists("{$config['paths']['loaderScriptDir']}/loadDatabase.php") && is_readable("{$config['paths']['loaderScriptDir']}/loadDatabase.php")) {
+            if (file_exists("{$config['paths']['loaderScriptDir']}/loadDatabase.php")
+                && is_readable("{$config['paths']['loaderScriptDir']}/loadDatabase.php")
+            ) {
                 /** @psalm-suppress UnresolvableInclude The path comes from the validated application configuration. */
                 require_once("{$config['paths']['loaderScriptDir']}/loadDatabase.php");
             }
@@ -145,6 +148,7 @@ class PropelBundle extends Bundle
      * @return void
      * @throws LogicException
      */
+    #[\Override]
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);

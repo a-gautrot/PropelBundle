@@ -35,6 +35,7 @@ class DatabaseDropCommand extends AbstractCommand
      * @return void
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -50,7 +51,12 @@ The <info>--connection</info> parameter allows you to change the connection to u
 The default connection is the active connection (propel.dbal.default_connection).
 EOT
             )
-            ->addOption('connection', null, InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
+            ->addOption(
+                'connection',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Connection to use. Example: default, bookstore'
+            )
             ->addOption('force', null, InputOption::VALUE_NONE, 'Set this parameter to execute this action.');
     }
 
@@ -63,6 +69,7 @@ EOT
      * @throws RuntimeException
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$input->getOption('force')) {
@@ -72,7 +79,11 @@ EOT
         }
 
         if ($this->getKernel()->getEnvironment() === 'prod') {
-            $this->writeSection($output, 'WARNING: you are about to drop a database in production !', 'bg=red;fg=white');
+            $this->writeSection(
+                $output,
+                'WARNING: you are about to drop a database in production !',
+                'bg=red;fg=white'
+            );
 
             if ($this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', false) === false) {
                 $output->writeln('Aborted, nice decision !');

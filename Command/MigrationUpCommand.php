@@ -29,6 +29,7 @@ class MigrationUpCommand extends WrappedCommand
      * @return void
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -36,10 +37,25 @@ class MigrationUpCommand extends WrappedCommand
         $this
             ->setName('propel:migration:up')
             ->setDescription('Execute (only one) next migration')
-            ->addOption('connection', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('migration-table', null, InputOption::VALUE_OPTIONAL, 'Migration table name (if none given, the configured table is used)', null)
+            ->addOption(
+                'connection',
+                null,
+                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'migration-table',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Migration table name (if none given, the configured table is used)'
+            )
             ->addOption('output-dir', null, InputOption::VALUE_OPTIONAL, 'The output directory')
-            ->addOption('fake', null, InputOption::VALUE_NONE, 'Does not touch the actual schema, but marks next migration as executed.')
+            ->addOption(
+                'fake',
+                null,
+                InputOption::VALUE_NONE,
+                'Does not touch the actual schema, but marks next migration as executed.'
+            )
             ->addOption('force', null, InputOption::VALUE_NONE, 'Continues with the migration even when errors occur.');
     }
 
@@ -47,6 +63,7 @@ class MigrationUpCommand extends WrappedCommand
      * @return Command
      * @throws LogicException
      */
+    #[\Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseMigrationCommand();
@@ -58,6 +75,7 @@ class MigrationUpCommand extends WrappedCommand
      * @throws InvalidArgumentException
      * @throws ParameterNotFoundException
      */
+    #[\Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $config = $this->getConfig();

@@ -46,6 +46,7 @@ class YamlDataLoader extends AbstractDataLoader
      * @psalm-suppress UnusedVariable The faker closure is used by included fixture templates.
      * @throws ParseException
      */
+    #[\Override]
     protected function transformDataToArray(string $file): array
     {
         if (!str_contains($file, "\n") && is_file($file)) {
@@ -64,7 +65,7 @@ class YamlDataLoader extends AbstractDataLoader
                 };
             } else {
                 /** @psalm-suppress UnusedVariable Available to PHP fixture templates through include. */
-                $faker = function ($text): void {
+                $faker = function (string $text): void {
                     echo "$text\n";
                 };
             }

@@ -16,7 +16,6 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
  * # TranslationType
@@ -35,6 +34,7 @@ class TranslationType extends AbstractType
      * @param array<array-key, mixed> $options
      * @return void
      */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addEventSubscriber(
@@ -48,6 +48,7 @@ class TranslationType extends AbstractType
      * @return void
      * @throws AccessException
      */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired([
@@ -68,6 +69,7 @@ class TranslationType extends AbstractType
     /**
      * @return string
      */
+    #[\Override]
     public function getBlockPrefix(): string
     {
         return 'propel_translation';

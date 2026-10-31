@@ -50,6 +50,7 @@ class TranslationCollectionFormListener implements EventSubscriberInterface
     /**
      * @return array<string, array{string, int}>
      */
+    #[\Override]
     public static function getSubscribedEvents(): array
     {
         return [

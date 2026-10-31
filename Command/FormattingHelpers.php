@@ -40,8 +40,12 @@ trait FormattingHelpers
      * @throws InvalidArgumentException
      * @throws ConsoleRuntimeException
      */
-    protected function askConfirmation(InputInterface $input, OutputInterface $output, string $question, bool $default = true): bool
-    {
+    protected function askConfirmation(
+        InputInterface $input,
+        OutputInterface $output,
+        string $question,
+        bool $default = true
+    ): bool {
         $question = new Question($question);
         do {
             /** @var QuestionHelper $questionHelper */

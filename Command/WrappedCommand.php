@@ -34,6 +34,7 @@ abstract class WrappedCommand extends AbstractCommand
      * @return void
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -54,6 +55,7 @@ abstract class WrappedCommand extends AbstractCommand
      * @throws IOException
      * @throws DirectoryNotFoundException
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $params = $this->getSubCommandArguments($input);

@@ -28,6 +28,7 @@ class GraphvizGenerateCommand extends WrappedCommand
      * @return void
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -35,13 +36,20 @@ class GraphvizGenerateCommand extends WrappedCommand
         $this
             ->setName('propel:graphviz:generate')
             ->setDescription('Generate Graphviz files (.dot)')
-            ->addOption('output-dir', null, InputOption::VALUE_REQUIRED, 'The output directory', BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY);
+            ->addOption(
+                'output-dir',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'The output directory',
+                BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY
+            );
     }
 
     /**
      * @return Command
      * @throws LogicException
      */
+    #[\Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseGraphvizGenerateCommand();
@@ -52,6 +60,7 @@ class GraphvizGenerateCommand extends WrappedCommand
      * @return array<string, mixed>
      * @throws InvalidArgumentException
      */
+    #[\Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         return [
