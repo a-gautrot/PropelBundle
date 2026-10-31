@@ -16,7 +16,7 @@ use Propel\Bundle\PropelBundle\Service\SchemaLocator;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\FakeBundle\FakeBundle;
 use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\HttpKernel\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Kernel\FileLocator;
 use Symfony\Component\HttpKernel\Kernel;
 
 /**

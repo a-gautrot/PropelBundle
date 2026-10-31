@@ -13,7 +13,7 @@ namespace Propel\Bundle\PropelBundle\Form;
 use Propel\Generator\Model\ForeignKey;
 use Propel\Generator\Model\Table;
 use RuntimeException;
-use Symfony\Component\HttpKernel\Bundle\BundleInterface;
+use Symfony\Component\DependencyInjection\Kernel\BundleInterface;
 
 /**
  * # FormBuilder

@@ -31,9 +31,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
+use Symfony\Component\DependencyInjection\Kernel\BundleInterface;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
  * # FormGenerateCommand

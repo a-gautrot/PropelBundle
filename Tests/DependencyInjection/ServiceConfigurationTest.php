@@ -7,9 +7,10 @@ use PHPUnit\Framework\TestCase;
 use Propel\Bundle\PropelBundle\DependencyInjection\PropelExtension;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * # ServiceConfigurationTest
@@ -27,7 +28,7 @@ class ServiceConfigurationTest extends TestCase
         $container->setParameter('kernel.project_dir', dirname(__DIR__, 2));
         $container->setParameter('kernel.environment', 'prod');
 
-        (new PropelExtension())->load([[
+        new PropelExtension()->load([[
             'database' => ['connections' => ['default' => [
                 'adapter' => 'sqlite',
                 'dsn' => 'sqlite::memory:',
@@ -48,55 +49,87 @@ class ServiceConfigurationTest extends TestCase
      * @return void
      * @throws Exception
      */
-    public function testServiceDefinitionsMatchLegacyXml(): void
+    public function testOptionalServicesUseNullWhenMissing(): void
     {
+        $container = new ContainerBuilder();
         $locator = new FileLocator(__DIR__ . '/../../Resources/config');
+        new PhpFileLoader($container, $locator)->load('propel.php');
 
-        foreach (['propel', 'converters', 'security', 'console'] as $resource) {
-            $xmlContainer = new ContainerBuilder();
-            $container = new ContainerBuilder();
-            (new XmlFileLoader($xmlContainer, $locator))->load($resource . '.xml');
-            if ($resource === 'propel') {
-                (new PhpFileLoader($container, $locator))->load($resource . '.php');
-            } else {
-                (new YamlFileLoader($container, $locator))->load($resource . '.yml');
-            }
+        self::assertSame('default', $container->getParameter('propel.dbal.default_connection'));
+        self::assertTrue($container->getDefinition('propel.logger')->isPublic());
+        self::assertEquals([
+            new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            new Reference('debug.stopwatch', ContainerInterface::NULL_ON_INVALID_REFERENCE),
+        ], $container->getDefinition('propel.logger')->getArguments());
+        self::assertEquals([
+            '%kernel.project_dir%',
+            '%propel.configuration%',
+            new Reference('faker.generator', ContainerInterface::NULL_ON_INVALID_REFERENCE),
+        ], $container->getDefinition('propel.loader.yaml')->getArguments());
+        self::assertEquals([
+            new Reference('service_container'),
+            new Reference('file_locator'),
+            '%propel.configuration%',
+        ], $container->getDefinition('propel.schema_locator')->getArguments());
+    }
 
-            $xmlParameters = $xmlContainer->getParameterBag()->all();
-            $parameters = $container->getParameterBag()->all();
-            // Loader metadata varies between Symfony versions and configuration formats.
-            unset($xmlParameters['.container.known_envs'], $parameters['.container.known_envs']);
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testServicesExposeTheirIntegrationTags(): void
+    {
+        $container = new ContainerBuilder();
+        $locator = new FileLocator(__DIR__ . '/../../Resources/config');
+        new PhpFileLoader($container, $locator)->load('propel.php');
+        $loader = new YamlFileLoader($container, $locator);
+        $loader->load('converters.yml');
+        $loader->load('security.yml');
 
-            self::assertEquals($xmlParameters, $parameters, $resource);
-            self::assertSame(
-                array_keys($xmlContainer->getDefinitions()),
-                array_keys($container->getDefinitions()),
-                $resource
-            );
+        self::assertSame([['channel' => 'propel']], $container->getDefinition('propel.logger')->getTag('monolog.logger'));
+        self::assertSame([
+            ['template' => '@Propel/Collector/propel', 'id' => 'propel'],
+        ], $container->getDefinition('propel.data_collector')->getTag('data_collector'));
+        self::assertFalse($container->getDefinition('propel.data_collector')->isPublic());
+        self::assertSame([[]], $container->getDefinition('propel.twig.extension.syntax')->getTag('twig.extension'));
+        self::assertSame([[]], $container->getDefinition('form.type_guesser.propel')->getTag('form.type_guesser'));
+        self::assertSame([['alias' => 'model']], $container->getDefinition('propel.form.type.model')->getTag('form.type'));
+        self::assertSame([
+            ['priority' => 110],
+        ], $container->getDefinition('propel.converter.propel.orm')->getTag('controller.argument_value_resolver'));
+        self::assertTrue($container->getDefinition('propel.security.user.provider')->isAbstract());
+        self::assertFalse($container->getDefinition('propel.security.user.provider')->isPublic());
+    }
 
-            foreach ($xmlContainer->getDefinitions() as $id => $xmlDefinition) {
-                $yamlDefinition = $container->getDefinition($id);
-                self::assertSame($xmlDefinition->getClass(), $yamlDefinition->getClass(), $id);
-                self::assertEquals($xmlDefinition->getArguments(), $yamlDefinition->getArguments(), $id);
-                self::assertSame($xmlDefinition->getTags(), $yamlDefinition->getTags(), $id);
-                self::assertSame($xmlDefinition->isPublic(), $yamlDefinition->isPublic(), $id);
-                self::assertSame($xmlDefinition->isAbstract(), $yamlDefinition->isAbstract(), $id);
-                self::assertSame($xmlDefinition->isAutowired(), $yamlDefinition->isAutowired(), $id);
-                self::assertSame($xmlDefinition->isAutoconfigured(), $yamlDefinition->isAutoconfigured(), $id);
-                self::assertSame(
-                    array_keys($xmlDefinition->getBindings()),
-                    array_keys($yamlDefinition->getBindings()),
-                    $id
-                );
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testConsoleCommandsAreRegisteredWithContainerBinding(): void
+    {
+        $container = new ContainerBuilder();
+        $locator = new FileLocator(__DIR__ . '/../../Resources/config');
+        new YamlFileLoader($container, $locator)->load('console.yml');
 
-                foreach ($xmlDefinition->getBindings() as $key => $binding) {
-                    self::assertEquals(
-                        $binding->getValues()[0],
-                        $yamlDefinition->getBindings()[$key]->getValues()[0],
-                        $id . ': ' . $key
-                    );
-                }
-            }
+        $commands = [
+            'build', 'database:create', 'database:drop', 'database:reverse',
+            'fixtures:dump', 'fixtures:load', 'form:generate', 'graphviz:generate',
+            'migration:diff', 'migration:down', 'migration:migrate', 'migration:status', 'migration:up',
+            'model:build', 'sql:build', 'sql:insert', 'table:drop',
+        ];
+        self::assertCount(count($commands), $container->findTaggedServiceIds('console.command'));
+
+        foreach ($commands as $command) {
+            $id = 'propel_bundle_propel.command.' . str_replace(':', '_', $command) . '_command';
+            $definition = $container->getDefinition($id);
+            self::assertSame([['command' => 'propel:' . $command]], $definition->getTag('console.command'), $id);
+            self::assertTrue($definition->isAutowired(), $id);
+            self::assertTrue($definition->isAutoconfigured(), $id);
+            self::assertFalse($definition->isPublic(), $id);
+            $binding = $definition->getBindings()['$container']->getValues()[0];
+            self::assertInstanceOf(Reference::class, $binding);
+            self::assertSame('service_container', (string)$binding);
+            self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $binding->getInvalidBehavior());
         }
     }
 }

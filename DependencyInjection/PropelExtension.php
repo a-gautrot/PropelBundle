@@ -55,7 +55,7 @@ class PropelExtension extends Extension
         // Load services
         if (!$container->hasDefinition('propel')) {
             $locator = new FileLocator(__DIR__ . '/../Resources/config');
-            (new PhpFileLoader($container, $locator))->load('propel.php');
+            new PhpFileLoader($container, $locator)->load('propel.php');
             $loader = new YamlFileLoader($container, $locator);
             $loader->load('converters.yml');
             $loader->load('security.yml');
@@ -88,19 +88,6 @@ class PropelExtension extends Extension
         }
 
         return new Configuration($debug, $projectDir);
-    }
-
-    /**
-     * Returns the base path for the XSD files.
-     *
-     * @return string The XSD base path
-     *
-     * @deprecated since Symfony 7.4, to be removed in Symfony 8.0 together with XML support.
-     */
-    #[Override]
-    public function getXsdValidationBasePath(): string
-    {
-        return __DIR__ . '/../Resources/config/schema';
     }
 
     /**

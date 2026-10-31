@@ -472,7 +472,7 @@ XML;
         $request = new Request([], [], ['book' => $book]);
         $argument = new ArgumentMetadata('book', Book::class, isVariadic: false, hasDefaultValue: false, defaultValue: null);
 
-        $this->assertSame([$book], (new PropelParamConverter())->resolve($request, $argument));
+        $this->assertSame([$book], new PropelParamConverter()->resolve($request, $argument));
     }
 
     /**

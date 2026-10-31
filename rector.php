@@ -31,8 +31,8 @@ return RectorConfig::configure()
         __DIR__ . '/Resources/skeleton',
         __DIR__ . '/Tests/Fixtures/Model',
     ])
-    ->withPhpVersion(PhpVersion::PHP_82)
-    ->withPhpSets(php82: true)
+    ->withPhpVersion(PhpVersion::PHP_84)
+    ->withPhpSets(php84: true)
     ->withComposerBased(symfony: true)
     ->withPreparedSets(namedArgs: true, symfonyCodeQuality: true)
     ->withCodeQualityLevel(0)

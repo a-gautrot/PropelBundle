@@ -18,7 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Bundle\BundleInterface;
+use Symfony\Component\DependencyInjection\Kernel\BundleInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**

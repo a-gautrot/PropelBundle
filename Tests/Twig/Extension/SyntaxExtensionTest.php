@@ -15,7 +15,7 @@ class SyntaxExtensionTest extends TestCase
      */
     public function testZeroBytesCanBeFormatted(): void
     {
-        self::assertSame('0 B', (new SyntaxExtension())->formatMemory(0.0));
+        self::assertSame('0 B', new SyntaxExtension()->formatMemory(0.0));
     }
 
     /**
@@ -23,6 +23,6 @@ class SyntaxExtensionTest extends TestCase
      */
     public function testLargeByteCountsKeepTheLargestUnit(): void
     {
-        self::assertSame('1,050,000 YB', (new SyntaxExtension())->formatMemory(1024.0 ** 10));
+        self::assertSame('1,050,000 YB', new SyntaxExtension()->formatMemory(1024.0 ** 10));
     }
 }

@@ -3,8 +3,8 @@
 ---
 
 ![Minimum PHP version](https://img.shields.io/badge/php-%3E%3D%208.2-8892BF.svg)
-[![GitHub Actions workflow status](https://img.shields.io/github/actions/workflow/status/a-gautrot/PropelBundle/ci.yml?branch=7.1&label=GitHub%20Actions%20-%20CI%20branch%207.1)](https://github.com/a-gautrot/PropelBundle/actions/workflows/ci.yml)
-[![Codecov (7.1)](https://img.shields.io/codecov/c/github/a-gautrot/PropelBundle/7.1)](https://codecov.io/gh/a-gautrot/PropelBundle/tree/7.1)
+[![GitHub Actions workflow status](https://img.shields.io/github/actions/workflow/status/a-gautrot/PropelBundle/ci.yml?branch=8.0&label=GitHub%20Actions%20-%20CI%20branch%208.0)](https://github.com/a-gautrot/PropelBundle/actions/workflows/ci.yml)
+[![Codecov (8.0)](https://img.shields.io/codecov/c/github/a-gautrot/PropelBundle/8.0)](https://codecov.io/gh/a-gautrot/PropelBundle/tree/8.0)
 
 **PropelBundle** is the official implementation of [Propel](https://www.propelorm.org/) in Symfony.
 

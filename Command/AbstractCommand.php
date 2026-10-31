@@ -32,10 +32,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
 use Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Symfony\Component\DependencyInjection\Kernel\BundleInterface;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
-use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
@@ -321,7 +321,7 @@ abstract class AbstractCommand extends Command
     protected function getPackageFromBundle(BundleInterface $bundle, string $namespace): string
     {
         //find relative path from namespace to bundle->getNamespace()
-        $baseNamespace = (new ReflectionClass($bundle))->getNamespaceName();
+        $baseNamespace = new ReflectionClass($bundle)->getNamespaceName();
         if (str_starts_with($namespace, $baseNamespace)) {
             //base namespace fits
             //eg.

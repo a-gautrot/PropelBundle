@@ -12,4 +12,4 @@ $_SERVER['argv'] = array_merge(
 );
 $_SERVER['argc'] = count($_SERVER['argv']);
 
-exit((new Application())->run($_SERVER['argv']));
+exit(new Application()->run($_SERVER['argv']));
