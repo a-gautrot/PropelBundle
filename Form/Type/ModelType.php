@@ -179,7 +179,7 @@ class ModelType extends AbstractType
             /** @var ColumnMap $firstIdentifier */
             $firstIdentifier = current($identifier);
             if (count($identifier) === 1 && $firstIdentifier->getPdoType() === PDO::PARAM_INT) {
-                return self::createChoiceName(...);
+                return [self::class, 'createChoiceName'];
             }
             return null;
         };
