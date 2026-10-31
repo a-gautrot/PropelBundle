@@ -17,7 +17,7 @@ defaults:
     shell: bash
 
 env:
-  SYMFONY_REQUIRE: '7.4.*'
+  SYMFONY_REQUIRE: '8.1.*'
 
 jobs:
   sqlite:

@@ -54,22 +54,17 @@ Nightly release:
 * Generation of model classes based on an XML schema only, placed under `BundleName/Resources/*schema.xml`;
 * Insertion of SQL statements;
 * Runtime autoloading of Propel and generated classes;
-* Propel runtime initialization through the XML configuration;
+* Propel runtime initialization through Symfony bundle configuration;
 * [Propel migrations](https://propelorm.org/documentation/09-migrations.html);
 * Reverse engineering
   from [existing database](https://propelorm.org/documentation/cookbook/working-with-existing-databases.html);
-* Integration to [Symfony Profiler](https://symfony.com/doc/7.4/profiler.html);
+* Integration to [Symfony Profiler](https://symfony.com/doc/8.1/profiler.html);
 * Load SQL, YAML, and XML fixtures;
 * Create and drop databases;
-* Integration with the [Form component](https://symfony.com/doc/7.4/forms.html);
-* Integration with the [Security component](https://symfony.com/doc/7.4/security.html);
+* Integration with the [Form component](https://symfony.com/doc/8.1/forms.html);
+* Integration with the [Security component](https://symfony.com/doc/8.1/security.html);
 * Propel's ParamConverter can be used
-  with [Symfony Attributes](https://symfony.com/doc/7.4/reference/attributes.html).
-
-### Deprecated
-
-* XmlFileLoader has been [deprecated](https://symfony.com/blog/new-in-symfony-7-4-deprecated-xml-configuration) since
-  Symfony **7.4**. If you are using XML schemas, you must convert them to YAML schemas.
+  with [Symfony Attributes](https://symfony.com/doc/8.1/reference/attributes.html).
 
 ## New to version 8.0
 

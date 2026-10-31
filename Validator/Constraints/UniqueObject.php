@@ -63,17 +63,6 @@ class UniqueObject extends Constraint
     }
 
     /**
-     * @return string[]
-     * @deprecated since Symfony 7.4
-     * @see __construct()
-     */
-    #[Override]
-    public function getRequiredOptions(): array
-    {
-        return ['fields'];
-    }
-
-    /**
      * @return self::CLASS_CONSTRAINT
      */
     #[Override]
