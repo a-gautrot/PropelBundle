@@ -39,8 +39,16 @@ class ModelBuildCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
-            ->addOption('loader-script-dir', mode: InputOption::VALUE_OPTIONAL, description: 'Target folder of the database table map loader script. Defaults to paths.loaderScriptDir')
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'loader-script-dir',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Target folder of the database table map loader script. Defaults to paths.loaderScriptDir'
+            )
             ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to generate model classes from');
     }
 

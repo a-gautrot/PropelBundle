@@ -42,7 +42,11 @@ class BuildCommand extends Command
                 new InputOption('classes', mode: InputOption::VALUE_NONE, description: 'Build only classes'),
                 new InputOption('sql', mode: InputOption::VALUE_NONE, description: 'Build only SQL'),
                 new InputOption('insert-sql', mode: InputOption::VALUE_NONE, description: 'Build all and insert SQL'),
-                new InputOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
+                new InputOption(
+                    'connection',
+                    mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                    description: 'Connection to use. Example: default, bookstore'
+                )
             ]);
     }
 

@@ -51,8 +51,16 @@ class DatabaseDropCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
-            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
-            ->addOption('force', mode: InputOption::VALUE_NONE, description: 'Set this parameter to execute this action.');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'force',
+                mode: InputOption::VALUE_NONE,
+                description: 'Set this parameter to execute this action.'
+            );
     }
 
     /**
@@ -74,7 +82,11 @@ class DatabaseDropCommand extends AbstractCommand
         }
 
         if ($this->getKernel()->getEnvironment() === 'prod') {
-            $this->writeSection($output, 'WARNING: you are about to drop a database in production !', 'bg=red;fg=white');
+            $this->writeSection(
+                $output,
+                'WARNING: you are about to drop a database in production !',
+                'bg=red;fg=white'
+            );
 
             if ($this->askConfirmation($input, $output, 'Are you sure ? (y/n) ', default: false) === false) {
                 $output->writeln('Aborted, nice decision !');

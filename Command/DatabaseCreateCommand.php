@@ -43,7 +43,11 @@ class DatabaseCreateCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
-            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Set this parameter to define a connection to use');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Set this parameter to define a connection to use'
+            );
     }
 
     /**

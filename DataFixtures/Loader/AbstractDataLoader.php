@@ -185,12 +185,15 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
 
                 if (!$obj instanceof ActiveRecordInterface) {
                     throw new RuntimeException(
-                        "The class \"$class\" is not a Propel class. There is probably another class named \"$class\" somewhere."
+                        "The class \"$class\" is not a Propel class. "
+                        . "There is probably another class named \"$class\" somewhere."
                     );
                 }
 
                 if (!is_array($values)) {
-                    throw new InvalidArgumentException("You must give a name for each fixture data entry (class $class).");
+                    throw new InvalidArgumentException(
+                        "You must give a name for each fixture data entry (class $class)."
+                    );
                 }
 
                 foreach ($values as $name => $value) {
@@ -202,7 +205,9 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
                             continue;
                         } catch (TableNotFoundException $e) {
                             // Check whether this is actually an array stored in the object.
-                            if ('Cannot fetch TableMap for undefined table: ' . substr($name, 0, -1) === $e->getMessage()) {
+                            $missingTableMessage = 'Cannot fetch TableMap for undefined table: '
+                                . substr($name, 0, -1);
+                            if ($missingTableMessage === $e->getMessage()) {
                                 if ($tableMap->getColumn($name)->getType() !== PropelTypes::PHP_ARRAY
                                     && $tableMap->getColumn($name)->getType() !== PropelTypes::OBJECT) {
                                     throw $e;
@@ -235,15 +240,17 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
 
                         if ($column->isForeignKey() && $value !== null) {
                             $relatedTable = $this->getDatabaseMap()->getTable($column->getRelatedTableName());
-                            if (isset($this->object_references[$this->cleanObjectRef("{$relatedTable->getClassname()}_$value")])) {
+                            $reference = $this->cleanObjectRef("{$relatedTable->getClassname()}_$value");
+                            if (isset($this->object_references[$reference])) {
                                 $value = $this
-                                    ->object_references[$this->cleanObjectRef("{$relatedTable->getClassname()}_$value")]
+                                    ->object_references[$reference]
                                     ->getByName($column->getRelatedName(), TableMap::TYPE_COLNAME);
                             } else {
                                 $relatedClass = $this->cleanObjectRef($relatedTable->getClassNameOrFail());
                                 if (isset($data[$relatedClass]) || isset($data["\\$relatedClass"])) {
                                     throw new InvalidArgumentException(
-                                        "The object \"$value\" from class \"{$relatedTable->getClassname()}\" is not defined in your data file."
+                                        "The object \"$value\" from class \"{$relatedTable->getClassname()}\" "
+                                        . 'is not defined in your data file.'
                                     );
                                 }
                             }
@@ -308,7 +315,9 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
 
         if (!isset($relatedClass, $setter, $relatedSetter)) {
             $objectClass = $obj::class;
-            throw new InvalidArgumentException("Unable to find the many-to-many relationship for object \"$objectClass\".");
+            throw new InvalidArgumentException(
+                "Unable to find the many-to-many relationship for object \"$objectClass\"."
+            );
         }
 
         foreach ($values as $value) {

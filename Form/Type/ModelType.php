@@ -77,7 +77,10 @@ class ModelType extends AbstractType
      * @param PropertyAccessorInterface|null $propertyAccessor
      * @param ChoiceListFactoryInterface|null $choiceListFactory
      */
-    public function __construct(?PropertyAccessorInterface $propertyAccessor = null, ?ChoiceListFactoryInterface $choiceListFactory = null)
+    public function __construct(
+        ?PropertyAccessorInterface  $propertyAccessor = null,
+        ?ChoiceListFactoryInterface $choiceListFactory = null
+    )
     {
         $this->choiceListFactory = $choiceListFactory ?: new PropertyAccessDecorator(
             new DefaultChoiceListFactory(),
@@ -166,8 +169,7 @@ class ModelType extends AbstractType
             return null;
         };
 
-        $choiceName = function (Options $options): ?array {
-
+        $choiceName = function (Options $options): ?callable {
             /** @var ModelCriteria $query */
             $query = $options['query'];
             if ($options['index_property']) {
@@ -184,7 +186,6 @@ class ModelType extends AbstractType
         };
 
         $choiceValue = function (Options $options): ?callable {
-
             /** @var ModelCriteria $query */
             $query = $options['query'];
             if ($options['index_property']) {
@@ -194,7 +195,9 @@ class ModelType extends AbstractType
             }
             /** @var ColumnMap $firstIdentifier */
             $firstIdentifier = current($identifier);
-            if (count($identifier) === 1 && in_array($firstIdentifier->getPdoType(), [PDO::PARAM_BOOL, PDO::PARAM_INT, PDO::PARAM_STR])) {
+            if (count($identifier) === 1
+                && in_array($firstIdentifier->getPdoType(), [PDO::PARAM_BOOL, PDO::PARAM_INT, PDO::PARAM_STR])
+            ) {
                 return function (mixed $object) use ($firstIdentifier): mixed {
                     if ($object) {
                         return call_user_func([$object, 'get' . ucfirst($firstIdentifier->getPhpName())]);
@@ -210,7 +213,9 @@ class ModelType extends AbstractType
                 $queryClass = "{$options['class']}Query";
                 if (!class_exists($queryClass)) {
                     if (empty($options['class'])) {
-                        throw new MissingOptionsException('The "class" parameter is empty, you should provide the model class');
+                        throw new MissingOptionsException(
+                            'The "class" parameter is empty, you should provide the model class'
+                        );
                     }
                     throw new InvalidOptionsException(
                         "The query class \"$queryClass\" is not found, you should provide the FQCN of the model class"
@@ -233,7 +238,9 @@ class ModelType extends AbstractType
                     $choiceLabel = function (object $choice) use ($valueProperty, $query): mixed {
                         $getter = 'get' . ucfirst($valueProperty);
                         if (!method_exists($choice, $getter)) {
-                            $getter = 'get' . ucfirst($query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName());
+                            $getter = 'get' . ucfirst(
+                                $query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName()
+                            );
                         }
 
                         return call_user_func([$choice, $getter]);

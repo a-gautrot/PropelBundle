@@ -37,7 +37,12 @@ class GraphvizGenerateCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->addOption('output-dir', mode: InputOption::VALUE_REQUIRED, description: 'The output directory', default: BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY);
+            ->addOption(
+                'output-dir',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The output directory',
+                default: BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY
+            );
     }
 
     /**

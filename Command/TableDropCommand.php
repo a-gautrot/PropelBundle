@@ -43,9 +43,21 @@ class TableDropCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
-            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
-            ->addOption('force', mode: InputOption::VALUE_NONE, description: 'Set this parameter to execute this action.')
-            ->addArgument('table', InputArgument::IS_ARRAY, 'Set this parameter to défine which table to delete (default all the table in the database.');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'force',
+                mode: InputOption::VALUE_NONE,
+                description: 'Set this parameter to execute this action.'
+            )
+            ->addArgument(
+                'table',
+                InputArgument::IS_ARRAY,
+                'Set this parameter to défine which table to delete (default all the table in the database.'
+            );
     }
 
     /**

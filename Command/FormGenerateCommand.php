@@ -40,7 +40,10 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
  * @author William DURAND <william.durand1@gmail.com>
  * @api
  */
-#[AsCommand(name: 'propel:form:generate', description: 'Generate Form types stubs based on the schema.xml', help: <<<'TXT'
+#[AsCommand(
+    name: 'propel:form:generate',
+    description: 'Generate Form types stubs based on the schema.xml',
+    help: <<<'TXT'
 The <info>%command.name%</info> command allows you to quickly generate Form Type stubs for a given bundle.
 
 <info>php app/console %command.full_name%</info>
@@ -67,7 +70,11 @@ class FormGenerateCommand extends AbstractCommand
         $this
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Overwrite existing Form types')
             ->addOption('platform', mode: InputOption::VALUE_REQUIRED, description: 'The platform')
-            ->addArgument('bundle', InputArgument::OPTIONAL, 'The bundle to use to generate Form types (Ex: @AcmeDemoBundle)')
+            ->addArgument(
+                'bundle',
+                InputArgument::OPTIONAL,
+                'The bundle to use to generate Form types (Ex: @AcmeDemoBundle)'
+            )
             ->addArgument('models', InputArgument::IS_ARRAY, 'Model classes to generate Form Types from');
     }
 
@@ -95,7 +102,9 @@ class FormGenerateCommand extends AbstractCommand
         $schemas = $this->getFinalSchemas($kernel, $bundle);
 
         if (!$schemas) {
-            $output->writeln("No <comment>*schemas.xml</comment> files found in bundle <comment>{$bundle->getName()}</comment>.");
+            $output->writeln(
+                "No <comment>*schemas.xml</comment> files found in bundle <comment>{$bundle->getName()}</comment>."
+            );
 
             return PropelAbstractCommand::CODE_ERROR;
         }
@@ -167,7 +176,13 @@ class FormGenerateCommand extends AbstractCommand
      * @return void
      * @throws IOException
      */
-    protected function createFormTypeFromDatabase(BundleInterface $bundle, Database $database, array $models, OutputInterface $output, bool $force = false): void
+    protected function createFormTypeFromDatabase(
+        BundleInterface $bundle,
+        Database        $database,
+        array           $models,
+        OutputInterface $output,
+        bool            $force = false
+    ): void
     {
         $dir = $this->createDirectory($bundle, $output);
 
@@ -181,7 +196,10 @@ class FormGenerateCommand extends AbstractCommand
             if (!file_exists($file->getPathname()) || $force === true) {
                 $this->writeFormType($bundle, $table, $file, $force, $output);
             } else {
-                $output->writeln(sprintf('File <comment>%-60s</comment> exists, skipped. Try the <info>--force</info> option.', $this->getRelativeFileName($file)));
+                $output->writeln(
+                    'File <comment>' . str_pad($this->getRelativeFileName($file), 60)
+                    . '</comment> exists, skipped. Try the <info>--force</info> option.'
+                );
             }
         }
     }
@@ -225,7 +243,13 @@ class FormGenerateCommand extends AbstractCommand
      * @throws RuntimeException
      * @throws ParameterNotFoundException
      */
-    protected function writeFormType(BundleInterface $bundle, Table $table, SplFileInfo $file, bool $force, OutputInterface $output): void
+    protected function writeFormType(
+        BundleInterface $bundle,
+        Table           $table,
+        SplFileInfo     $file,
+        bool            $force,
+        OutputInterface $output
+    ): void
     {
         $formBuilder = new FormBuilder();
         $formTypeContent = $formBuilder->buildFormType($bundle, $table, self::DEFAULT_FORM_TYPE_DIRECTORY);

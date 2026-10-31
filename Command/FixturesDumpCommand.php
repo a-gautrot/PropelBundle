@@ -30,7 +30,10 @@ use Symfony\Component\Filesystem\Filesystem;
  * @author William DURAND <william.durand1@gmail.com>
  * @api
  */
-#[AsCommand(name: 'propel:fixtures:dump', description: 'Dump data from database into YAML fixtures file.', help: <<<'TXT'
+#[AsCommand(
+    name: 'propel:fixtures:dump',
+    description: 'Dump data from database into YAML fixtures file.',
+    help: <<<'TXT'
 The <info>propel:fixtures:dump</info> dumps data from database into YAML fixtures file.
 
   <info>php app/console propel:fixtures:dump</info>
@@ -56,8 +59,16 @@ class FixturesDumpCommand extends AbstractCommand
     protected function configure(): void
     {
         $this
-            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Set this parameter to define a connection to use')
-            ->addOption('dir', mode: InputOption::VALUE_OPTIONAL, description: 'Set this parameter to define a fixture directory');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Set this parameter to define a connection to use'
+            )
+            ->addOption(
+                'dir',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Set this parameter to define a fixture directory'
+            );
     }
 
     /**
@@ -80,7 +91,11 @@ class FixturesDumpCommand extends AbstractCommand
 
         if (!file_exists($path)) {
             $output->writeln("<info>The $path folder does not exists.</info>");
-            if ($this->askConfirmation($input, $output, "<question>Do you want me to create it for you ?</question> [Yes]")) {
+            if ($this->askConfirmation(
+                $input,
+                $output,
+                "<question>Do you want me to create it for you ?</question> [Yes]"
+            )) {
                 $fs = new Filesystem();
                 $fs->mkdir($path);
                 $this->writeNewDirectory($output, $path);

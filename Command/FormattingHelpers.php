@@ -40,7 +40,12 @@ trait FormattingHelpers
      * @throws InvalidArgumentException
      * @throws ConsoleRuntimeException
      */
-    protected function askConfirmation(InputInterface $input, OutputInterface $output, string $question, bool $default = true): bool
+    protected function askConfirmation(
+        InputInterface  $input,
+        OutputInterface $output,
+        string          $question,
+        bool            $default = true
+    ): bool
     {
         $question = new Question($question);
         do {
@@ -108,7 +113,11 @@ trait FormattingHelpers
      * @throws RuntimeException
      * @throws InvalidArgumentException
      */
-    protected function writeSection(OutputInterface $output, string|array $text, string $style = 'bg=blue;fg=white'): void
+    protected function writeSection(
+        OutputInterface $output,
+        string|array    $text,
+        string          $style = 'bg=blue;fg=white'
+    ): void
     {
         /** @var FormatterHelper $formatter */
         $formatter = $this->getRequiredHelperSet()->get('formatter');

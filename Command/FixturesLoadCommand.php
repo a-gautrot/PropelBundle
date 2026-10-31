@@ -50,13 +50,15 @@ The <info>propel:fixtures:load</info> loads <info>XML</info>, <info>SQL</info> a
 The <info>--connection</info> parameter allows you to change the connection to use.
 The default connection is the active connection (propel.dbal.default_connection).
 
-The <info>--dir</info> parameter allows you to change the directory that contains <info>XML</info> or/and <info>SQL</info> fixtures files <comment>(default: propel/fixtures)</comment>.
+The <info>--dir</info> parameter allows you to change the directory that contains
+<info>XML</info> or/and <info>SQL</info> fixtures files <comment>(default: propel/fixtures)</comment>.
 
 The <info>--xml</info> parameter allows you to load only <info>XML</info> fixtures.
 The <info>--sql</info> parameter allows you to load only <info>SQL</info> fixtures.
 The <info>--yml</info> parameter allows you to load only <info>YAML</info> fixtures.
 
-You can mix <info>--xml</info>, <info>--sql</info> and <info>--yml</info> parameters to load XML, YAML and SQL fixtures at the same time.
+You can mix <info>--xml</info>, <info>--sql</info> and <info>--yml</info> parameters
+to load XML, YAML and SQL fixtures at the same time.
 If none of this parameter is set, all XML, YAML and SQL files in the directory will be load.
 
 XML fixtures files are the same XML files you can get with the command <info>propel:data-dump</info>:
@@ -136,7 +138,11 @@ class FixturesLoadCommand extends AbstractCommand
             ->addOption('xml', mode: InputOption::VALUE_NONE, description: 'Load XML fixtures')
             ->addOption('sql', mode: InputOption::VALUE_NONE, description: 'Load SQL fixtures')
             ->addOption('yml', mode: InputOption::VALUE_NONE, description: 'Load YAML fixtures')
-            ->addOption('connection', mode: InputOption::VALUE_OPTIONAL, description: 'Set this parameter to define a connection to use');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Set this parameter to define a connection to use'
+            );
     }
 
     /**
@@ -225,7 +231,8 @@ class FixturesLoadCommand extends AbstractCommand
 
         $this->prepareCache($tmpdir);
 
-        $connectionName = $input->getOption('connection') ?: $this->getContainer()->getParameter('propel.dbal.default_connection');
+        $connectionName = $input->getOption('connection')
+            ?: $this->getContainer()->getParameter('propel.dbal.default_connection');
         if (!is_string($connectionName)) {
             throw new InvalidArgumentException('The connection name must be a string.');
         }
@@ -269,7 +276,9 @@ class FixturesLoadCommand extends AbstractCommand
     protected function getFixtureFiles(string $type = 'sql', ?string $in = null): ArrayIterator|Finder
     {
         $finder = new Finder();
-        $finder->sort(fn(SplFileInfo $a, SplFileInfo $b): int => strcmp($a->getPathname(), $b->getPathname()))->name("*.$type");
+        $finder
+            ->sort(fn(SplFileInfo $a, SplFileInfo $b): int => strcmp($a->getPathname(), $b->getPathname()))
+            ->name("*.$type");
 
         $files = $finder->in($in ?? $this->absoluteFixturesPath);
 
@@ -279,7 +288,11 @@ class FixturesLoadCommand extends AbstractCommand
 
         $finalFixtureFiles = [];
         foreach ($files as $file) {
-            $fixtureFilePath = str_replace($this->getFixturesPath($this->bundle) . DIRECTORY_SEPARATOR, '', $file->getRealPath());
+            $fixtureFilePath = str_replace(
+                $this->getFixturesPath($this->bundle) . DIRECTORY_SEPARATOR,
+                '',
+                $file->getRealPath()
+            );
             $logicalName = "@{$this->bundle->getName()}/Resources/fixtures/$fixtureFilePath";
             $finalFixtureFiles[] = new SplFileInfo($this->getFileLocator()->locate($logicalName));
         }

@@ -47,13 +47,16 @@
     "symfony/framework-bundle": "^7.4",
     "symfony/http-foundation": "^7.4",
     "symfony/http-kernel": "^7.4",
+    "symfony/polyfill-php83": "^1.33",
+    "symfony/polyfill-php84": "^1.33",
+    "symfony/polyfill-php85": "^1.33",
     "symfony/security-bundle": "^7.4",
     "symfony/security-core": "^7.4",
     "symfony/validator": "^7.4",
     "symfony/yaml": "^7.4"
   },
   "conflict": {
-    "symfony/cache": "<7.4||>=8.0",
+    "symfony/cache": "<7.4.12||>=8.0",
     "symfony/clock": "<7.4||>=8.0",
     "symfony/error-handler": "<7.4||>=8.0",
     "symfony/event-dispatcher": "<7.4||>=8.0",
@@ -63,9 +66,9 @@
     "symfony/password-hasher": "<7.4||>=8.0",
     "symfony/property-access": "<7.4||>=8.0",
     "symfony/property-info": "<7.4||>=8.0",
-    "symfony/routing": "<7.4||>=8.0",
+    "symfony/routing": "<7.4.13||>=8.0",
     "symfony/security-csrf": "<7.4||>=8.0",
-    "symfony/security-http": "<7.4||>=8.0",
+    "symfony/security-http": "<7.4.13||>=8.0",
     "symfony/string": "<7.4||>=8.0",
     "symfony/translation": "<7.4.3||>=8.0",
     "symfony/twig-bridge": "<7.4||>=8.0",
@@ -105,8 +108,10 @@
   "scripts": {
     "test": "@php Tests/run.php",
     "test:coverage": "@test --coverage-clover Tests/coverage.xml --log-junit Tests/junit.xml",
-    "phpstan": "vendor/bin/phpstan analyse -c phpstan.dist.neon",
-    "psalm": "vendor/bin/psalm --config=psalm.dist.xml",
-    "phpcs": "phpcs --standard=phpcs.dist.xml"
+    "phpstan": "@php vendor/bin/phpstan analyse -c phpstan.dist.neon --memory-limit=1G",
+    "psalm": "@php -d memory_limit=1G vendor/bin/psalm.phar --config=psalm.dist.xml",
+    "phpcs": "@php vendor/bin/phpcs --standard=phpcs.dist.xml",
+    "rector": "@php vendor/bin/rector process",
+    "rector:check": "@rector --dry-run"
   }
 }

@@ -51,7 +51,7 @@ class TranslationCollectionTypeTest extends TypeTestCase
         $item->addTranslatableItemI18n(new TranslatableItemI18n(1, 'fr', 'val1'));
         $item->addTranslatableItemI18n(new TranslatableItemI18n(2, 'en', 'val2'));
 
-        $builder = $this->factory->createBuilder(FormType::class, data: null, options: [
+        $builder = $this->factory->createBuilder(options: [
             'data_class' => self::TRANSLATION_CLASS
         ]);
 
@@ -91,7 +91,7 @@ class TranslationCollectionTypeTest extends TypeTestCase
 
         $this->assertCount(0, $item->getTranslatableItemI18ns());
 
-        $builder = $this->factory->createBuilder(FormType::class, data: null, options: [
+        $builder = $this->factory->createBuilder(options: [
             'data_class' => self::TRANSLATION_CLASS
         ]);
         $builder->add('translatableItemI18ns', TranslationCollectionType::class, [
@@ -113,9 +113,9 @@ class TranslationCollectionTypeTest extends TypeTestCase
      */
     public function testNoArrayGiven(): void
     {
-        $item = new Item(id: null, value: 'val');
+        $item = new Item(value: 'val');
 
-        $builder = $this->factory->createBuilder(FormType::class, data: null, options: [
+        $builder = $this->factory->createBuilder(options: [
             'data_class' => self::NON_TRANSLATION_CLASS
         ]);
         $builder->add('value', TranslationCollectionType::class, [
@@ -139,7 +139,7 @@ class TranslationCollectionTypeTest extends TypeTestCase
     {
         $this->expectException(MissingOptionsException::class);
 
-        $this->factory->createNamed('itemI18ns', TranslationCollectionType::class, data: null, options: [
+        $this->factory->createNamed('itemI18ns', TranslationCollectionType::class, options: [
             'languages' => ['en', 'fr'],
             'entry_options' => [
                 'columns' => ['value', 'value2']
@@ -154,7 +154,7 @@ class TranslationCollectionTypeTest extends TypeTestCase
     {
         $this->expectException(MissingOptionsException::class);
 
-        $this->factory->createNamed('itemI18ns', TranslationCollectionType::class, data: null, options: [
+        $this->factory->createNamed('itemI18ns', TranslationCollectionType::class, options: [
             'entry_options' => [
                 'data_class' => self::TRANSLATABLE_I18N_CLASS,
                 'columns' => ['value', 'value2']
@@ -169,7 +169,7 @@ class TranslationCollectionTypeTest extends TypeTestCase
     {
         $this->expectException(MissingOptionsException::class);
 
-        $this->factory->createNamed('itemI18ns', TranslationCollectionType::class, data: null, options: [
+        $this->factory->createNamed('itemI18ns', TranslationCollectionType::class, options: [
             'languages' => ['en', 'fr'],
             'entry_options' => [
                 'data_class' => self::TRANSLATABLE_I18N_CLASS

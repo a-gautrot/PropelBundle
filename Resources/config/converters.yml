@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=../../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+parameters:
+  propel.converter.propel.class: Propel\Bundle\PropelBundle\Request\ParamConverter\PropelParamConverter
+
+services:
+  propel.converter.propel.orm:
+    class: '%propel.converter.propel.class%'
+    tags:
+      - { name: controller.argument_value_resolver, priority: 110 }

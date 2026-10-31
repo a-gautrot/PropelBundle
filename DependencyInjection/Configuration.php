@@ -15,6 +15,7 @@ use Override;
 use Propel\Common\Config\PropelConfiguration;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Connection\DebugPDO;
+use Propel\Runtime\Util\Profiler;
 use RuntimeException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
@@ -167,7 +168,9 @@ class Configuration extends PropelConfiguration
                                 ->then(function (array $connections): array {
                                     foreach (array_keys($connections) as $name) {
                                         if (str_contains($name, '.')) {
-                                            throw new InvalidArgumentException('Dots are not allowed in connection names');
+                                            throw new InvalidArgumentException(
+                                                'Dots are not allowed in connection names'
+                                            );
                                         }
                                     }
 
@@ -175,23 +178,30 @@ class Configuration extends PropelConfiguration
                                 })
                             ->end()
                             ->requiresAtLeastOneElement()
-                            ->normalizeKeys(false)
+                            ->normalizeKeys(bool: false)
                             ->useAttributeAsKey('id')
                             ->prototype('array')
                             ->fixXmlConfig('slave')
                             ->fixXmlConfig('model_path')
                                 ->children()
-                                    ->scalarNode('classname')->defaultValue($this->debug ? DebugPDO::class : ConnectionWrapper::class)->end()
+                                    ->scalarNode('classname')
+                                        ->defaultValue($this->debug ? DebugPDO::class : ConnectionWrapper::class)
+                                    ->end()
                                     ->scalarNode('adapter')
                                         ->isRequired()
                                         ->cannotBeEmpty()
                                         ->beforeNormalization()
                                             ->ifString()
-                                            ->then(fn(string $v): ?string => preg_replace('/^pdo_/', '', strtolower($v)))
+                                            ->then(
+                                                fn(string $v): ?string => preg_replace('/^pdo_/', '', strtolower($v))
+                                            )
                                         ->end()
                                         ->validate()
                                             ->ifNotInArray($validAdapters)
-                                            ->thenInvalid('The adapter %s is not supported. Please choose one of ' . implode(', ', $validAdapters))
+                                            ->thenInvalid(
+                                                'The adapter %s is not supported. Please choose one of '
+                                                . implode(', ', $validAdapters)
+                                            )
                                         ->end()
                                     ->end()
                                     ->scalarNode('dsn')
@@ -255,7 +265,10 @@ class Configuration extends PropelConfiguration
                                 ->arrayNode('mysql')
                                     ->addDefaultsIfNotSet()
                                     ->children()
-                                        ->scalarNode('tableType')->defaultValue('InnoDB')->treatNullLike('InnoDB')->end()
+                                        ->scalarNode('tableType')
+                                            ->defaultValue('InnoDB')
+                                            ->treatNullLike('InnoDB')
+                                        ->end()
                                         ->scalarNode('tableEngineKeyword')->defaultValue('ENGINE')->end()
                                         ->scalarNode('uuidColumnType')->defaultValue('binary')->end()
                                     ->end()
@@ -270,7 +283,9 @@ class Configuration extends PropelConfiguration
                                 ->arrayNode('oracle')
                                     ->addDefaultsIfNotSet()
                                     ->children()
-                                        ->scalarNode('autoincrementSequencePattern')->defaultValue('${table}_SEQ')->end()
+                                        ->scalarNode('autoincrementSequencePattern')
+                                            ->defaultValue('${table}_SEQ')
+                                        ->end()
                                     ->end()
                                 ->end()
                             ->end()

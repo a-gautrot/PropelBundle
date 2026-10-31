@@ -18,7 +18,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
 use Symfony\Component\DependencyInjection\Extension\Extension;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 
@@ -54,10 +54,12 @@ class PropelExtension extends Extension
 
         // Load services
         if (!$container->hasDefinition('propel')) {
-            /** @psalm-suppress DeprecatedMethod XML services remain supported on the required Symfony 6.4. */
-            $this->loadXmlResources($container);
-
-            $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+            $locator = new FileLocator(__DIR__ . '/../Resources/config');
+            (new PhpFileLoader($container, $locator))->load('propel.php');
+            $loader = new YamlFileLoader($container, $locator);
+            $loader->load('converters.yml');
+            $loader->load('security.yml');
+            $loader->load('console.yml');
             $loader->load('services.yml');
 
             if ($container->getParameter('kernel.environment') === 'dev' && class_exists(WebProfilerExtension::class)) {
@@ -80,27 +82,12 @@ class PropelExtension extends Extension
         $debug = $container->getParameter('kernel.debug');
         $projectDir = $container->getParameter('kernel.project_dir');
         if (!is_bool($debug) || !is_string($projectDir)) {
-            throw new InvalidArgumentException('The kernel.debug and kernel.project_dir parameters have invalid types.');
+            throw new InvalidArgumentException(
+                'The kernel.debug and kernel.project_dir parameters have invalid types.'
+            );
         }
 
         return new Configuration($debug, $projectDir);
-    }
-
-    /**
-     * Loads the legacy XML service definitions.
-     *
-     * @param ContainerBuilder $container
-     * @return void
-     * @throws Exception
-     * @deprecated since Symfony 7.4; migrate Symfony service definitions to PHP or YAML before upgrading to Symfony 8.0.
-     */
-    private function loadXmlResources(ContainerBuilder $container): void
-    {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        $loader->load('propel.xml');
-        $loader->load('converters.xml');
-        $loader->load('security.xml');
-        $loader->load('console.xml');
     }
 
     /**

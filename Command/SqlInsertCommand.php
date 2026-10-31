@@ -44,9 +44,17 @@ class SqlInsertCommand extends WrappedCommand
     protected function configure(): void
     {
         $this
-            ->addOption('force', mode: InputOption::VALUE_NONE, description: 'Set this parameter to execute this action.')
+            ->addOption(
+                'force',
+                mode: InputOption::VALUE_NONE,
+                description: 'Set this parameter to execute this action.'
+            )
             ->addOption('sql-dir', mode: InputOption::VALUE_REQUIRED, description: 'The SQL files directory')
-            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            );
     }
 
     /**

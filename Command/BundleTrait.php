@@ -46,7 +46,9 @@ trait BundleTrait
             ->getContainer()
             ->get('kernel');
 
-        if ($input->hasArgument('bundle') && !empty($input->getArgument('bundle')) && str_starts_with($input->getArgument('bundle'), '@')) {
+        if ($input->hasArgument('bundle')
+            && !empty($input->getArgument('bundle'))
+            && str_starts_with($input->getArgument('bundle'), '@')) {
             return $kernel->getBundle(substr($input->getArgument('bundle'), 1));
         }
 

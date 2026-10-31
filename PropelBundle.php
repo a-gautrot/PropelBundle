@@ -52,7 +52,7 @@ class PropelBundle extends Bundle
             if ($this->container->getParameter('propel.logging') === true) {
                 $this->configureLogging();
             }
-        } catch (Exception $e) {
+        } catch (Exception) {
         }
     }
 
@@ -104,7 +104,8 @@ class PropelBundle extends Bundle
             $serviceContainer->setConnectionManager($manager);
 
             // load database maps
-            if (file_exists("{$config['paths']['loaderScriptDir']}/loadDatabase.php") && is_readable("{$config['paths']['loaderScriptDir']}/loadDatabase.php")) {
+            if (file_exists("{$config['paths']['loaderScriptDir']}/loadDatabase.php")
+                && is_readable("{$config['paths']['loaderScriptDir']}/loadDatabase.php")) {
                 /** @psalm-suppress UnresolvableInclude The path comes from the validated application configuration. */
                 require_once("{$config['paths']['loaderScriptDir']}/loadDatabase.php");
             }

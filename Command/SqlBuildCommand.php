@@ -40,7 +40,11 @@ class SqlBuildCommand extends WrappedCommand
         $this
             ->addOption('sql-dir', mode: InputOption::VALUE_REQUIRED, description: 'The SQL files directory')
             ->addOption('overwrite', mode: InputOption::VALUE_NONE, description: '')
-            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore');
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            );
     }
 
     /**

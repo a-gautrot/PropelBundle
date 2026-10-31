@@ -118,7 +118,11 @@ class TypeGuesser implements FormTypeGuesserInterface
                     $choices = $column->getValueSet();
                     $labels = array_map(ucfirst(...), $choices);
 
-                    return new TypeGuess(ChoiceType::class, ['choices' => array_combine($choices, $labels)], Guess::MEDIUM_CONFIDENCE);
+                    return new TypeGuess(
+                        ChoiceType::class,
+                        ['choices' => array_combine($choices, $labels)],
+                        Guess::MEDIUM_CONFIDENCE
+                    );
                 }
                 return new TypeGuess(TextType::class, [], Guess::MEDIUM_CONFIDENCE);
             case PropelTypes::VARCHAR:

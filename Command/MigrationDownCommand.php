@@ -38,11 +38,27 @@ class MigrationDownCommand extends WrappedCommand
         parent::configure();
 
         $this
-            ->addOption('connection', mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, description: 'Connection to use. Example: default, bookstore')
-            ->addOption('migration-table', mode: InputOption::VALUE_OPTIONAL, description: 'Migration table name (if none given, the configured table is used)')
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'migration-table',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Migration table name (if none given, the configured table is used)'
+            )
             ->addOption('output-dir', mode: InputOption::VALUE_OPTIONAL, description: 'The output directory')
-            ->addOption('fake', mode: InputOption::VALUE_NONE, description: 'Does not touch the actual schema, but marks previous migration as executed.')
-            ->addOption('force', mode: InputOption::VALUE_NONE, description: 'Continues with the migration even when errors occur.');
+            ->addOption(
+                'fake',
+                mode: InputOption::VALUE_NONE,
+                description: 'Does not touch the actual schema, but marks previous migration as executed.'
+            )
+            ->addOption(
+                'force',
+                mode: InputOption::VALUE_NONE,
+                description: 'Continues with the migration even when errors occur.'
+            );
     }
 
     /**
