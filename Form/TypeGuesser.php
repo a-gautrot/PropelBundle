@@ -11,6 +11,7 @@
 
 namespace Propel\Bundle\PropelBundle\Form;
 
+use Override;
 use Propel\Bundle\PropelBundle\Form\Type\ModelType;
 use Propel\Generator\Model\PropelTypes;
 use Propel\Runtime\Map\ColumnMap;
@@ -51,7 +52,7 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @return TypeGuess|null
      * @throws ColumnNotFoundException
      */
-    #[\Override]
+    #[Override]
     public function guessType(string $class, string $property): ?TypeGuess
     {
         if (!$table = $this->getTable($class)) {
@@ -185,7 +186,7 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @return ValueGuess|null
      * @throws ColumnNotFoundException
      */
-    #[\Override]
+    #[Override]
     public function guessRequired(string $class, string $property): ?ValueGuess
     {
         if ($column = $this->getColumn($class, $property)) {
@@ -201,7 +202,7 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @return ValueGuess|null
      * @throws ColumnNotFoundException
      */
-    #[\Override]
+    #[Override]
     public function guessMaxLength(string $class, string $property): ?ValueGuess
     {
         if ($column = $this->getColumn($class, $property)) {
@@ -226,7 +227,7 @@ class TypeGuesser implements FormTypeGuesserInterface
      * @return ValueGuess|null
      * @throws ColumnNotFoundException
      */
-    #[\Override]
+    #[Override]
     public function guessPattern(string $class, string $property): ?ValueGuess
     {
         if ($column = $this->getColumn($class, $property)) {

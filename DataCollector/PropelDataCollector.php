@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\DataCollector;
 
+use Override;
 use Propel\Bundle\PropelBundle\Logger\PropelLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,7 +47,7 @@ class PropelDataCollector extends DataCollector
      * @param Throwable|null $exception
      * @return void
      */
-    #[\Override]
+    #[Override]
     public function collect(Request $request, Response $response, ?Throwable $exception = null): void
     {
         $this->data = [
@@ -94,7 +95,7 @@ class PropelDataCollector extends DataCollector
      *
      * @return string The collector name.
      */
-    #[\Override]
+    #[Override]
     public function getName(): string
     {
         return 'propel';
@@ -128,7 +129,7 @@ class PropelDataCollector extends DataCollector
     /**
      * @return void
      */
-    #[\Override]
+    #[Override]
     public function reset(): void
     {
         $this->data = [];

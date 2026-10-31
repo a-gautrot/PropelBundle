@@ -11,6 +11,7 @@
 
 namespace Propel\Bundle\PropelBundle\Form\Type;
 
+use Override;
 use Propel\Bundle\PropelBundle\Form\EventListener\TranslationFormListener;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -34,7 +35,7 @@ class TranslationType extends AbstractType
      * @param array<array-key, mixed> $options
      * @return void
      */
-    #[\Override]
+    #[Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addEventSubscriber(
@@ -48,7 +49,7 @@ class TranslationType extends AbstractType
      * @return void
      * @throws AccessException
      */
-    #[\Override]
+    #[Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired([
@@ -69,7 +70,7 @@ class TranslationType extends AbstractType
     /**
      * @return string
      */
-    #[\Override]
+    #[Override]
     public function getBlockPrefix(): string
     {
         return 'propel_translation';

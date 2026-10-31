@@ -11,6 +11,7 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException;
+use Override;
 use PDO;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Runtime\Adapter\Pdo\MysqlAdapter;
@@ -36,7 +37,7 @@ class TableDropCommand extends AbstractCommand
      * @return void
      * @throws ConsoleInvalidArgumentException
      */
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -64,7 +65,7 @@ class TableDropCommand extends AbstractCommand
      * @throws RuntimeException
      * @throws ConsoleInvalidArgumentException
      */
-    #[\Override]
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $connection = Propel::getConnection($input->getOption('connection'));

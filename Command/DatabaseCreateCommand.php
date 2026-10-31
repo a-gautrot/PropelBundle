@@ -11,6 +11,7 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException;
+use Override;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
 use Propel\Runtime\Connection\Exception\ConnectionException;
@@ -36,7 +37,7 @@ class DatabaseCreateCommand extends AbstractCommand
      * @throws ConsoleInvalidArgumentException
      * @see \Symfony\Component\Console\Command\Command
      */
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -60,7 +61,7 @@ class DatabaseCreateCommand extends AbstractCommand
      * @see \Symfony\Component\Console\Command\Command
      *
      */
-    #[\Override]
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $connectionName = $input->getOption('connection') ?: $this->getDefaultConnection();

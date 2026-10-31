@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\DataFixtures\Loader;
 
 use Exception;
 use InvalidArgumentException;
+use Override;
 use Propel\Bundle\PropelBundle\DataFixtures\AbstractDataHandler;
 use Propel\Bundle\PropelBundle\Util\PropelInflector;
 use Propel\Generator\Model\PropelTypes;
@@ -50,7 +51,7 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
      * @throws Exception
      * @throws RuntimeException
      */
-    #[\Override]
+    #[Override]
     public function load(array $files, string $connectionName): int
     {
         $nbFiles = 0;
@@ -240,8 +241,8 @@ abstract class AbstractDataLoader extends AbstractDataHandler implements DataLoa
                         if ($column->isForeignKey() && $value !== null) {
                             $relatedTable = $this->getDatabaseMap()->getTable($column->getRelatedTableName());
                             if (isset($this->object_references[$this->cleanObjectRef(
-                                "{$relatedTable->getClassname()}_$value"
-                            )])) {
+                                    "{$relatedTable->getClassname()}_$value"
+                                )])) {
                                 $value = $this
                                     ->object_references[$this->cleanObjectRef("{$relatedTable->getClassname()}_$value")]
                                     ->getByName($column->getRelatedName(), TableMap::TYPE_COLNAME);

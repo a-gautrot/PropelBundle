@@ -11,6 +11,7 @@
 namespace Propel\Bundle\PropelBundle\DataFixtures\Loader;
 
 use Faker\Generator;
+use Override;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -46,7 +47,7 @@ class YamlDataLoader extends AbstractDataLoader
      * @psalm-suppress UnusedVariable The faker closure is used by included fixture templates.
      * @throws ParseException
      */
-    #[\Override]
+    #[Override]
     protected function transformDataToArray(string $file): array
     {
         if (!str_contains($file, "\n") && is_file($file)) {

@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Override;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
@@ -31,7 +32,7 @@ class BuildCommand extends Command
      * @return void
      * @throws InvalidArgumentException
      */
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -59,7 +60,7 @@ class BuildCommand extends Command
      * @see Command
      *
      */
-    #[\Override]
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $application = $this->getApplication();

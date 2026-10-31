@@ -13,6 +13,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 use InvalidArgumentException;
 use JsonException;
 use LogicException;
+use Override;
 use Propel\Bundle\PropelBundle\Service\SchemaLocator;
 use ReflectionClass;
 use RuntimeException;
@@ -89,7 +90,7 @@ abstract class AbstractCommand extends Command
      * @throws ServiceCircularReferenceException
      * @throws ServiceNotFoundException
      */
-    #[\Override]
+    #[Override]
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         $this->input = $input;
@@ -145,14 +146,6 @@ abstract class AbstractCommand extends Command
         }
 
         return $application;
-    }
-
-    /**
-     * @return ContainerInterface
-     */
-    public function getContainer(): ContainerInterface
-    {
-        return $this->container;
     }
 
     /**
@@ -315,6 +308,14 @@ abstract class AbstractCommand extends Command
         }
 
         return $locator;
+    }
+
+    /**
+     * @return ContainerInterface
+     */
+    public function getContainer(): ContainerInterface
+    {
+        return $this->container;
     }
 
     /**
@@ -490,11 +491,12 @@ abstract class AbstractCommand extends Command
      * @throws RuntimeException
      */
     protected function runCommand(
-        Command $command,
-        array $parameters,
-        InputInterface $input,
+        Command         $command,
+        array           $parameters,
+        InputInterface  $input,
         OutputInterface $output
-    ): int {
+    ): int
+    {
         // add the command's name to the parameters
         array_unshift($parameters, $this->getName());
 

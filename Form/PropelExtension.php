@@ -11,6 +11,7 @@
 
 namespace Propel\Bundle\PropelBundle\Form;
 
+use Override;
 use Propel\Bundle\PropelBundle\Form\Type\ModelType;
 use Propel\Bundle\PropelBundle\Form\Type\TranslationCollectionType;
 use Propel\Bundle\PropelBundle\Form\Type\TranslationType;
@@ -50,9 +51,10 @@ class PropelExtension extends AbstractExtension
      * @param ChoiceListFactoryInterface|null $choiceListFactory
      */
     public function __construct(
-        ?PropertyAccessorInterface $propertyAccessor = null,
+        ?PropertyAccessorInterface  $propertyAccessor = null,
         ?ChoiceListFactoryInterface $choiceListFactory = null
-    ) {
+    )
+    {
         $this->propertyAccessor = $propertyAccessor ?: PropertyAccess::createPropertyAccessor();
         $this->choiceListFactory = $choiceListFactory ?: new PropertyAccessDecorator(
             new DefaultChoiceListFactory(),
@@ -63,7 +65,7 @@ class PropelExtension extends AbstractExtension
     /**
      * @return FormTypeInterface<mixed>[]
      */
-    #[\Override]
+    #[Override]
     protected function loadTypes(): array
     {
         return [
@@ -76,7 +78,7 @@ class PropelExtension extends AbstractExtension
     /**
      * @return FormTypeGuesserInterface|null
      */
-    #[\Override]
+    #[Override]
     protected function loadTypeGuesser(): ?FormTypeGuesserInterface
     {
         return new TypeGuesser();

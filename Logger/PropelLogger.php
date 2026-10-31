@@ -10,6 +10,8 @@
 
 namespace Propel\Bundle\PropelBundle\Logger;
 
+use InvalidArgumentException;
+use Override;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
@@ -63,7 +65,7 @@ class PropelLogger implements LoggerInterface
      * @param array<array-key, mixed> $context
      * @return void
      */
-    #[\Override]
+    #[Override]
     public function log($level, $message, array $context = []): void
     {
         if ($this->logger === null) {
@@ -71,7 +73,7 @@ class PropelLogger implements LoggerInterface
         }
 
         if (is_object($message) && !method_exists($message, '__toString')) {
-            throw new \InvalidArgumentException('The log message must implement __toString().');
+            throw new InvalidArgumentException('The log message must implement __toString().');
         }
         $message = (string)$message;
         $add = true;

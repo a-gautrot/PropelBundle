@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\DependencyInjection;
 
 use Exception;
 use InvalidArgumentException;
+use Override;
 use Symfony\Bundle\WebProfilerBundle\DependencyInjection\WebProfilerExtension;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -36,7 +37,7 @@ class PropelExtension extends Extension
      *
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = $this->getConfiguration($configs, $container);
@@ -73,7 +74,7 @@ class PropelExtension extends Extension
      * @throws InvalidArgumentException
      * @throws ParameterNotFoundException
      */
-    #[\Override]
+    #[Override]
     public function getConfiguration(array $config, ContainerBuilder $container): Configuration
     {
         $debug = $container->getParameter('kernel.debug');
@@ -110,7 +111,7 @@ class PropelExtension extends Extension
      *
      * @deprecated since Symfony 7.4, to be removed in Symfony 8.0 together with XML support.
      */
-    #[\Override]
+    #[Override]
     public function getXsdValidationBasePath(): string
     {
         return __DIR__ . '/../Resources/config/schema';
@@ -123,7 +124,7 @@ class PropelExtension extends Extension
      *
      * @return string The alias
      */
-    #[\Override]
+    #[Override]
     public function getAlias(): string
     {
         return 'propel';

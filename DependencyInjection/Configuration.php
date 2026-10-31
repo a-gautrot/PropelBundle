@@ -11,6 +11,7 @@
 namespace Propel\Bundle\PropelBundle\DependencyInjection;
 
 use InvalidArgumentException;
+use Override;
 use Propel\Common\Config\PropelConfiguration;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Connection\DebugPDO;
@@ -55,7 +56,7 @@ class Configuration extends PropelConfiguration
      * @psalm-suppress PossiblyNullReference Symfony's end() returns the configured parent builder.
      * @psalm-suppress UndefinedInterfaceMethod Symfony's fluent builder loses the concrete parent type at end().
      */
-    #[\Override]
+    #[Override]
     protected function addPathsSection(ArrayNodeDefinition $node): void
     {
         $node
@@ -79,7 +80,7 @@ class Configuration extends PropelConfiguration
      * @psalm-suppress PossiblyNullReference Symfony's end() returns the configured parent builder.
      * @psalm-suppress UndefinedInterfaceMethod Symfony's fluent builder loses the concrete parent type at end().
      */
-    #[\Override]
+    #[Override]
     protected function addRuntimeSection(ArrayNodeDefinition $node): void
     {
         $node
@@ -154,7 +155,7 @@ class Configuration extends PropelConfiguration
      * @psalm-suppress UndefinedMethod ExprBuilder::end() returns the connections ArrayNodeDefinition.
      * @throws RuntimeException
      */
-    #[\Override]
+    #[Override]
     protected function addDatabaseSection(ArrayNodeDefinition $node): void
     {
         $validAdapters = ['mysql', 'pgsql', 'sqlite', 'mssql', 'sqlsrv', 'oracle'];

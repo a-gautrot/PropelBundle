@@ -14,6 +14,7 @@ use App\AppBundle;
 use InvalidArgumentException as BaseInvalidArgumentException;
 use JsonException;
 use LogicException as BaseLogicException;
+use Override;
 use Propel\Bundle\PropelBundle\Form\FormBuilder;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Generator\Config\GeneratorConfig;
@@ -51,7 +52,7 @@ class FormGenerateCommand extends AbstractCommand
      * @return void
      * @throws InvalidArgumentException
      */
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -86,7 +87,7 @@ EOT
      * @throws InvalidArgumentException
      * @throws LogicException
      */
-    #[\Override]
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $kernel = $this->getKernel();
@@ -175,11 +176,12 @@ EOT
      */
     protected function createFormTypeFromDatabase(
         BundleInterface $bundle,
-        Database $database,
-        array $models,
+        Database        $database,
+        array           $models,
         OutputInterface $output,
-        bool $force = false
-    ): void {
+        bool            $force = false
+    ): void
+    {
         $dir = $this->createDirectory($bundle, $output);
 
         foreach ($database->getTables() as $table) {
@@ -241,11 +243,12 @@ EOT
      */
     protected function writeFormType(
         BundleInterface $bundle,
-        Table $table,
-        SplFileInfo $file,
-        bool $force,
+        Table           $table,
+        SplFileInfo     $file,
+        bool            $force,
         OutputInterface $output
-    ): void {
+    ): void
+    {
         $formBuilder = new FormBuilder();
         $formTypeContent = $formBuilder->buildFormType($bundle, $table, self::DEFAULT_FORM_TYPE_DIRECTORY);
 

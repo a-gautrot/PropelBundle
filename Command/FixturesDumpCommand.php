@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Override;
 use Propel\Bundle\PropelBundle\DataFixtures\Dumper\DataDumperInterface;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException as BaseRuntimeException;
@@ -41,7 +42,7 @@ class FixturesDumpCommand extends AbstractCommand
      * @throws InvalidArgumentException
      * @see \Symfony\Component\Console\Command\Command
      */
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -78,7 +79,7 @@ EOT
      * @throws ServiceNotFoundException
      * @throws IOException
      */
-    #[\Override]
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $fixtureDir = $input->getOption('dir') ?: $this->defaultFixturesDir;

@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\DataFixtures\Loader;
 
+use Override;
 use SimpleXMLElement;
 
 /**
@@ -25,7 +26,7 @@ class XmlDataLoader extends AbstractDataLoader
      * @param string $file
      * @return array<string, array<string, array<string, string>>>
      */
-    #[\Override]
+    #[Override]
     protected function transformDataToArray(string $file): array
     {
         $xml = simplexml_load_file($file);

@@ -4,6 +4,7 @@ namespace Propel\Bundle\PropelBundle\Request\ParamConverter;
 
 use Exception;
 use LogicException;
+use Override;
 use Propel\Bundle\PropelBundle\Util\PropelInflector;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
@@ -75,7 +76,7 @@ class PropelParamConverter implements ParamConverterInterface
      * @throws NotFoundHttpException
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function apply(Request $request, ParamConverter $configuration): bool
     {
         $class = $configuration->getClass();
@@ -314,7 +315,7 @@ class PropelParamConverter implements ParamConverterInterface
      *
      * @return bool
      */
-    #[\Override]
+    #[Override]
     public function supports(ParamConverter $configuration): bool
     {
         $classname = $configuration->getClass();

@@ -11,6 +11,7 @@
 
 namespace Propel\Bundle\PropelBundle\Form\Type;
 
+use Override;
 use Propel\Bundle\PropelBundle\Form\EventListener\TranslationCollectionFormListener;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -36,7 +37,7 @@ class TranslationCollectionType extends AbstractType
      * @return void
      * @throws MissingOptionsException
      */
-    #[\Override]
+    #[Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if (!isset($options['entry_options']['data_class'])) {
@@ -58,7 +59,7 @@ class TranslationCollectionType extends AbstractType
      * @return void
      * @throws AccessException
      */
-    #[\Override]
+    #[Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired(['languages']);
@@ -77,7 +78,7 @@ class TranslationCollectionType extends AbstractType
     /**
      * @return string|null
      */
-    #[\Override]
+    #[Override]
     public function getParent(): ?string
     {
         return CollectionType::class;
@@ -94,7 +95,7 @@ class TranslationCollectionType extends AbstractType
     /**
      * @return string
      */
-    #[\Override]
+    #[Override]
     public function getBlockPrefix(): string
     {
         return 'propel_translation_collection';

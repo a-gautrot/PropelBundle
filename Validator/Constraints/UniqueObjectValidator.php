@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Validator\Constraints;
 
+use Override;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Map\TableMap;
@@ -34,7 +35,7 @@ class UniqueObjectValidator extends ConstraintValidator
      * @return void
      * @throws ConstraintDefinitionException
      */
-    #[\Override]
+    #[Override]
     public function validate($value, Constraint $constraint): void
     {
         /** @var UniqueObject $constraint */

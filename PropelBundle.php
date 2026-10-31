@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle;
 
 use Exception;
 use LogicException as BaseLogicException;
+use Override;
 use Propel\Bundle\PropelBundle\DependencyInjection\Security\UserProvider\PropelFactory;
 use Propel\Runtime\Connection\ConnectionManagerPrimaryReplica;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
@@ -38,7 +39,7 @@ class PropelBundle extends Bundle
     /**
      * @return void
      */
-    #[\Override]
+    #[Override]
     public function boot(): void
     {
         if ($this->container === null) {
@@ -148,7 +149,7 @@ class PropelBundle extends Bundle
      * @return void
      * @throws LogicException
      */
-    #[\Override]
+    #[Override]
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);

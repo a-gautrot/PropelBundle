@@ -4,6 +4,7 @@ namespace Propel\Bundle\PropelBundle\Request\ArgumentResolver;
 
 use Exception;
 use LogicException;
+use Override;
 use Propel\Bundle\PropelBundle\Util\PropelInflector;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
@@ -73,7 +74,7 @@ class PropelValueResolver implements ArgumentValueResolverInterface
      * @throws NotFoundHttpException
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
         if (!$this->supports($request, $argument)) {
@@ -196,7 +197,7 @@ class PropelValueResolver implements ArgumentValueResolverInterface
      *
      * @return bool
      */
-    #[\Override]
+    #[Override]
     public function supports(Request $request, ArgumentMetadata $argument): bool
     {
         $classname = $argument->getType();

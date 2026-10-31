@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\DataFixtures\Dumper;
 
+use Override;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -25,7 +26,7 @@ class YamlDataDumper extends AbstractDataDumper
      * @param array<string, array<string, array<string, mixed>>> $data
      * @return string
      */
-    #[\Override]
+    #[Override]
     protected function transformArrayToData(array $data): string
     {
         return Yaml::dump($data, 3, 4, Yaml::DUMP_OBJECT);

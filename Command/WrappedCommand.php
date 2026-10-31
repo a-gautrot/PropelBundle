@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use JsonException;
 use LogicException;
+use Override;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
@@ -34,7 +35,7 @@ abstract class WrappedCommand extends AbstractCommand
      * @return void
      * @throws InvalidArgumentException
      */
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -55,7 +56,7 @@ abstract class WrappedCommand extends AbstractCommand
      * @throws IOException
      * @throws DirectoryNotFoundException
      */
-    #[\Override]
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $params = $this->getSubCommandArguments($input);

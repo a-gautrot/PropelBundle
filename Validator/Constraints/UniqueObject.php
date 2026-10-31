@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Validator\Constraints;
 
+use Override;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
 use Symfony\Component\Validator\Exception\InvalidOptionsException;
@@ -66,7 +67,7 @@ class UniqueObject extends Constraint
      * @deprecated since Symfony 7.4
      * @see __construct()
      */
-    #[\Override]
+    #[Override]
     public function getRequiredOptions(): array
     {
         return ['fields'];
@@ -75,7 +76,7 @@ class UniqueObject extends Constraint
     /**
      * @return string
      */
-    #[\Override]
+    #[Override]
     public function getTargets(): string
     {
         return self::CLASS_CONSTRAINT;

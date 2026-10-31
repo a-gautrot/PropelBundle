@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Override;
 use Propel\Generator\Command\GraphvizGenerateCommand as BaseGraphvizGenerateCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -28,7 +29,7 @@ class GraphvizGenerateCommand extends WrappedCommand
      * @return void
      * @throws InvalidArgumentException
      */
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
@@ -49,7 +50,7 @@ class GraphvizGenerateCommand extends WrappedCommand
      * @return Command
      * @throws LogicException
      */
-    #[\Override]
+    #[Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseGraphvizGenerateCommand();
@@ -60,7 +61,7 @@ class GraphvizGenerateCommand extends WrappedCommand
      * @return array<string, mixed>
      * @throws InvalidArgumentException
      */
-    #[\Override]
+    #[Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         return [

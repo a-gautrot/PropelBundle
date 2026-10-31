@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Override;
 use Propel\Generator\Command\MigrationStatusCommand as BaseMigrationCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -29,7 +30,7 @@ class MigrationStatusCommand extends WrappedCommand
      * @return void
      * @throws InvalidArgumentException
      */
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
@@ -56,7 +57,7 @@ class MigrationStatusCommand extends WrappedCommand
      * @return Command
      * @throws LogicException
      */
-    #[\Override]
+    #[Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseMigrationCommand();
@@ -68,7 +69,7 @@ class MigrationStatusCommand extends WrappedCommand
      * @throws InvalidArgumentException
      * @throws ParameterNotFoundException
      */
-    #[\Override]
+    #[Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $config = $this->getConfig();

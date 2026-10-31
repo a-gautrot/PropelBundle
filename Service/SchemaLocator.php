@@ -144,8 +144,8 @@ class SchemaLocator
         $schemaPath = str_replace(
         // no bundle/bundle
             $bundle->getPath() . DIRECTORY_SEPARATOR
-                . ($bundle->getName() == AppBundle::NAME ? '' : 'Resources' . DIRECTORY_SEPARATOR)
-                . 'config' . DIRECTORY_SEPARATOR,
+            . ($bundle->getName() == AppBundle::NAME ? '' : 'Resources' . DIRECTORY_SEPARATOR)
+            . 'config' . DIRECTORY_SEPARATOR,
             '',
             $schema->getRealPath()
         );

@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Form\ChoiceList;
 
+use Override;
 use PDO;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
@@ -70,10 +71,11 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
      */
     public function __construct(
         ChoiceListFactoryInterface $factory,
-        string $class,
-        ModelCriteria $queryObject,
-        ?string $useAsIdentifier = null
-    ) {
+        string                     $class,
+        ModelCriteria              $queryObject,
+        ?string                    $useAsIdentifier = null
+    )
+    {
         $this->factory = $factory;
         $this->class = $class;
         $this->query = $queryObject;
@@ -112,7 +114,7 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
      * @return array<array-key, mixed>
      * @throws LogicException
      */
-    #[\Override]
+    #[Override]
     public function loadChoicesForValues(array $values, ?callable $value = null): array
     {
         // Performance optimization
@@ -182,7 +184,7 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
      * @param callable|null $value
      * @return ChoiceListInterface
      */
-    #[\Override]
+    #[Override]
     public function loadChoiceList(?callable $value = null): ChoiceListInterface
     {
         if ($this->choiceList) {
@@ -201,7 +203,7 @@ class PropelChoiceLoader implements ChoiceLoaderInterface
      * @param callable|null $value
      * @return string[]
      */
-    #[\Override]
+    #[Override]
     public function loadValuesForChoices(array $choices, ?callable $value = null): array
     {
         // Performance optimization

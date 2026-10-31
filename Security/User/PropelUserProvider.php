@@ -12,6 +12,7 @@
 namespace Propel\Bundle\PropelBundle\Security\User;
 
 use LogicException;
+use Override;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\Exception\PropelException;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -70,7 +71,7 @@ class PropelUserProvider implements UserProviderInterface
      * @throws UserNotFoundException
      * @deprecated since Symfony 5.3, use loadUserByIdentifier() instead
      */
-    #[\Override]
+    #[Override]
     public function loadUserByUsername(string $username): UserInterface
     {
         return $this->loadUserByIdentifier($username);
@@ -114,7 +115,7 @@ class PropelUserProvider implements UserProviderInterface
      * @param UserInterface $user
      * @return UserInterface
      */
-    #[\Override]
+    #[Override]
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof $this->class) {
@@ -134,7 +135,7 @@ class PropelUserProvider implements UserProviderInterface
      * @param string $class
      * @return bool
      */
-    #[\Override]
+    #[Override]
     public function supportsClass(string $class): bool
     {
         return $class === $this->class;

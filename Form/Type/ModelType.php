@@ -12,6 +12,7 @@
 namespace Propel\Bundle\PropelBundle\Form\Type;
 
 use InvalidArgumentException;
+use Override;
 use PDO;
 use Propel\Bundle\PropelBundle\Form\ChoiceList\PropelChoiceLoader;
 use Propel\Bundle\PropelBundle\Form\DataTransformer\CollectionToArrayTransformer;
@@ -30,6 +31,7 @@ use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
+use Symfony\Component\PropertyAccess\PropertyPathInterface;
 
 /**
  * # ModelType
@@ -76,9 +78,10 @@ class ModelType extends AbstractType
      * @param ChoiceListFactoryInterface|null $choiceListFactory
      */
     public function __construct(
-        ?PropertyAccessorInterface $propertyAccessor = null,
+        ?PropertyAccessorInterface  $propertyAccessor = null,
         ?ChoiceListFactoryInterface $choiceListFactory = null
-    ) {
+    )
+    {
         $this->choiceListFactory = $choiceListFactory ?: new PropertyAccessDecorator(
             new DefaultChoiceListFactory(),
             $propertyAccessor
@@ -134,7 +137,7 @@ class ModelType extends AbstractType
      * @param array<array-key, mixed> $options
      * @return void
      */
-    #[\Override]
+    #[Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if ($options['multiple']) {
@@ -149,7 +152,7 @@ class ModelType extends AbstractType
      * @throws AccessException
      * @throws UndefinedOptionsException
      */
-    #[\Override]
+    #[Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $choiceLoader = function (Options $options): ?PropelChoiceLoader {
@@ -238,8 +241,8 @@ class ModelType extends AbstractType
 
         $choiceLabelNormalizer =
             /**
-             * @param string|bool|callable|\Symfony\Component\PropertyAccess\PropertyPathInterface|null $choiceLabel
-             * @return string|bool|callable|\Symfony\Component\PropertyAccess\PropertyPathInterface|null
+             * @param string|bool|callable|PropertyPathInterface|null $choiceLabel
+             * @return string|bool|callable|PropertyPathInterface|null
              */
             function (Options $options, $choiceLabel) {
                 if ($choiceLabel === null) {
@@ -250,16 +253,17 @@ class ModelType extends AbstractType
                         /** @var ModelCriteria $query */
                         $query = $options['query'];
 
-                        $choiceLabel = /** @return mixed */ function (object $choice) use ($valueProperty, $query) {
-                            $getter = 'get' . ucfirst($valueProperty);
-                            if (!method_exists($choice, $getter)) {
-                                $getter = 'get' . ucfirst(
-                                    $query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName()
-                                );
-                            }
+                        $choiceLabel = /** @return mixed */
+                            function (object $choice) use ($valueProperty, $query) {
+                                $getter = 'get' . ucfirst($valueProperty);
+                                if (!method_exists($choice, $getter)) {
+                                    $getter = 'get' . ucfirst(
+                                            $query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName()
+                                        );
+                                }
 
-                            return call_user_func([$choice, $getter]);
-                        };
+                                return call_user_func([$choice, $getter]);
+                            };
                     }
                 }
 
@@ -288,7 +292,7 @@ class ModelType extends AbstractType
     /**
      * @return string
      */
-    #[\Override]
+    #[Override]
     public function getBlockPrefix(): string
     {
         return 'model';
@@ -297,7 +301,7 @@ class ModelType extends AbstractType
     /**
      * @return string|null
      */
-    #[\Override]
+    #[Override]
     public function getParent(): ?string
     {
         return ChoiceType::class;

@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Twig\Extension;
 
+use Override;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
@@ -26,7 +27,7 @@ class SyntaxExtension extends AbstractExtension
     /**
      * @return TwigFilter[]
      */
-    #[\Override]
+    #[Override]
     public function getFilters(): array
     {
         return [

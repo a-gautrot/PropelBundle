@@ -41,11 +41,12 @@ trait FormattingHelpers
      * @throws ConsoleRuntimeException
      */
     protected function askConfirmation(
-        InputInterface $input,
+        InputInterface  $input,
         OutputInterface $output,
-        string $question,
-        bool $default = true
-    ): bool {
+        string          $question,
+        bool            $default = true
+    ): bool
+    {
         $question = new Question($question);
         do {
             /** @var QuestionHelper $questionHelper */

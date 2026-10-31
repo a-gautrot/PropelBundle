@@ -12,6 +12,7 @@
 namespace Propel\Bundle\PropelBundle\DependencyInjection\Security\UserProvider;
 
 use InvalidArgumentException;
+use Override;
 use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\UserProvider\UserProviderFactoryInterface;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\ParentNodeDefinitionInterface;
@@ -54,7 +55,7 @@ class PropelFactory implements UserProviderFactoryInterface
      * @return void
      * @throws BadMethodCallException
      */
-    #[\Override]
+    #[Override]
     public function create(ContainerBuilder $container, string $id, array $config): void
     {
         $container
@@ -66,7 +67,7 @@ class PropelFactory implements UserProviderFactoryInterface
     /**
      * @return string
      */
-    #[\Override]
+    #[Override]
     public function getKey(): string
     {
         return $this->key;
@@ -79,7 +80,7 @@ class PropelFactory implements UserProviderFactoryInterface
      * @psalm-suppress PossiblyNullReference Symfony's end() returns the configured parent builder.
      * @psalm-suppress UndefinedInterfaceMethod Symfony's fluent builder loses the concrete parent type at end().
      */
-    #[\Override]
+    #[Override]
     public function addConfiguration(NodeDefinition $builder): void
     {
         if (!$builder instanceof ParentNodeDefinitionInterface) {

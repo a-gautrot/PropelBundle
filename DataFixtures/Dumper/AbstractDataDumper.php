@@ -11,6 +11,7 @@
 namespace Propel\Bundle\PropelBundle\DataFixtures\Dumper;
 
 use LogicException;
+use Override;
 use PDO;
 use PDOStatement;
 use Propel\Bundle\PropelBundle\DataFixtures\AbstractDataHandler;
@@ -38,7 +39,7 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
      * @throws RuntimeException
      * @throws DirectoryNotFoundException
      */
-    #[\Override]
+    #[Override]
     public function dump(?string $filename, ?string $connectionName = null): void
     {
         if ($filename === null || $filename === '') {
@@ -246,11 +247,12 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
      * @throws ValueError
      */
     protected function fixOrderingOfForeignKeyDataInSameTable(
-        array $resultsSets,
-        string $tableName,
+        array     $resultsSets,
+        string    $tableName,
         ColumnMap $column,
-        ?string $in = null
-    ): array {
+        ?string   $in = null
+    ): array
+    {
         // Avoid SQL injection via string-based query concatenation for $tableName, $columnName, and $in
         if (!preg_match('/^\w+$/', $tableName)) {
             throw new ValueError("Invalid table name: $tableName");

@@ -11,6 +11,7 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException as BaseInvalidArgumentException;
+use Override;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
 use Propel\Runtime\Connection\Exception\ConnectionException;
@@ -35,7 +36,7 @@ class DatabaseDropCommand extends AbstractCommand
      * @return void
      * @throws InvalidArgumentException
      */
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -69,7 +70,7 @@ EOT
      * @throws RuntimeException
      * @throws InvalidArgumentException
      */
-    #[\Override]
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$input->getOption('force')) {

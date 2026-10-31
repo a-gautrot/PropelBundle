@@ -12,6 +12,7 @@
 namespace Propel\Bundle\PropelBundle\Form\EventListener;
 
 use ArrayAccess;
+use Override;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\Exception\RuntimeException;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
@@ -50,7 +51,7 @@ class TranslationCollectionFormListener implements EventSubscriberInterface
     /**
      * @return array<string, array{string, int}>
      */
-    #[\Override]
+    #[Override]
     public static function getSubscribedEvents(): array
     {
         return [

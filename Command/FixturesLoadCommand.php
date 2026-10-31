@@ -13,6 +13,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 use ArrayIterator;
 use InvalidArgumentException;
 use LogicException;
+use Override;
 use Propel\Bundle\PropelBundle\DataFixtures\Loader\DataLoaderInterface;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException;
@@ -77,7 +78,7 @@ class FixturesLoadCommand extends AbstractCommand
      * @throws ConsoleInvalidArgumentException
      * @see \Symfony\Component\Console\Command\Command
      */
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -159,7 +160,7 @@ EOT
      * @throws ServiceNotFoundException
      * @throws IOException
      */
-    #[\Override]
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($this->bundle !== null) {

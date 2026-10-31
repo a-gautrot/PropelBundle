@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use JsonException;
 use LogicException;
+use Override;
 use Propel\Generator\Command\SqlInsertCommand as PropelSqlInsertCommand;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
@@ -37,7 +38,7 @@ class SqlInsertCommand extends WrappedCommand
      * @return void
      * @throws InvalidArgumentException
      */
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -57,7 +58,7 @@ class SqlInsertCommand extends WrappedCommand
      * @return Command
      * @throws ConsoleLogicException
      */
-    #[\Override]
+    #[Override]
     protected function createSubCommandInstance(): Command
     {
         return new PropelSqlInsertCommand();
@@ -76,7 +77,7 @@ class SqlInsertCommand extends WrappedCommand
      * @throws IOException
      * @throws DirectoryNotFoundException
      */
-    #[\Override]
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('force')) {
@@ -93,7 +94,7 @@ class SqlInsertCommand extends WrappedCommand
      * @throws InvalidArgumentException
      * @throws ParameterNotFoundException
      */
-    #[\Override]
+    #[Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $config = $this->getConfig();

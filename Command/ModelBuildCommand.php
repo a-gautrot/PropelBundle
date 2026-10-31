@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
+use Override;
 use Propel\Generator\Command\ModelBuildCommand as BaseModelBuildCommand;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
@@ -30,7 +31,7 @@ class ModelBuildCommand extends WrappedCommand
      * @return void
      * @throws InvalidArgumentException
      */
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
@@ -57,7 +58,7 @@ class ModelBuildCommand extends WrappedCommand
      * @return Command
      * @throws LogicException
      */
-    #[\Override]
+    #[Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseModelBuildCommand();
@@ -68,7 +69,7 @@ class ModelBuildCommand extends WrappedCommand
      * @return array<string, string>
      * @throws RuntimeException
      */
-    #[\Override]
+    #[Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $outputDir = "{$this->getKernel()->getProjectDir()}/";
