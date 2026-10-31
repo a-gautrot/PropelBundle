@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=../../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+parameters:
+  propel.security.user.provider.class: Propel\Bundle\PropelBundle\Security\User\PropelUserProvider
+
+services:
+  propel.security.user.provider:
+    class: '%propel.security.user.provider.class%'
+    abstract: true
+    public: false

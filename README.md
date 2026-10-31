@@ -100,4 +100,4 @@ You can also read the changelogs [here](CHANGELOG.md).
 ## And more...
 
 You can read and learn Propel 2 from their official documentation [here](https://propelorm.org/documentation/). For
-licenses, see: [LICENSE](Resources/meta/LICENSE). If you want more details about PropelBundle, [go here](misc/MORE.md).
+licenses, see: [LICENSE](LICENSE).

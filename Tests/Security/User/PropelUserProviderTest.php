@@ -10,10 +10,11 @@
 
 namespace Propel\Bundle\PropelBundle\Tests\Security\User;
 
+use Exception;
 use Propel\Bundle\PropelBundle\Security\User\PropelUserProvider;
-use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\Model\User;
-use Propel\Generator\Util\QuickBuilder;
+use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
+use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
@@ -21,7 +22,7 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
  * # PropelUserProviderTest
  * @author William Durand <william.durand1@gmail.com>
  *
- * NOTE: currently no driver is selected "sqlite" will be used by default
+ * The test database is selected through TEST_DSN, defaulting to SQLite in memory.
  */
 class PropelUserProviderTest extends TestCase
 {
@@ -32,12 +33,13 @@ class PropelUserProviderTest extends TestCase
 
     /**
      * @return void
+     * @throws Exception
      */
     public function setUp(): void
     {
         // ensure build is called only once
         if (empty($this::$con)) {
-            $schema = <<<SCHEMA
+            $schema = <<<XML
     <database name="users" defaultIdMethod="native" namespace="Propel\\Bundle\\PropelBundle\\Tests\\Fixtures\\Model">
         <table name="user">
             <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
@@ -49,13 +51,12 @@ class PropelUserProviderTest extends TestCase
             <column name="roles" type="array" />
         </table>
     </database>
-    SCHEMA;
+    XML;
 
-            $builder = new QuickBuilder();
-            $builder->setSchema($schema);
-            $classTargets = ['tablemap', 'object', 'query', /*'objectstub',*/'querystub'];
+            $classTargets = ['tablemap', 'object', 'query', /*'objectstub',*/
+                'querystub'];
 
-            $this::$con = $builder->build(classTargets: $classTargets);
+            $this::$con = SchemaBuilder::buildSchema($schema, $classTargets);
         }
     }
 
@@ -70,7 +71,7 @@ class PropelUserProviderTest extends TestCase
     /**
      * @return void
      */
-    public function testRefreshUserGetsUserByPrimaryKey()
+    public function testRefreshUserGetsUserByPrimaryKey(): void
     {
         $user1 = new User();
         $user1->setUsername('user1');
@@ -80,7 +81,7 @@ class PropelUserProviderTest extends TestCase
         $user2->setUsername('user2');
         $user2->save();
 
-        $provider = new PropelUserProvider('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\User', 'username');
+        $provider = new PropelUserProvider(User::class, 'username');
 
         // try to change the user identity
         $user1->setUsername('user2');
@@ -92,29 +93,9 @@ class PropelUserProviderTest extends TestCase
     /**
      * @return void
      */
-    public function testLoadUserByUsername()
+    public function testSupportsClass(): void
     {
-        $user1 = new User();
-        $user1->setUsername('user1');
-        $user1->save();
-
-        $provider = new PropelUserProvider('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\User', 'username');
-
-        // existing one
-        $this->assertInstanceOf(User::class, $provider->loadUserByUsername('user1'));
-
-        // not existing one
-        $this->expectException(UserNotFoundException::class);
-
-        $provider->loadUserByUsername('not_exists');
-    }
-
-    /**
-     * @return void
-     */
-    public function testSupportsClass()
-    {
-        $class = 'Propel\Bundle\PropelBundle\Tests\Fixtures\Model\User';
+        $class = User::class;
 
         $provider = new PropelUserProvider($class, 'username');
 
@@ -125,13 +106,13 @@ class PropelUserProviderTest extends TestCase
     /**
      * @return void
      */
-    public function testLoadUserByIdentifier()
+    public function testLoadUserByIdentifier(): void
     {
         $user1 = new User();
         $user1->setUsername('user1');
         $user1->save();
 
-        $provider = new PropelUserProvider('Propel\Bundle\PropelBundle\Tests\Fixtures\Model\User', 'username');
+        $provider = new PropelUserProvider(User::class, 'username');
 
         // existing one
         $this->assertInstanceOf(User::class, $provider->loadUserByIdentifier('user1'));
@@ -139,6 +120,6 @@ class PropelUserProviderTest extends TestCase
         // not existing one
         $this->expectException(UserNotFoundException::class);
 
-        $provider->loadUserByUsername('not_exists');
+        $provider->loadUserByIdentifier('not_exists');
     }
 }

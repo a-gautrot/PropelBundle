@@ -10,47 +10,61 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputInterface;
-
+use Override;
 use Propel\Generator\Command\GraphvizGenerateCommand as BaseGraphvizGenerateCommand;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
+ * # GraphvizGenerateCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
+#[AsCommand(name: 'propel:graphviz:generate', description: 'Generate Graphviz files (.dot)')]
 class GraphvizGenerateCommand extends WrappedCommand
 {
     /**
-     * {@inheritdoc}
+     * @return void
+     * @throws InvalidArgumentException
      */
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
 
         $this
-            ->setName('propel:graphviz:generate')
-            ->setDescription('Generate Graphviz files (.dot)')
-
-            ->addOption('output-dir',  null, InputOption::VALUE_REQUIRED,  'The output directory', BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY)
-        ;
+            ->addOption(
+                'output-dir',
+                mode: InputOption::VALUE_REQUIRED,
+                description: 'The output directory',
+                default: BaseGraphvizGenerateCommand::DEFAULT_OUTPUT_DIRECTORY
+            );
     }
 
     /**
-     * {@inheritdoc}
+     * @return Command
+     * @throws LogicException
      */
+    #[Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseGraphvizGenerateCommand();
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException
      */
+    #[Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
-        return array(
+        return [
             '--output-dir' => $input->getOption('output-dir'),
-        );
+        ];
     }
 }

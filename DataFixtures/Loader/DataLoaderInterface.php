@@ -11,17 +11,20 @@
 namespace Propel\Bundle\PropelBundle\DataFixtures\Loader;
 
 /**
+ * # DataLoaderInterface
  * Interface that exposes how Propel data loaders should work.
  *
  * @author William Durand <william.durand1@gmail.com>
+ * @api
  */
 interface DataLoaderInterface
 {
     /**
      * Loads data from a set of files.
      *
-     * @param string[] $files          A set of files containing datas to load.
-     * @param string   $connectionName The Propel connection name
+     * @param string[] $files A set of files containing datas to load.
+     * @param string $connectionName The Propel connection name
+     * @return int
      */
     public function load(array $files, string $connectionName): int;
 }

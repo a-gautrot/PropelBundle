@@ -21,7 +21,7 @@ use Propel\Bundle\PropelBundle\Util\PropelInflector;
 class PropelInflectorTest extends TestCase
 {
     /**
-     * @return array
+     * @return list<array{string|null, string|null}>
      */
     public static function dataProviderForTestCamelize(): array
     {
@@ -42,12 +42,12 @@ class PropelInflectorTest extends TestCase
     }
 
     /**
-     * @param $word
-     * @param $expected
+     * @param mixed $word
+     * @param mixed $expected
      * @return void
      */
-    #[DataProvider('dataProviderForTestCamelize')]
-    public function testCamelize($word, $expected)
+    #[DataProvider(methodName: 'dataProviderForTestCamelize')]
+    public function testCamelize(mixed $word, mixed $expected): void
     {
         $this->assertEquals($expected, PropelInflector::camelize($word));
     }

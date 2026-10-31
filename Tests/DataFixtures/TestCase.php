@@ -10,9 +10,10 @@
 
 namespace Propel\Bundle\PropelBundle\Tests\DataFixtures;
 
+use Exception;
 use PDO;
+use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
 use Propel\Bundle\PropelBundle\Tests\TestCase as BaseTestCase;
-use Propel\Generator\Util\QuickBuilder;
 use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Connection\PropelPDO;
 use Propel\Runtime\Propel;
@@ -31,12 +32,13 @@ class TestCase extends BaseTestCase
     /**
      * The list of created temp files to be removed.
      *
-     * @var array
+     * @var list<string>
      */
     protected array $tmpFiles = [];
 
     /**
      * @return void
+     * @throws Exception
      */
     protected function setUp(): void
     {
@@ -64,13 +66,13 @@ class TestCase extends BaseTestCase
 </database>
 XML;
 
-            QuickBuilder::buildSchema($schema);
+            SchemaBuilder::buildSchema($schema);
         }
 
         $this->con = Propel::getServiceContainer()->getConnection('default');
         // added for tests only!
         // convert numeric values to string otherwise they will be converted to integer in PHP 8.1
-        $this->con->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, true);
+        $this->con->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, value: true);
         $this->con->beginTransaction();
     }
 
@@ -90,7 +92,7 @@ XML;
         // and we don't want to call ConnectionInterface::commit() in that case
         // since it will trigger an exception on its own
         // ('Cannot commit because a nested transaction was rolled back')
-        if (null !== $this->con) {
+        if ($this->con !== null) {
             if ($this->con->isCommitable()) {
                 $this->con->commit();
             }

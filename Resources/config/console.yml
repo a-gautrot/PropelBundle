@@ -1,0 +1,93 @@
+# yaml-language-server: $schema=../../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+    bind:
+      $container: '@service_container'
+
+  propel_bundle_propel.command.build_command:
+    class: Propel\Bundle\PropelBundle\Command\BuildCommand
+    tags:
+      - { name: console.command, command: 'propel:build' }
+
+  propel_bundle_propel.command.database_create_command:
+    class: Propel\Bundle\PropelBundle\Command\DatabaseCreateCommand
+    tags:
+      - { name: console.command, command: 'propel:database:create' }
+
+  propel_bundle_propel.command.database_drop_command:
+    class: Propel\Bundle\PropelBundle\Command\DatabaseDropCommand
+    tags:
+      - { name: console.command, command: 'propel:database:drop' }
+
+  propel_bundle_propel.command.database_reverse_command:
+    class: Propel\Bundle\PropelBundle\Command\DatabaseReverseCommand
+    tags:
+      - { name: console.command, command: 'propel:database:reverse' }
+
+  propel_bundle_propel.command.fixtures_dump_command:
+    class: Propel\Bundle\PropelBundle\Command\FixturesDumpCommand
+    tags:
+      - { name: console.command, command: 'propel:fixtures:dump' }
+
+  propel_bundle_propel.command.fixtures_load_command:
+    class: Propel\Bundle\PropelBundle\Command\FixturesLoadCommand
+    tags:
+      - { name: console.command, command: 'propel:fixtures:load' }
+
+  propel_bundle_propel.command.form_generate_command:
+    class: Propel\Bundle\PropelBundle\Command\FormGenerateCommand
+    tags:
+      - { name: console.command, command: 'propel:form:generate' }
+
+  propel_bundle_propel.command.graphviz_generate_command:
+    class: Propel\Bundle\PropelBundle\Command\GraphvizGenerateCommand
+    tags:
+      - { name: console.command, command: 'propel:graphviz:generate' }
+
+  propel_bundle_propel.command.migration_diff_command:
+    class: Propel\Bundle\PropelBundle\Command\MigrationDiffCommand
+    tags:
+      - { name: console.command, command: 'propel:migration:diff' }
+
+  propel_bundle_propel.command.migration_down_command:
+    class: Propel\Bundle\PropelBundle\Command\MigrationDownCommand
+    tags:
+      - { name: console.command, command: 'propel:migration:down' }
+
+  propel_bundle_propel.command.migration_migrate_command:
+    class: Propel\Bundle\PropelBundle\Command\MigrationMigrateCommand
+    tags:
+      - { name: console.command, command: 'propel:migration:migrate' }
+
+  propel_bundle_propel.command.migration_status_command:
+    class: Propel\Bundle\PropelBundle\Command\MigrationStatusCommand
+    tags:
+      - { name: console.command, command: 'propel:migration:status' }
+
+  propel_bundle_propel.command.migration_up_command:
+    class: Propel\Bundle\PropelBundle\Command\MigrationUpCommand
+    tags:
+      - { name: console.command, command: 'propel:migration:up' }
+
+  propel_bundle_propel.command.model_build_command:
+    class: Propel\Bundle\PropelBundle\Command\ModelBuildCommand
+    tags:
+      - { name: console.command, command: 'propel:model:build' }
+
+  propel_bundle_propel.command.sql_build_command:
+    class: Propel\Bundle\PropelBundle\Command\SqlBuildCommand
+    tags:
+      - { name: console.command, command: 'propel:sql:build' }
+
+  propel_bundle_propel.command.sql_insert_command:
+    class: Propel\Bundle\PropelBundle\Command\SqlInsertCommand
+    tags:
+      - { name: console.command, command: 'propel:sql:insert' }
+
+  propel_bundle_propel.command.table_drop_command:
+    class: Propel\Bundle\PropelBundle\Command\TableDropCommand
+    tags:
+      - { name: console.command, command: 'propel:table:drop' }

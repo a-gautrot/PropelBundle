@@ -11,11 +11,10 @@
 namespace Propel\Bundle\PropelBundle\Tests\Service;
 
 use org\bovigo\vfs\vfsStream;
-use org\bovigo\vfs\vfsStreamDirectory;
 use PHPUnit\Framework\MockObject\MockObject;
 use Propel\Bundle\PropelBundle\Service\SchemaLocator;
-use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\FakeBundle\FakeBundle;
+use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Config\FileLocator;
 use Symfony\Component\HttpKernel\Kernel;
@@ -26,25 +25,13 @@ use Symfony\Component\HttpKernel\Kernel;
 class SchemaLocatorTest extends TestCase
 {
     /**
-     * @var Kernel
-     */
-    private Kernel $kernelMock;
-
-    /*
-     * container generated for the tasts
-     */
-    /**
+     * container generated for the tests
      * @var ContainerBuilder
      */
     private ContainerBuilder $container;
 
     /**
-     * @var vfsStreamDirectory
-     */
-    private vfsStreamDirectory $root;
-
-    /**
-     * @var array
+     * @var array<array-key, mixed>
      */
     private array $configuration;
 
@@ -70,29 +57,27 @@ class SchemaLocatorTest extends TestCase
                 ]
             ],
         ];
-        $this->root = vfsStream::setup('projectDir');
+        $root = vfsStream::setup('projectDir');
         vfsStream::create($pathStructure);
 
-        $this->kernelMock = $this->getMockBuilder(Kernel::class)->disableOriginalConstructor()->getMock();
-        $this->kernelMock->method('getProjectDir')->willReturn($this->root->url());
-        $this->kernelMock->method('locateResource')->willReturnCallback(function ($argument) {
-            return (str_replace('@', __DIR__ . '/../Fixtures/', $argument));
-        });
+        $kernelStub = $this->createStub(Kernel::class);
+        $kernelStub->method('getProjectDir')->willReturn($root->url());
+        $kernelStub->method('locateResource')->willReturnCallback(fn(string $argument): string => str_replace('@', __DIR__ . '/../Fixtures/', $argument));
 
         // attach kernel service to container
         $this->container = $this->getContainer();
-        $this->container->set('kernel', $this->kernelMock);
+        $this->container->set('kernel', $kernelStub);
 
         $this->bundleMock = new FakeBundle();
 
         $this->configuration['paths']['schemaDir'] = vfsStream::url('projectDir/configuration/directory');
-        $this->fileLocator = new FileLocator($this->kernelMock);
+        $this->fileLocator = new FileLocator($kernelStub);
     }
 
     /**
      * @return void
      */
-    public function testLocateFromBundle()
+    public function testLocateFromBundle(): void
     {
         $locator = new SchemaLocator($this->container, $this->fileLocator, $this->configuration);
         $files = $locator->locateFromBundle($this->bundleMock);
@@ -101,13 +86,12 @@ class SchemaLocatorTest extends TestCase
 
         $this->assertTrue(isset($files[__DIR__ . '/../Fixtures/FakeBundle/Resources/config/bundle.schema.xml']));
         $this->assertEquals('bundle.schema.xml', $files[__DIR__ . '/../Fixtures/FakeBundle/Resources/config/bundle.schema.xml'][1]->getFileName());
-
     }
 
     /**
      * @return void
      */
-    public function testLocateFromBundlesAndConfiguration()
+    public function testLocateFromBundlesAndConfiguration(): void
     {
         $locator = new SchemaLocator($this->container, $this->fileLocator, $this->configuration);
         $files = $locator->locateFromBundlesAndConfiguration(
@@ -119,6 +103,5 @@ class SchemaLocatorTest extends TestCase
         $this->assertEquals('bundle.schema.xml', $files[__DIR__ . '/../Fixtures/FakeBundle/Resources/config/bundle.schema.xml'][1]->getFileName());
         $this->assertTrue(isset($files['vfs://projectDir/configuration/directory/schema.xml']));
         $this->assertEquals('schema.xml', $files['vfs://projectDir/configuration/directory/schema.xml'][1]->getFileName());
-
     }
 }

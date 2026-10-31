@@ -2,16 +2,21 @@
 
 namespace Propel\Bundle\PropelBundle\Request\ParamConverter;
 
+use Exception;
+use LogicException;
+use Override;
 use Propel\Bundle\PropelBundle\Util\PropelInflector;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
+use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
+use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * PropelParamConverter
+ * # PropelParamConverter
  *
  * This convert action parameter to a Propel Object
  * there is two option for this converter:
@@ -21,6 +26,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  *
  * @author     Jérémie Augustin <jeremie.augustin@pixel-cookers.com>
+ * @api
  */
 class PropelParamConverter implements ValueResolverInterface
 {
@@ -28,61 +34,72 @@ class PropelParamConverter implements ValueResolverInterface
      * the pk column (e.g. id)
      * @var string
      */
-    protected $pk;
+    protected string $pk = 'id';
 
     /**
      * list of column/value to use with filterBy
      * @var array<string, string>
      */
-    protected array $filters = array();
+    protected array $filters = [];
 
     /**
      * list of route parameters to exclude from the conversion process
      * @var string[]
      */
-    protected array $exclude = array();
+    protected array $exclude = [];
 
     /**
      * list of with option use to hydrate related object
      * @var array<string|array<array-key, string>>
      */
-    protected array $withs;
+    protected array $withs = [];
 
     /**
      * name of method use to call a query method
-     * @var string
+     * @var string|null
      */
-    protected $queryMethod;
+    protected ?string $queryMethod = null;
 
     /**
      * @var bool
      */
-    protected $hasWith = false;
+    protected bool $hasWith = false;
 
     /**
      * @param Request $request
      * @param ArgumentMetadata $argument
      *
-     * @return iterable
+     * @return iterable<ActiveRecordInterface|null>
      *
-     * @throws \LogicException
+     * @throws Exception
+     * @throws LogicException
      * @throws NotFoundHttpException
-     * @throws \Exception
      */
+    #[Override]
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
         if (!$this->supports($argument)) {
-            return array();
+            return [];
         }
 
         $class = $argument->getType();
-        $classQuery = $class . 'Query';
+        if ($class === null || !is_a($class, ActiveRecordInterface::class, allow_string: true)) {
+            return [];
+        }
+        $existing = $request->attributes->get($argument->getName());
+        if ($existing instanceof $class) {
+            return [$existing];
+        }
+
+        $classQuery = "{$class}Query";
         $classTableMap = $class::TABLE_MAP;
-        $this->filters = array();
-        $this->exclude = array();
+        $this->pk = 'id';
+        $this->hasWith = false;
+        $this->filters = [];
+        $this->exclude = [];
 
         if (!class_exists($classQuery)) {
-            throw new \Exception(sprintf('The %s Query class does not exist', $classQuery));
+            throw new Exception("The $classQuery Query class does not exist");
         }
 
         $tableMap = new $classTableMap();
@@ -93,10 +110,10 @@ class PropelParamConverter implements ValueResolverInterface
             $this->pk = strtolower($pk->getName());
         }
 
-        $options = array();
+        $options = [];
 
         // Check request attributes for converter options, if there are non provided.
-        if (empty($options) && $request->attributes->has('propel_converter')) {
+        if ($request->attributes->has('propel_converter')) {
             $converterOption = $request->attributes->get('propel_converter');
             if (!empty($converterOption[$argument->getName()])) {
                 $options = $converterOption[$argument->getName()];
@@ -114,7 +131,7 @@ class PropelParamConverter implements ValueResolverInterface
                 }
             }
         } else {
-            $this->exclude = isset($options['exclude']) ? $options['exclude'] : array();
+            $this->exclude = $options['exclude'] ?? [];
             $this->filters = $request->attributes->all();
         }
 
@@ -122,37 +139,46 @@ class PropelParamConverter implements ValueResolverInterface
             unset($this->filters[$argument->getName()]);
         }
 
-        $this->withs = isset($options['with']) ? is_array($options['with']) ? $options['with'] : array($options['with']) : array();
+        if (isset($options['with'])) {
+            $this->withs = is_array($options['with']) ? $options['with'] : [$options['with']];
+        } else {
+            $this->withs = [];
+        }
 
-        $this->queryMethod = $queryMethod = isset($options['query_method']) ? $options['query_method'] : null;
+        $this->queryMethod = $queryMethod = $options['query_method'] ?? null;
 
-        if (null !== $this->queryMethod && method_exists($classQuery, $this->queryMethod)) {
+        if ($this->queryMethod !== null && method_exists($classQuery, $this->queryMethod)) {
             // find by custom method
             $query = $this->getQuery($classQuery);
             // execute a custom query
             $object = $query->$queryMethod($request->attributes);
         } else {
             // find by Pk
-            if (false === $object = $this->findPk($classQuery, $request)) {
+            if (($object = $this->findPk($classQuery, $request)) === false) {
                 // find by criteria
-                if (false === $object = $this->findOneBy($classQuery, $request)) {
+                if (($object = $this->findOneBy($classQuery, $request)) === false) {
                     if ($argument->isNullable()) {
                         //we find nothing but the object is optional
                         $object = null;
                     } else {
-                        throw new \LogicException('Unable to guess how to get a Propel object from the request information.');
+                        throw new LogicException(
+                            'Unable to guess how to get a Propel object from the request information.'
+                        );
                     }
                 }
             }
         }
 
-        if (null === $object && false === $argument->isNullable()) {
-            throw new NotFoundHttpException(sprintf('%s object not found.', $class));
+        if ($object === null && !$argument->isNullable()) {
+            throw new NotFoundHttpException("$class object not found.");
+        }
+        if ($object !== null && !$object instanceof ActiveRecordInterface) {
+            throw new LogicException('The query must return a Propel model or null.');
         }
 
         $request->attributes->set($argument->getName(), $object);
 
-        return array($object);
+        return [$object];
     }
 
     /**
@@ -163,7 +189,7 @@ class PropelParamConverter implements ValueResolverInterface
     public function supports(ArgumentMetadata $argument): bool
     {
         $classname = $argument->getType();
-        if (!$classname) {
+        if ($classname === null || $classname === '') {
             return false;
         }
 
@@ -172,8 +198,8 @@ class PropelParamConverter implements ValueResolverInterface
         }
 
         // Propel Class?
-        $class = new \ReflectionClass($classname);
-        if ($class->implementsInterface('\Propel\Runtime\ActiveRecord\ActiveRecordInterface')) {
+        $class = new ReflectionClass($classname);
+        if ($class->implementsInterface(ActiveRecordInterface::class)) {
             return true;
         }
 
@@ -187,21 +213,27 @@ class PropelParamConverter implements ValueResolverInterface
      *
      * @return ModelCriteria
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected function getQuery(string $classQuery): ModelCriteria
     {
+        if (!is_a($classQuery, ModelCriteria::class, allow_string: true)) {
+            throw new LogicException('The query class must extend ModelCriteria.');
+        }
         $query = $classQuery::create();
 
         foreach ($this->withs as $with) {
             if (is_array($with)) {
-                if (2 == count($with)) {
+                if (count($with) == 2) {
                     $query->joinWith($with[0], $this->getValidJoin($with));
                     $this->hasWith = true;
                 } else {
-                    throw new \Exception(sprintf('ParamConverter : "with" parameter "%s" is invalid,
-                            only string relation name (e.g. "Book") or an array with two keys (e.g. {"Book", "LEFT_JOIN"}) are allowed',
-                        var_export($with, true)));
+                    $invalidWith = var_export($with, return: true);
+                    throw new Exception(
+                        "ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,\n"
+                        . '                            only string relation name (e.g. "Book") '
+                        . 'or an array with two keys (e.g. {"Book", "LEFT_JOIN"}) are allowed'
+                    );
                 }
             } else {
                 $query->joinWith($with);
@@ -219,22 +251,22 @@ class PropelParamConverter implements ValueResolverInterface
      *
      * @return string
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected function getValidJoin(array $with): string
     {
-        switch (trim(str_replace(array('_', 'JOIN'), '', strtoupper($with[1])))) {
+        switch (trim(str_replace(['_', 'JOIN'], '', strtoupper($with[1])))) {
             case 'LEFT':
                 return Criteria::LEFT_JOIN;
             case 'RIGHT':
                 return Criteria::RIGHT_JOIN;
             case 'INNER':
                 return Criteria::INNER_JOIN;
+            default:
+                $invalidWith = var_export($with, return: true);
+                throw new Exception("ParamConverter : \"with\" parameter \"$invalidWith\" is invalid,
+                only \"left\", \"right\" or \"inner\" are allowed for join option");
         }
-
-        throw new \Exception(sprintf('ParamConverter : "with" parameter "%s" is invalid,
-                only "left", "right" or "inner" are allowed for join option',
-            var_export($with, true)));
     }
 
     /**
@@ -243,11 +275,11 @@ class PropelParamConverter implements ValueResolverInterface
      * @param string $classQuery the query class
      * @param Request $request
      *
-     * @return mixed
+     * @return ActiveRecordInterface|false|null
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function findPk(string $classQuery, Request $request)
+    protected function findPk(string $classQuery, Request $request): ActiveRecordInterface|false|null
     {
         if (in_array($this->pk, $this->exclude) || !$request->attributes->has($this->pk)) {
             return false;
@@ -268,11 +300,12 @@ class PropelParamConverter implements ValueResolverInterface
      * @param string $classQuery the query class
      * @param Request $request
      *
-     * @return mixed
+     * @return ActiveRecordInterface|false|null
      *
-     * @throws \Exception
+     * @psalm-suppress PossiblyUnusedParam Kept for compatibility with overriding resolvers.
+     * @throws Exception
      */
-    protected function findOneBy($classQuery, Request $request)
+    protected function findOneBy(string $classQuery, Request $request): ActiveRecordInterface|false|null
     {
         $query = $this->getQuery($classQuery);
         $hasCriteria = false;
@@ -281,7 +314,7 @@ class PropelParamConverter implements ValueResolverInterface
                 try {
                     $query->{'filterBy' . PropelInflector::camelize($column)}($value);
                     $hasCriteria = true;
-                } catch (\Exception $e) {
+                } catch (Exception) {
                 }
             }
         }

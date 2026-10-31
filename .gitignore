@@ -4,14 +4,47 @@
 /Model/**/Base
 /Model/**/Map
 
-# Composer
-/vendor
-/composer.lock
+# IDE
 /.idea/
-/.phpunit.result.cache
-/phpstan-baseline.neon
 
-/.phpunit*
+# Composer
+/vendor/
+/composer.lock
+
+# Local tool configuration (versioned defaults use .dist)
+/phpunit.xml
+/phpunit-legacy.xml
+/phpunit.xml.bak
+/phpunit.dist.xml.bak
+/phpstan.neon
+/psalm.xml
+/phpcs.xml
+/.phpcs.xml
+
+# Local static analysis baselines
+/phpstan-baseline.neon
+/psalm-baseline.xml
+
+# Tool caches
+/.phpunit.cache/
+/.phpunit.result.cache
+/.phpstan.cache/
+/.phpstan/
+/.psalm/
+/.phpcs-cache
+
+# Test and coverage reports
+/coverage/
+/coverage.clover
+/Tests/coverage.xml
+/Tests/junit.xml
 /junit.xml
+
+# Local static analysis reports
+/phpcs-report.*
+/phpstan-report.*
+/psalm-report.*
+
+# Local CI configuration
 /act
 /.secrets

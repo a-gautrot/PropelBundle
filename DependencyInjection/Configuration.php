@@ -10,25 +10,48 @@
 
 namespace Propel\Bundle\PropelBundle\DependencyInjection;
 
+use InvalidArgumentException;
+use Override;
 use Propel\Common\Config\PropelConfiguration;
+use Propel\Runtime\Connection\ConnectionWrapper;
+use Propel\Runtime\Connection\DebugPDO;
+use Propel\Runtime\Util\Profiler;
+use RuntimeException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
 /**
+ * # Configuration
  * This class contains the configuration information for the bundle
+ * @api
  */
 class Configuration extends PropelConfiguration
 {
-    private bool $debug;
-    private string $defaultDir;
-    private string $kernelDir;
+    /**
+     * @var string
+     */
+    private readonly string $defaultDir;
+    /**
+     * @var string
+     */
+    private readonly string $kernelDir;
 
-    public function __construct(bool $debug, string $kernelDir)
+    /**
+     * @param bool $debug
+     * @param string $kernelDir
+     */
+    public function __construct(private readonly bool $debug, string $kernelDir)
     {
-        $this->debug = $debug;
-        $this->defaultDir = $kernelDir.'/propel';
+        $this->defaultDir = "$kernelDir/propel";
         $this->kernelDir = $kernelDir;
     }
 
+    /**
+     * @param ArrayNodeDefinition $node
+     * @return void
+     * @psalm-suppress PossiblyNullReference Symfony's end() returns the configured parent builder.
+     * @psalm-suppress UndefinedInterfaceMethod Symfony's fluent builder loses the concrete parent type at end().
+     */
+    #[Override]
     protected function addPathsSection(ArrayNodeDefinition $node): void
     {
         $node
@@ -37,16 +60,22 @@ class Configuration extends PropelConfiguration
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('schemaDir')->defaultValue($this->defaultDir)->end()
-                        ->scalarNode('sqlDir')->defaultValue($this->defaultDir.'/sql')->end()
-                        ->scalarNode('migrationDir')->defaultValue($this->defaultDir.'/migrations')->end()
+                        ->scalarNode('sqlDir')->defaultValue($this->defaultDir . '/sql')->end()
+                        ->scalarNode('migrationDir')->defaultValue($this->defaultDir . '/migrations')->end()
                         ->scalarNode('composerDir')->defaultNull()->end()
-                        ->scalarNode('loaderScriptDir')->defaultValue($this->kernelDir.'/generated-conf')->end()
+                        ->scalarNode('loaderScriptDir')->defaultValue($this->kernelDir . '/generated-conf')->end()
                     ->end()
                 ->end()
-            ->end()
-        ;
+            ->end();
     }
 
+    /**
+     * @param ArrayNodeDefinition $node
+     * @return void
+     * @psalm-suppress PossiblyNullReference Symfony's end() returns the configured parent builder.
+     * @psalm-suppress UndefinedInterfaceMethod Symfony's fluent builder loses the concrete parent type at end().
+     */
+    #[Override]
     protected function addRuntimeSection(ArrayNodeDefinition $node): void
     {
         $node
@@ -66,13 +95,13 @@ class Configuration extends PropelConfiguration
                                 ->children()
                                     ->scalarNode('type')->end()
                                     ->scalarNode('path')->end()
-                                    ->enumNode('level')->values(array(100, 200, 250, 300, 400, 500, 550, 600))->end()
+                                    ->enumNode('level')->values([100, 200, 250, 300, 400, 500, 550, 600])->end()
                                 ->end()
                             ->end()
                         ->end()
                         ->arrayNode('profiler')
                             ->children()
-                                ->scalarNode('classname')->defaultValue('\Propel\Runtime\Util\Profiler')->end()
+                                ->scalarNode('classname')->defaultValue(Profiler::class)->end()
                                 ->floatNode('slowTreshold')->defaultValue(0.1)->end()
                                 ->arrayNode('details')
                                     ->children()
@@ -115,9 +144,16 @@ class Configuration extends PropelConfiguration
             ->end();
     }
 
+    /**
+     * @param ArrayNodeDefinition $node
+     * @return void
+     * @psalm-suppress UndefinedMethod ExprBuilder::end() returns the connections ArrayNodeDefinition.
+     * @throws RuntimeException
+     */
+    #[Override]
     protected function addDatabaseSection(ArrayNodeDefinition $node): void
     {
-        $validAdapters = array('mysql', 'pgsql', 'sqlite', 'mssql', 'sqlsrv', 'oracle');
+        $validAdapters = ['mysql', 'pgsql', 'sqlite', 'mssql', 'sqlsrv', 'oracle'];
 
         $node
             ->children()
@@ -129,10 +165,12 @@ class Configuration extends PropelConfiguration
                             ->isRequired()
                             ->validate()
                             ->always()
-                                ->then(function($connections) {
-                                    foreach ($connections as $name => $connection) {
-                                        if (strpos($name, '.') !== false) {
-                                            throw new \InvalidArgumentException('Dots are not allowed in connection names');
+                                ->then(function (array $connections): array {
+                                    foreach (array_keys($connections) as $name) {
+                                        if (str_contains($name, '.')) {
+                                            throw new InvalidArgumentException(
+                                                'Dots are not allowed in connection names'
+                                            );
                                         }
                                     }
 
@@ -140,23 +178,30 @@ class Configuration extends PropelConfiguration
                                 })
                             ->end()
                             ->requiresAtLeastOneElement()
-                            ->normalizeKeys(false)
+                            ->normalizeKeys(bool: false)
                             ->useAttributeAsKey('id')
                             ->prototype('array')
                             ->fixXmlConfig('slave')
                             ->fixXmlConfig('model_path')
                                 ->children()
-                                    ->scalarNode('classname')->defaultValue($this->debug ? '\Propel\Runtime\Connection\DebugPDO' : '\Propel\Runtime\Connection\ConnectionWrapper')->end()
+                                    ->scalarNode('classname')
+                                        ->defaultValue($this->debug ? DebugPDO::class : ConnectionWrapper::class)
+                                    ->end()
                                     ->scalarNode('adapter')
                                         ->isRequired()
                                         ->cannotBeEmpty()
                                         ->beforeNormalization()
                                             ->ifString()
-                                            ->then(function ($v) { return preg_replace('/^pdo_/', '', strtolower($v)); })
+                                            ->then(
+                                                fn(string $v): ?string => preg_replace('/^pdo_/', '', strtolower($v))
+                                            )
                                         ->end()
                                         ->validate()
                                             ->ifNotInArray($validAdapters)
-                                            ->thenInvalid('The adapter %s is not supported. Please choose one of ' . implode(', ', $validAdapters))
+                                            ->thenInvalid(
+                                                'The adapter %s is not supported. Please choose one of '
+                                                . implode(', ', $validAdapters)
+                                            )
                                         ->end()
                                     ->end()
                                     ->scalarNode('dsn')
@@ -164,13 +209,13 @@ class Configuration extends PropelConfiguration
                                         ->cannotBeEmpty()
                                         ->beforeNormalization()
                                             ->ifString()
-                                            ->then(function ($v) { return preg_replace('/^pdo_/', '', $v); })
+                                            ->then(fn(string $v): ?string => preg_replace('/^pdo_/', '', $v))
                                         ->end()
                                     ->end()
                                     ->scalarNode('user')->isRequired()->end()
                                     ->scalarNode('password')->isRequired()->treatNullLike('')->end()
                                     ->arrayNode('options')
-                                    	->addDefaultsIfNotSet()
+                                        ->addDefaultsIfNotSet()
                                         ->children()
                                             ->booleanNode('ATTR_PERSISTENT')->defaultFalse()->end()
                                             ->scalarNode('MYSQL_ATTR_SSL_CA')->end()
@@ -180,7 +225,7 @@ class Configuration extends PropelConfiguration
                                         ->end()
                                     ->end()
                                     ->arrayNode('attributes')
-                                    	->addDefaultsIfNotSet()
+                                        ->addDefaultsIfNotSet()
                                         ->children()
                                             ->booleanNode('ATTR_EMULATE_PREPARES')->defaultFalse()->end()
                                             ->scalarNode('SQLSRV_ATTR_ENCODING')->end()
@@ -205,7 +250,7 @@ class Configuration extends PropelConfiguration
                                                 ->scalarNode('dsn')
                                                     ->beforeNormalization()
                                                     ->ifString()
-                                                    ->then(function ($v) { return preg_replace('/^pdo_/', '', $v); })
+                                                    ->then(fn(string $v): ?string => preg_replace('/^pdo_/', '', $v))
                                                     ->end()
                                                 ->end()
                                             ->end()
@@ -220,7 +265,10 @@ class Configuration extends PropelConfiguration
                                 ->arrayNode('mysql')
                                     ->addDefaultsIfNotSet()
                                     ->children()
-                                        ->scalarNode('tableType')->defaultValue('InnoDB')->treatNullLike('InnoDB')->end()
+                                        ->scalarNode('tableType')
+                                            ->defaultValue('InnoDB')
+                                            ->treatNullLike('InnoDB')
+                                        ->end()
                                         ->scalarNode('tableEngineKeyword')->defaultValue('ENGINE')->end()
                                         ->scalarNode('uuidColumnType')->defaultValue('binary')->end()
                                     ->end()
@@ -235,14 +283,15 @@ class Configuration extends PropelConfiguration
                                 ->arrayNode('oracle')
                                     ->addDefaultsIfNotSet()
                                     ->children()
-                                        ->scalarNode('autoincrementSequencePattern')->defaultValue('${table}_SEQ')->end()
+                                        ->scalarNode('autoincrementSequencePattern')
+                                            ->defaultValue('${table}_SEQ')
+                                        ->end()
                                     ->end()
                                 ->end()
                             ->end()
                         ->end() //adapters
                     ->end()
                 ->end() //database
-            ->end()
-        ;
+            ->end();
     }
 }

@@ -10,6 +10,7 @@
 
 namespace Propel\Bundle\PropelBundle\DataCollector;
 
+use Override;
 use Propel\Bundle\PropelBundle\Logger\PropelLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,34 +20,40 @@ use Symfony\Component\VarDumper\Cloner\Data;
 use Throwable;
 
 /**
- * The PropelDataCollector collector class collects information.
+ * # PropelDataCollector
+ * The Propel Data Collector class collects information.
  *
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
 class PropelDataCollector extends DataCollector
 {
-    protected PropelLogger $logger;
-
-    public function __construct(PropelLogger $logger)
+    /**
+     * @param PropelLogger $logger
+     */
+    public function __construct(protected PropelLogger $logger)
     {
-        $this->logger = $logger;
     }
 
     /**
-     * {@inheritdoc}
+     * @param Request $request
+     * @param Response $response
+     * @param Throwable|null $exception
+     * @return void
      */
+    #[Override]
     public function collect(Request $request, Response $response, ?Throwable $exception = null): void
     {
-        $this->data = array(
-            'queries'       => $this->cloneVar($this->buildQueries()),
-            'querycount'    => $this->countQueries(),
-        );
+        $this->data = [
+            'queries' => $this->cloneVar($this->buildQueries()),
+            'querycount' => $this->countQueries(),
+        ];
     }
 
     /**
      * Creates an array of Build objects.
      *
-     * @return array<int, array{sql: string, connection: string, time: int|float, memory: int, trace: TraceStub}> An array of Build objects
+     * @return array<int, array{sql: string, connection: string, time: int|float, memory: int, trace: TraceStub}>
      */
     private function buildQueries(): array
     {
@@ -56,7 +63,7 @@ class PropelDataCollector extends DataCollector
     /**
      * Returns queries.
      *
-     * @return Data<int, array{sql: string, connection: string, time: int|float, memory: int, trace: TraceStub}> Queries
+     * @return Data Queries
      */
     public function getQueries(): Data
     {
@@ -78,6 +85,7 @@ class PropelDataCollector extends DataCollector
      *
      * @return string The collector name.
      */
+    #[Override]
     public function getName(): string
     {
         return 'propel';
@@ -100,7 +108,7 @@ class PropelDataCollector extends DataCollector
      */
     public function getTime(): float|int
     {
-        $time = 0;
+        $time = 0.0;
         foreach ($this->data['queries'] as $query) {
             $time += (float)$query['time'];
         }
@@ -109,10 +117,11 @@ class PropelDataCollector extends DataCollector
     }
 
     /**
-     * @inheritdoc
+     * @return void
      */
+    #[Override]
     public function reset(): void
     {
-        // TODO: Implement reset() method.
+        $this->data = [];
     }
 }

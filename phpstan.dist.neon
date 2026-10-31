@@ -3,9 +3,15 @@ includes:
 
 parameters:
   level: 6
+  phpVersion: 80200
+
   paths:
     - ./
+
   excludePaths:
     - Resources/skeleton
     - Tests
     - vendor
+
+  stubFiles:
+    - Resources/phpstan/propel.stub
