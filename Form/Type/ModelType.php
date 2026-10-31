@@ -187,7 +187,6 @@ class ModelType extends AbstractType
         };
 
         $choiceValue = function (Options $options): ?callable {
-
             /** @var ModelCriteria $query */
             $query = $options['query'];
             if ($options['index_property']) {
@@ -241,8 +240,8 @@ class ModelType extends AbstractType
                         $getter = 'get' . ucfirst($valueProperty);
                         if (!method_exists($choice, $getter)) {
                             $getter = 'get' . ucfirst(
-                                    $query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName()
-                                );
+                                $query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName()
+                            );
                         }
 
                         return call_user_func([$choice, $getter]);
