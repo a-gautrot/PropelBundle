@@ -1,12 +1,13 @@
+# yaml-language-server: $schema=../../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
 services:
-    _defaults:
-      autowire: true
-      autoconfigure: true
-      public: false
-    Propel\Bundle\PropelBundle\:
-      resource: '../../*'
-      ## Resources\skeleton contains not valid php
-      ## Twig\Extension\SyntaxExtension.php is defined in Propel.xml
-      exclude: '../../{Console,Propel,Model,Migrations,Tests,Helpers,DependencyInjection,Form,Listener,Validator,Resources/skeleton,Twig/Extension/SyntaxExtension.php,DataCollector,AppBundle.php}'
-    ### creating service alias
-    Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+  Propel\Bundle\PropelBundle\:
+    resource: '../../*'
+    ## Resources\skeleton contains not valid php
+    ## Twig\Extension\SyntaxExtension.php is defined in propel.php
+    exclude: '../../{Console,Propel,Model,Migrations,Tests,Helpers,DependencyInjection,Form,Listener,Validator,Resources/skeleton,Resources/config/propel.php,Twig/Extension/SyntaxExtension.php,DataCollector,AppBundle.php,rector.php,vendor}'
+  ### creating service alias
+  Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'

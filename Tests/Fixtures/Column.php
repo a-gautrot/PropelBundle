@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -19,29 +19,17 @@ use Propel\Generator\Model\PropelTypes;
 class Column
 {
     /**
-     * @var mixed
+     * @param mixed $name
+     * @param mixed $type
      */
-    private mixed $name;
-
-    /**
-     * @var mixed
-     */
-    private mixed $type;
-
-    /**
-     * @param $name
-     * @param $type
-     */
-    public function __construct($name, $type)
+    public function __construct(private readonly mixed $name, private readonly mixed $type)
     {
-        $this->name = $name;
-        $this->type = $type;
     }
 
     /**
      * @return mixed
      */
-    public function getType()
+    public function getType(): mixed
     {
         return $this->type;
     }
@@ -75,6 +63,6 @@ class Column
      */
     public function isNotNull(): bool
     {
-        return ('id' === $this->name);
+        return $this->name === 'id';
     }
 }

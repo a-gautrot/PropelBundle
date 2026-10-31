@@ -26,7 +26,7 @@ class XmlDataLoaderTest extends TestCase
      * @return void
      * @throws Exception
      */
-    public function testXmlLoad()
+    public function testXmlLoad(): void
     {
         $fixtures = <<<XML
 <Fixtures>
@@ -41,7 +41,7 @@ XML;
 
         $filename = $this->getTempFile($fixtures);
 
-        $loader = new XmlDataLoader(__DIR__ . '/../../Fixtures/DataFixtures/Loader', array());
+        $loader = new XmlDataLoader(__DIR__ . '/../../Fixtures/DataFixtures/Loader', []);
         $loader->load([$filename], 'default');
 
         $books = CoolBookQuery::create()->find($this->con);

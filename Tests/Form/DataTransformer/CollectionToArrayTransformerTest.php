@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -16,6 +16,7 @@ use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Propel\Runtime\Collection\ObjectCollection;
 use stdClass;
 use Symfony\Component\Form\Exception\TransformationFailedException;
+use Symfony\Component\Form\Form;
 
 /**
  * # CollectionToArrayTransformerTest
@@ -30,29 +31,29 @@ class CollectionToArrayTransformerTest extends TestCase
     /**
      * @return void
      */
-    public function testTransform()
+    public function testTransform(): void
     {
         $result = $this->transformer->transform(new ObjectCollection());
 
-        $this->assertTrue(is_array($result));
-        $this->assertEquals(0, count($result));
+//        $this->assertTrue(is_array($result));
+        $this->assertCount(0, $result);
     }
 
     /**
      * @return void
      */
-    public function testTransformWithNull()
+    public function testTransformWithNull(): void
     {
-        $result = $this->transformer->transform(null);
+        $result = $this->transformer->transform(value: null);
 
-        $this->assertTrue(is_array($result));
-        $this->assertEquals(0, count($result));
+//        $this->assertTrue(is_array($result));
+        $this->assertCount(0, $result);
     }
 
     /**
-     *
+     * @return void
      */
-    public function testTransformThrowsExceptionIfNotObjectCollection()
+    public function testTransformThrowsExceptionIfNotObjectCollection(): void
     {
         $this->expectException(TransformationFailedException::class);
 
@@ -62,15 +63,15 @@ class CollectionToArrayTransformerTest extends TestCase
     /**
      * @return void
      */
-    public function testTransformWithData()
+    public function testTransformWithData(): void
     {
         $coll = new ObjectCollection();
         $coll->setData([$a = new stdClass, $b = new stdClass]);
 
         $result = $this->transformer->transform($coll);
 
-        $this->assertTrue(is_array($result));
-        $this->assertEquals(2, count($result));
+//        $this->assertTrue(is_array($result));
+        $this->assertCount(2, $result);
         $this->assertSame($a, $result[0]);
         $this->assertSame($b, $result[1]);
     }
@@ -78,29 +79,29 @@ class CollectionToArrayTransformerTest extends TestCase
     /**
      * @return void
      */
-    public function testReverseTransformWithNull()
+    public function testReverseTransformWithNull(): void
     {
-        $result = $this->transformer->reverseTransform(null);
+        $result = $this->transformer->reverseTransform(value: null);
 
-        $this->assertInstanceOf('\Propel\Runtime\Collection\ObjectCollection', $result);
-        $this->assertEquals(0, count($result->getData()));
+//        $this->assertInstanceOf('\Propel\Runtime\Collection\ObjectCollection', $result);
+        $this->assertCount(0, $result->getData());
     }
 
     /**
      * @return void
      */
-    public function testReverseTransformWithEmptyString()
+    public function testReverseTransformWithEmptyString(): void
     {
         $result = $this->transformer->reverseTransform('');
 
-        $this->assertInstanceOf('\Propel\Runtime\Collection\ObjectCollection', $result);
-        $this->assertEquals(0, count($result->getData()));
+//        $this->assertInstanceOf('\Propel\Runtime\Collection\ObjectCollection', $result);
+        $this->assertCount(0, $result->getData());
     }
 
     /**
-     *
+     * @return void
      */
-    public function testReverseTransformThrowsExceptionIfNotArray()
+    public function testReverseTransformThrowsExceptionIfNotArray(): void
     {
         $this->expectException(TransformationFailedException::class);
 
@@ -110,17 +111,17 @@ class CollectionToArrayTransformerTest extends TestCase
     /**
      * @return void
      */
-    public function testReverseTransformWithData()
+    public function testReverseTransformWithData(): void
     {
         $inputData = [$a = new stdClass, $b = new stdClass];
 
         $result = $this->transformer->reverseTransform($inputData);
         $data = $result->getData();
 
-        $this->assertInstanceOf('\Propel\Runtime\Collection\ObjectCollection', $result);
+//        $this->assertInstanceOf('\Propel\Runtime\Collection\ObjectCollection', $result);
 
-        $this->assertTrue(is_array($data));
-        $this->assertEquals(2, count($data));
+//        $this->assertTrue(is_array($data));
+        $this->assertCount(2, $data);
         $this->assertSame($a, $data[0]);
         $this->assertSame($b, $data[1]);
         $this->assertsame($inputData, $data);
@@ -131,7 +132,7 @@ class CollectionToArrayTransformerTest extends TestCase
      */
     protected function setUp(): void
     {
-        if (!class_exists('Symfony\Component\Form\Form')) {
+        if (!class_exists(Form::class)) {
             $this->markTestSkipped('The "Form" component is not available');
         }
 

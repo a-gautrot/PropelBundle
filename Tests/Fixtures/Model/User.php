@@ -18,11 +18,12 @@ class User extends BaseUser implements UserInterface
     }
 
     /**
-     * @return array|string[]
+     * @return array
      */
     public function getRoles(): array
     {
         // TODO: Implement getRoles() method.
+        return [];
     }
 
     /**
@@ -31,5 +32,6 @@ class User extends BaseUser implements UserInterface
     public function getUserIdentifier(): string
     {
         // TODO: Implement getUserIdentifier() method.
+        return '';
     }
 }

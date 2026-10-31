@@ -10,58 +10,85 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputInterface;
-
+use Override;
 use Propel\Generator\Command\MigrationUpCommand as BaseMigrationCommand;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
 
 /**
+ * # MigrationUpCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
+#[AsCommand(name: 'propel:migration:up', description: 'Execute (only one) next migration')]
 class MigrationUpCommand extends WrappedCommand
 {
     /**
-     * {@inheritdoc}
+     * @return void
+     * @throws InvalidArgumentException
      */
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
 
         $this
-            ->setName('propel:migration:up')
-            ->setDescription('Execute (only one) next migration')
-
-            ->addOption('connection',       null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('migration-table',  null, InputOption::VALUE_OPTIONAL,  'Migration table name (if none given, the configured table is used)', null)
-            ->addOption('output-dir',       null, InputOption::VALUE_OPTIONAL,  'The output directory')
-            ->addOption('fake',             null, InputOption::VALUE_NONE,       'Does not touch the actual schema, but marks next migration as executed.')
-            ->addOption('force',            null, InputOption::VALUE_NONE,       'Continues with the migration even when errors occur.')
-        ;
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            )
+            ->addOption(
+                'migration-table',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Migration table name (if none given, the configured table is used)'
+            )
+            ->addOption('output-dir', mode: InputOption::VALUE_OPTIONAL, description: 'The output directory')
+            ->addOption(
+                'fake',
+                mode: InputOption::VALUE_NONE,
+                description: 'Does not touch the actual schema, but marks next migration as executed.'
+            )
+            ->addOption(
+                'force',
+                mode: InputOption::VALUE_NONE,
+                description: 'Continues with the migration even when errors occur.'
+            );
     }
 
     /**
-     * {@inheritdoc}
+     * @return Command
+     * @throws LogicException
      */
+    #[Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseMigrationCommand();
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException
+     * @throws ParameterNotFoundException
      */
+    #[Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $config = $this->getConfig();
         $defaultOutputDir = $config['paths']['migrationDir'];
 
-        return array(
-            '--connection'      => $this->getConnections($input->getOption('connection')),
+        return [
+            '--connection' => $this->getConnections($input->getOption('connection')),
             '--migration-table' => $input->getOption('migration-table') ?: $this->getMigrationsTable(),
-            '--output-dir'      => $input->getOption('output-dir') ?: $defaultOutputDir,
-            '--fake'            => $input->getOption('fake'),
-            '--force'           => $input->getOption('force'),
-        );
+            '--output-dir' => $input->getOption('output-dir') ?: $defaultOutputDir,
+            '--fake' => $input->getOption('fake'),
+            '--force' => $input->getOption('force'),
+        ];
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -17,8 +17,9 @@ use Propel\Bundle\PropelBundle\Tests\Fixtures\Item;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\TranslatableItem;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\TranslatableItemI18n;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormExtensionInterface;
 use Symfony\Component\Form\Test\TypeTestCase;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
@@ -30,26 +31,26 @@ class TranslationCollectionTypeTest extends TypeTestCase
     /**
      *
      */
-    const TRANSLATION_CLASS = 'Propel\Bundle\PropelBundle\Tests\Fixtures\TranslatableItem';
+    const TRANSLATION_CLASS = TranslatableItem::class;
     /**
      *
      */
-    const TRANSLATABLE_I18N_CLASS = 'Propel\Bundle\PropelBundle\Tests\Fixtures\TranslatableItemI18n';
+    const TRANSLATABLE_I18N_CLASS = TranslatableItemI18n::class;
     /**
      *
      */
-    const NON_TRANSLATION_CLASS = 'Propel\Bundle\PropelBundle\Tests\Fixtures\Item';
+    const NON_TRANSLATION_CLASS = Item::class;
 
     /**
      * @return void
      */
-    public function testTranslationsAdded()
+    public function testTranslationsAdded(): void
     {
         $item = new TranslatableItem();
         $item->addTranslatableItemI18n(new TranslatableItemI18n(1, 'fr', 'val1'));
         $item->addTranslatableItemI18n(new TranslatableItemI18n(2, 'en', 'val2'));
 
-        $builder = $this->factory->createBuilder(FormType::class, null, [
+        $builder = $this->factory->createBuilder(options: [
             'data_class' => self::TRANSLATION_CLASS
         ]);
 
@@ -65,8 +66,8 @@ class TranslationCollectionTypeTest extends TypeTestCase
         $translations = $form->get('translatableItemI18ns');
 
         $this->assertCount(2, $translations);
-        $this->assertInstanceOf('Symfony\Component\Form\Form', $translations['en']);
-        $this->assertInstanceOf('Symfony\Component\Form\Form', $translations['fr']);
+        $this->assertInstanceOf(Form::class, $translations['en']);
+        $this->assertInstanceOf(Form::class, $translations['fr']);
 
         $this->assertInstanceOf(self::TRANSLATABLE_I18N_CLASS, $translations['en']->getData());
         $this->assertInstanceOf(self::TRANSLATABLE_I18N_CLASS, $translations['fr']->getData());
@@ -83,13 +84,13 @@ class TranslationCollectionTypeTest extends TypeTestCase
     /**
      * @return void
      */
-    public function testNotPresentTranslationsAdded()
+    public function testNotPresentTranslationsAdded(): void
     {
         $item = new TranslatableItem();
 
         $this->assertCount(0, $item->getTranslatableItemI18ns());
 
-        $builder = $this->factory->createBuilder(FormType::class, null, [
+        $builder = $this->factory->createBuilder(options: [
             'data_class' => self::TRANSLATION_CLASS
         ]);
         $builder->add('translatableItemI18ns', TranslationCollectionType::class, [
@@ -107,13 +108,13 @@ class TranslationCollectionTypeTest extends TypeTestCase
     }
 
     /**
-     *
+     * @return void
      */
-    public function testNoArrayGiven()
+    public function testNoArrayGiven(): void
     {
-        $item = new Item(null, 'val');
+        $item = new Item(value: 'val');
 
-        $builder = $this->factory->createBuilder(FormType::class, null, [
+        $builder = $this->factory->createBuilder(options: [
             'data_class' => self::NON_TRANSLATION_CLASS
         ]);
         $builder->add('value', TranslationCollectionType::class, [
@@ -131,13 +132,13 @@ class TranslationCollectionTypeTest extends TypeTestCase
     }
 
     /**
-     *
+     * @return void
      */
-    public function testNoDataClassAdded()
+    public function testNoDataClassAdded(): void
     {
         $this->expectException(MissingOptionsException::class);
 
-        $this->factory->createNamed('itemI18ns', TranslationCollectionType::class, null, [
+        $this->factory->createNamed('itemI18ns', TranslationCollectionType::class, options: [
             'languages' => ['en', 'fr'],
             'entry_options' => [
                 'columns' => ['value', 'value2']
@@ -146,13 +147,13 @@ class TranslationCollectionTypeTest extends TypeTestCase
     }
 
     /**
-     *
+     * @return void
      */
-    public function testNoLanguagesAdded()
+    public function testNoLanguagesAdded(): void
     {
         $this->expectException(MissingOptionsException::class);
 
-        $this->factory->createNamed('itemI18ns', TranslationCollectionType::class, null, [
+        $this->factory->createNamed('itemI18ns', TranslationCollectionType::class, options: [
             'entry_options' => [
                 'data_class' => self::TRANSLATABLE_I18N_CLASS,
                 'columns' => ['value', 'value2']
@@ -161,13 +162,13 @@ class TranslationCollectionTypeTest extends TypeTestCase
     }
 
     /**
-     *
+     * @return void
      */
-    public function testNoColumnsAdded()
+    public function testNoColumnsAdded(): void
     {
         $this->expectException(MissingOptionsException::class);
 
-        $this->factory->createNamed('itemI18ns', TranslationCollectionType::class, null, [
+        $this->factory->createNamed('itemI18ns', TranslationCollectionType::class, options: [
             'languages' => ['en', 'fr'],
             'entry_options' => [
                 'data_class' => self::TRANSLATABLE_I18N_CLASS
@@ -176,7 +177,7 @@ class TranslationCollectionTypeTest extends TypeTestCase
     }
 
     /**
-     * @return array|\Symfony\Component\Form\FormExtensionInterface[]
+     * @return FormExtensionInterface[]
      */
     protected function getExtensions(): array
     {

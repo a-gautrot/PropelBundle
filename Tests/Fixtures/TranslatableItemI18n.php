@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -20,21 +20,6 @@ use Propel\Runtime\Connection\ConnectionInterface;
 class TranslatableItemI18n implements ActiveRecordInterface
 {
     /**
-     * @var mixed|null
-     */
-    private mixed $id;
-
-    /**
-     * @var mixed|null
-     */
-    private mixed $locale;
-
-    /**
-     * @var mixed|null
-     */
-    private mixed $value;
-
-    /**
      * @var mixed
      */
     private mixed $value2;
@@ -45,49 +30,46 @@ class TranslatableItemI18n implements ActiveRecordInterface
     private mixed $item;
 
     /**
-     * @param $id
-     * @param $locale
-     * @param $value
+     * @param mixed $id
+     * @param mixed $locale
+     * @param mixed $value
      */
-    public function __construct($id = null, $locale = null, $value = null)
+    public function __construct(private mixed $id = null, private mixed $locale = null, private mixed $value = null)
     {
-        $this->id = $id;
-        $this->locale = $locale;
-        $this->value = $value;
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
-    public function getPrimaryKey()
+    public function getPrimaryKey(): mixed
     {
         return $this->getId();
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
-    public function getId()
+    public function getId(): mixed
     {
         return $this->id;
     }
 
     /**
-     * @param $id
+     * @param mixed $primaryKey
      * @return void
      */
-    public function setId($id): void
+    public function setPrimaryKey(mixed $primaryKey = null): void
     {
-        $this->id = $id;
+        $this->setId($primaryKey);
     }
 
     /**
-     * @param $primaryKey
+     * @param mixed $id
      * @return void
      */
-    public function setPrimaryKey($primaryKey): void
+    public function setId(mixed $id = null): void
     {
-        $this->setId($primaryKey);
+        $this->id = $id;
     }
 
     /**
@@ -95,7 +77,7 @@ class TranslatableItemI18n implements ActiveRecordInterface
      */
     public function isPrimaryKeyNull(): bool
     {
-        return null === $this->getId();
+        return $this->getId() === null;
     }
 
     /**
@@ -107,10 +89,9 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @param $col
      * @return bool
      */
-    public function isColumnModified($col): bool
+    public function isColumnModified(): bool
     {
         return false;
     }
@@ -124,17 +105,17 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @param $b
+     * @param bool $b
      * @return void
      */
-    public function setNew($b)
+    public function setNew(bool $b): void
     {
     }
 
     /**
      * @return void
      */
-    public function resetModified()
+    public function resetModified(): void
     {
     }
 
@@ -147,10 +128,10 @@ class TranslatableItemI18n implements ActiveRecordInterface
     }
 
     /**
-     * @param $b
+     * @param bool $b
      * @return void
      */
-    public function setDeleted($b)
+    public function setDeleted(bool $b): void
     {
     }
 
@@ -158,7 +139,7 @@ class TranslatableItemI18n implements ActiveRecordInterface
      * @param ConnectionInterface|null $con
      * @return void
      */
-    public function delete(?ConnectionInterface $con = null)
+    public function delete(?ConnectionInterface $con = null): void
     {
     }
 
@@ -166,23 +147,23 @@ class TranslatableItemI18n implements ActiveRecordInterface
      * @param ConnectionInterface|null $con
      * @return void
      */
-    public function save(?ConnectionInterface $con = null)
+    public function save(?ConnectionInterface $con = null): void
     {
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
-    public function getLocale()
+    public function getLocale(): mixed
     {
         return $this->locale;
     }
 
     /**
-     * @param $locale
+     * @param mixed $locale
      * @return void
      */
-    public function setLocale($locale): void
+    public function setLocale(mixed $locale = null): void
     {
         $this->locale = $locale;
     }
@@ -190,33 +171,33 @@ class TranslatableItemI18n implements ActiveRecordInterface
     /**
      * @return mixed
      */
-    public function getItem()
+    public function getItem(): mixed
     {
         return $this->item;
     }
 
     /**
-     * @param $item
+     * @param mixed $item
      * @return void
      */
-    public function setItem($item): void
+    public function setItem(mixed $item): void
     {
         $this->item = $item;
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
-    public function getValue()
+    public function getValue(): mixed
     {
         return $this->value;
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return void
      */
-    public function setValue($value): void
+    public function setValue(mixed $value = null): void
     {
         $this->value = $value;
     }
@@ -224,16 +205,16 @@ class TranslatableItemI18n implements ActiveRecordInterface
     /**
      * @return mixed
      */
-    public function getValue2()
+    public function getValue2(): mixed
     {
         return $this->value2;
     }
 
     /**
-     * @param $value2
+     * @param mixed $value2
      * @return void
      */
-    public function setValue2($value2): void
+    public function setValue2(mixed $value2): void
     {
         $this->value2 = $value2;
     }

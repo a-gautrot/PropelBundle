@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -22,7 +22,7 @@ class ReadOnlyItemQuery
     /**
      * @return $this
      */
-    public function getTableMap(): static
+    public function getTableMap(): self
     {
         // Allows to define methods in this class
         // to avoid a lot of mock classes
@@ -34,7 +34,7 @@ class ReadOnlyItemQuery
      */
     public function getPrimaryKeys(): array
     {
-        $cm = new ColumnMap('id', new TableMap());
+        $cm = new ColumnMap('id', new TableMap(), '', '');
         $cm->setType('INTEGER');
 
         return ['id' => $cm];

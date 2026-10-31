@@ -10,32 +10,110 @@
 
 namespace Propel\Bundle\PropelBundle\DataFixtures;
 
+use LogicException;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Map\DatabaseMap;
+use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Propel;
+use RuntimeException;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder;
 
 /**
+ * # AbstractDataHandler
  * @author William Durand <william.durand1@gmail.com>
  */
 abstract class AbstractDataHandler
 {
-    protected string $rootDir;
+    /**
+     * @var ConnectionInterface|null
+     */
     protected ?ConnectionInterface $con = null;
+    /**
+     * @var DatabaseMap|null
+     */
     protected ?DatabaseMap $dbMap = null;
-    /** @var array{database?: array{connections: array<string, array<string, mixed>>}} */
-    protected array $datasources = array();
 
     /**
      * Default constructor
      *
-     * @param string                                                                    $rootDir     The root directory.
+     * @param string $rootDir The root directory.
      * @param array{database?: array{connections: array<string, array<string, mixed>>}} $datasources
      */
-    public function __construct(string $rootDir, array $datasources)
+    public function __construct(protected string $rootDir, protected array $datasources)
     {
-        $this->rootDir = $rootDir;
-        $this->datasources = $datasources;
+    }
+
+    /**
+     * Load Map builders.
+     *
+     * @param string|null $connectionName A connection name.
+     * @return void
+     * @throws LogicException
+     * @throws DirectoryNotFoundException
+     */
+    protected function loadMapBuilders(?string $connectionName = null): void
+    {
+        if ($this->dbMap !== null) {
+            return;
+        }
+
+        $this->dbMap = Propel::getDatabaseMap($connectionName);
+        $connectionName = $this->dbMap->getName();
+        if (count($this->dbMap->getTables()) === 0) {
+            $finder = new Finder();
+            $files = $finder
+                ->files()->name('*TableMap.php')
+                ->in($this->getModelSearchPaths($connectionName))
+                ->notName('TableMap.php')
+                ->exclude('PropelBundle')
+                ->exclude('Tests');
+
+            foreach ($files as $file) {
+                $class = $this->guessFullClassName($file->getRelativePath(), $file->getBasename('.php'));
+
+                if ($class !== null && is_subclass_of($class, TableMap::class)
+                    && $this->isInDatabase($class, $connectionName)) {
+                    $this->dbMap->addTableFromMapClass($class);
+                }
+            }
+        }
+    }
+
+    /**
+     * @return DatabaseMap
+     * @throws RuntimeException
+     */
+    protected function getDatabaseMap(): DatabaseMap
+    {
+        if ($this->dbMap === null) {
+            throw new RuntimeException('The database map has not been loaded.');
+        }
+
+        return $this->dbMap;
+    }
+
+    /**
+     * Gets the search path for models out of the configuration.
+     *
+     * @param string $connectionName A connection name.
+     *
+     * @return string[]
+     */
+    protected function getModelSearchPaths(string $connectionName): array
+    {
+        $searchPath = [];
+
+        $modelPaths = $this->datasources['database']['connections'][$connectionName]['model_paths'] ?? [];
+        if (is_array($modelPaths) && $modelPaths !== []) {
+            foreach ($modelPaths as $modelPath) {
+                $searchPath[] = "{$this->getRootDir()}/$modelPath";
+            }
+        } else {
+            $searchPath[] = "{$this->getRootDir()}/";
+        }
+
+        return $searchPath;
     }
 
     /**
@@ -47,34 +125,34 @@ abstract class AbstractDataHandler
     }
 
     /**
-     * Load Map builders.
+     * Try to find a valid class with its namespace based on the filename.
+     * Based on the PSR-0 standard, the namespace should be the directory structure.
      *
-     * @param string|null $connectionName A connection name.
+     * @param string $path The relative path of the file.
+     * @param string $shortClassName The short class name aka the filename without extension.
+     *
+     * @return string|null
      */
-    protected function loadMapBuilders(?string $connectionName = null): void
+    private function guessFullClassName(string $path, string $shortClassName): ?string
     {
-        if (null !== $this->dbMap) {
-            return;
+        $array = [];
+        $path = str_replace('/', '\\', $path);
+
+        $array[] = $path;
+        while ($pos = strpos($path, '\\')) {
+            $path = substr($path, $pos + 1, strlen($path));
+            $array[] = $path;
         }
 
-        $this->dbMap = Propel::getDatabaseMap($connectionName);
-        if (0 === count($this->dbMap->getTables())) {
-            $finder = new Finder();
-            $files  = $finder
-                ->files()->name('*TableMap.php')
-                ->in($this->getModelSearchPaths($connectionName))
-                ->notName('TableMap.php')
-                ->exclude('PropelBundle')
-                ->exclude('Tests');
-
-            foreach ($files as $file) {
-                $class = $this->guessFullClassName($file->getRelativePath(), basename($file, '.php'));
-
-                if (null !== $class && $this->isInDatabase($class, $connectionName)) {
-                    $this->dbMap->addTableFromMapClass($class);
-                }
+        $array = array_reverse($array);
+        while ($ns = array_pop($array)) {
+            $class = "$ns\\$shortClassName";
+            if (class_exists($class)) {
+                return $class;
             }
         }
+
+        return null;
     }
 
     /**
@@ -87,61 +165,19 @@ abstract class AbstractDataHandler
      */
     protected function isInDatabase(string $class, string $connectionName): bool
     {
-        return constant($class.'::DATABASE_NAME') === $connectionName;
+        return constant("$class::DATABASE_NAME") === $connectionName;
     }
 
     /**
-     * Try to find a valid class with its namespace based on the filename.
-     * Based on the PSR-0 standard, the namespace should be the directory structure.
-     *
-     * @param string $path           The relative path of the file.
-     * @param string $shortClassName The short class name aka the filename without extension.
-     *
-     * @return string|null
+     * @return ConnectionInterface
+     * @throws RuntimeException
      */
-    private function guessFullClassName(string $path, string $shortClassName): ?string
+    protected function getConnection(): ConnectionInterface
     {
-        $array = array();
-        $path  = str_replace('/', '\\', $path);
-
-        $array[] = $path;
-        while ($pos = strpos($path, '\\')) {
-            $path = substr($path, $pos + 1, strlen($path));
-            $array[] = $path;
+        if ($this->con === null) {
+            throw new RuntimeException('The fixture connection has not been initialized.');
         }
 
-        $array = array_reverse($array);
-        while ($ns = array_pop($array)) {
-
-            $class = $ns . '\\' . $shortClassName;
-            if (class_exists($class)) {
-                return $class;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets the search path for models out of the configuration.
-     *
-     * @param string $connectionName A connection name.
-     *
-     * @return string[]
-     */
-    protected function getModelSearchPaths(string $connectionName): array
-    {
-        $searchPath = array();
-
-        if (!empty($this->datasources['database']['connections'][$connectionName]['model_paths'])) {
-            $modelPaths = $this->datasources['database']['connections'][$connectionName]['model_paths'];
-            foreach ($modelPaths as $modelPath) {
-                $searchPath[] = $this->getRootDir() . '/' . $modelPath;
-            }
-        } else {
-            $searchPath[] = $this->getRootDir() . '/';
-        }
-
-        return $searchPath;
+        return $this->con;
     }
 }

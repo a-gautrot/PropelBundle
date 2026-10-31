@@ -3,10 +3,10 @@
 ---
 
 ![Minimum PHP version](https://img.shields.io/badge/php-%3E%3D%208.2-8892BF.svg)
-[![GitHub Actions workflow status](https://img.shields.io/github/actions/workflow/status/a-gautrot/PropelBundle/ci.yml?branch=8.0&label=GitHub%20Actions%20-%20CI%20branch%208.0)](https://github.com/a-gautrot/PropelBundle/actions/workflows/ci.yml)
-[![Codecov (8.0)](https://img.shields.io/codecov/c/github/a-gautrot/PropelBundle/8.0)](https://codecov.io/gh/a-gautrot/PropelBundle/tree/8.0)
+[![GitHub Actions workflow status](https://img.shields.io/github/actions/workflow/status/a-gautrot/PropelBundle/ci.yml?branch=7.1&label=GitHub%20Actions%20-%20CI%20branch%207.1)](https://github.com/a-gautrot/PropelBundle/actions/workflows/ci.yml)
+[![Codecov (7.1)](https://img.shields.io/codecov/c/github/a-gautrot/PropelBundle/7.1)](https://codecov.io/gh/a-gautrot/PropelBundle/tree/7.1)
 
-This is the official implementation of [Propel](https://www.propelorm.org/) in Symfony.
+**PropelBundle** is the official implementation of [Propel](https://www.propelorm.org/) in Symfony.
 
 ## Installation
 
@@ -66,6 +66,11 @@ Nightly release:
 * Propel's ParamConverter can be used
   with [Symfony Attributes](https://symfony.com/doc/7.4/reference/attributes.html).
 
+### Deprecated
+
+* XmlFileLoader has been [deprecated](https://symfony.com/blog/new-in-symfony-7-4-deprecated-xml-configuration) since
+  Symfony **7.4**. If you are using XML schemas, you must convert them to YAML schemas.
+
 ## New to version 8.0
 
 * Added support for Symfony 8.1
@@ -75,4 +80,4 @@ You can also read the changelogs [here](CHANGELOG.md).
 ## And more...
 
 You can read and learn Propel 2 from their official documentation [here](https://propelorm.org/documentation/). For
-licenses, see: [LICENSE](Resources/meta/LICENSE).
+licenses, see: [LICENSE](LICENSE).

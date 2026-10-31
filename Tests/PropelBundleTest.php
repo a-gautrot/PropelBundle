@@ -26,7 +26,7 @@ class PropelBundleTest extends TestCase
     use VfsTrait;
 
     /**
-     * cant be tested with current implementation because it load PropelExtension which look for file
+     * cant be tested with current implementation because it loads PropelExtension which look for file
      * @NOTE: need refactoring
      * @return void
      */
@@ -59,7 +59,7 @@ class PropelBundleTest extends TestCase
     /**
      * @return void
      */
-    public function testConfigureConnections()
+    public function testConfigureConnections(): void
     {
         /**
          * set single connection without slaves
@@ -164,7 +164,7 @@ class PropelBundleTest extends TestCase
 
     /**
      * initialize PropelBundle with given configuration
-     * @param array $configuration propel configuration parameters
+     * @param array<string, mixed> $configuration propel configuration parameters
      * @param mixed $logger
      * @return ContainerBuilder
      */
@@ -195,7 +195,7 @@ class PropelBundleTest extends TestCase
      * test logger is set and methods exist
      * @return void
      */
-    public function testConfigureLogging()
+    public function testConfigureLogging(): void
     {
         Propel::setServiceContainer(new StandardServiceContainer());
         $serviceContainer = Propel::getServiceContainer();

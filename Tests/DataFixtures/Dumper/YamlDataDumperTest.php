@@ -26,9 +26,10 @@ class YamlDataDumperTest extends TestCase
     /**
      * @return void
      */
-    public function testYamlDump()
+    public function testYamlDump(): void
     {
         $author = new CoolBookAuthor();
+        $author->setId(1);
         $author->setName('A famous one')->save($this->con);
 
         $complementary = new stdClass();
@@ -36,6 +37,7 @@ class YamlDataDumperTest extends TestCase
 
         $book = new CoolBook();
         $book
+            ->setId(1)
             ->setName('An important one')
             ->setAuthorId(1)
             ->setComplementaryInfos($complementary)
@@ -43,7 +45,7 @@ class YamlDataDumperTest extends TestCase
 
         $filename = $this->getTempFile();
 
-        $loader = new YamlDataDumper(__DIR__ . '/../../Fixtures/DataFixtures/Loader', array());
+        $loader = new YamlDataDumper(__DIR__ . '/../../Fixtures/DataFixtures/Loader', []);
         $loader->dump($filename);
 
         $expected = <<<YAML

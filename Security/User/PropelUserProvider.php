@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -11,102 +11,113 @@
 
 namespace Propel\Bundle\PropelBundle\Security\User;
 
+use LogicException;
+use Override;
+use Propel\Runtime\ActiveQuery\ModelCriteria;
+use Propel\Runtime\Exception\PropelException;
+use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 
 /**
+ * # PropelUserProvider
  * Provides easy to use provisioning for Propel model users.
  *
  * @author William DURAND <william.durand1@gmail.com>
+ * @api
+ * @implements UserProviderInterface<UserInterface>
  */
 class PropelUserProvider implements UserProviderInterface
 {
-    /**
-     * A Model class name.
-     *
-     * @var string
-     */
-    protected $class;
-
     /**
      * A Query class name.
      *
      * @var string
      */
-    protected $queryClass;
-
-    /**
-     * A property to use to retrieve the user.
-     *
-     * @var string
-     */
-    protected $property;
+    protected string $queryClass;
 
     /**
      * Default constructor
      *
-     * @param string      $class    The User model class.
+     * @param string $class The User model class.
      * @param string|null $property The property to use to retrieve a user.
      */
-    public function __construct($class, $property = null)
-    {
-        $this->class = $class;
-        $this->queryClass = $class.'Query';
-        $this->property = $property;
+    public function __construct(
+        /**
+         * A Model class name.
+         */
+        protected string  $class,
+        /**
+         * A property to use to retrieve the user.
+         */
+        protected ?string $property = null
+    ) {
+        $this->queryClass = "{$this->class}Query";
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @param string $username
+     * @param string $identifier
+     * @return UserInterface
+     * @throws LogicException
+     * @throws PropelException
+     * @throws UserNotFoundException
      */
-    public function loadUserByUsername($username): UserInterface
+    #[Override]
+    public function loadUserByIdentifier(string $identifier): UserInterface
     {
         $queryClass = $this->queryClass;
-        $query      = $queryClass::create();
+        if (!is_a($queryClass, ModelCriteria::class, allow_string: true)) {
+            throw new LogicException('The user query class must extend ModelCriteria.');
+        }
+        $query = $queryClass::create();
 
-        if (null !== $this->property) {
-            $filter = 'filterBy'.ucfirst($this->property);
-            $query->$filter($username);
+        if ($this->property !== null) {
+            $filter = 'filterBy' . ucfirst($this->property);
+            $query->$filter($identifier);
         } else {
-            $query->filterByUsername($username);
+            if (!method_exists($query, 'filterByUsername')) {
+                throw new LogicException('The user query must define filterByUsername() or configure a property.');
+            }
+            $query->filterByUsername($identifier);
         }
 
-        if (null === $user = $query->findOne()) {
-            throw new UserNotFoundException(sprintf('User "%s" not found.', $username));
+        $user = $query->findOne();
+
+        if ($user === null) {
+            throw new UserNotFoundException("User \"$identifier\" not found.");
         }
 
         return $user;
     }
 
     /**
-     * {@inheritdoc}
+     * @param UserInterface $user
+     * @return UserInterface
      */
+    #[Override]
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof $this->class) {
-            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', get_class($user)));
+            $userClass = $user::class;
+            throw new UnsupportedUserException("Instances of \"$userClass\" are not supported.");
         }
 
         $queryClass = $this->queryClass;
-
+        if (!is_a($queryClass, ModelCriteria::class, allow_string: true)
+            || !method_exists($user, 'getPrimaryKey')) {
+            throw new UnsupportedUserException('The user must be a Propel model with a primary key.');
+        }
         return $queryClass::create()->findPk($user->getPrimaryKey());
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @param string $class
+     * @return bool
      */
-    public function supportsClass($class): bool
+    #[Override]
+    public function supportsClass(string $class): bool
     {
         return $class === $this->class;
-    }
-
-    public function loadUserByIdentifier(string $identifier): UserInterface
-    {
-        return $this->loadUserByUsername($identifier);
     }
 }

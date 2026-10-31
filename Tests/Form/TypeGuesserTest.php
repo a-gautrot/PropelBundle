@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -14,6 +14,7 @@ namespace Propel\Bundle\PropelBundle\Tests\Form;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Propel\Bundle\PropelBundle\Form\Type\ModelType;
 use Propel\Bundle\PropelBundle\Form\TypeGuesser;
+use Propel\Bundle\PropelBundle\Tests\Fixtures\Item;
 use Propel\Bundle\PropelBundle\Tests\TestCase;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -30,7 +31,7 @@ class TypeGuesserTest extends TestCase
     /**
      *
      */
-    const CLASS_NAME = 'Propel\Bundle\PropelBundle\Tests\Fixtures\Item';
+    const CLASS_NAME = Item::class;
 
     /**
      *
@@ -43,7 +44,7 @@ class TypeGuesserTest extends TestCase
     private TypeGuesser $guesser;
 
     /**
-     * @return array[]
+     * @return list<array{string, class-string, int, bool?}>
      */
     public static function dataProviderForGuessType(): array
     {
@@ -52,6 +53,7 @@ class TypeGuesserTest extends TestCase
             ['enabled', CheckboxType::class, Guess::HIGH_CONFIDENCE],
             ['id', IntegerType::class, Guess::MEDIUM_CONFIDENCE],
             ['value', TextType::class, Guess::MEDIUM_CONFIDENCE],
+            ['code', TextType::class, Guess::MEDIUM_CONFIDENCE],
             ['price', NumberType::class, Guess::MEDIUM_CONFIDENCE],
             ['updated_at', DateTimeType::class, Guess::HIGH_CONFIDENCE],
 
@@ -72,7 +74,7 @@ class TypeGuesserTest extends TestCase
     /**
      * @return void
      */
-    public function testGuessMaxLengthWithText()
+    public function testGuessMaxLengthWithText(): void
     {
         $value = $this->guesser->guessMaxLength(self::CLASS_NAME, 'value');
 
@@ -83,7 +85,7 @@ class TypeGuesserTest extends TestCase
     /**
      * @return void
      */
-    public function testGuessMaxLengthWithFloat()
+    public function testGuessMaxLengthWithFloat(): void
     {
         $value = $this->guesser->guessMaxLength(self::CLASS_NAME, 'price');
 
@@ -94,7 +96,7 @@ class TypeGuesserTest extends TestCase
     /**
      * @return void
      */
-    public function testGuessMinLengthWithText()
+    public function testGuessMinLengthWithText(): void
     {
         $value = $this->guesser->guessPattern(self::CLASS_NAME, 'value');
 
@@ -104,7 +106,23 @@ class TypeGuesserTest extends TestCase
     /**
      * @return void
      */
-    public function testGuessMinLengthWithFloat()
+    public function testGuessMaxLengthWithoutApplicableConstraint(): void
+    {
+        $this->assertNull($this->guesser->guessMaxLength(self::CLASS_NAME, 'id'));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGuessPatternWithoutApplicableConstraint(): void
+    {
+        $this->assertNull($this->guesser->guessPattern(self::CLASS_NAME, 'id'));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGuessMinLengthWithFloat(): void
     {
         $value = $this->guesser->guessPattern(self::CLASS_NAME, 'price');
 
@@ -115,7 +133,7 @@ class TypeGuesserTest extends TestCase
     /**
      * @return void
      */
-    public function testGuessRequired()
+    public function testGuessRequired(): void
     {
         $value = $this->guesser->guessRequired(self::CLASS_NAME, 'id');
 
@@ -126,7 +144,7 @@ class TypeGuesserTest extends TestCase
     /**
      * @return void
      */
-    public function testGuessRequiredWithNullableColumn()
+    public function testGuessRequiredWithNullableColumn(): void
     {
         $value = $this->guesser->guessRequired(self::CLASS_NAME, 'value');
 
@@ -137,7 +155,7 @@ class TypeGuesserTest extends TestCase
     /**
      * @return void
      */
-    public function testGuessTypeWithoutTable()
+    public function testGuessTypeWithoutTable(): void
     {
         $value = $this->guesser->guessType(self::UNKNOWN_CLASS_NAME, 'property');
 
@@ -149,7 +167,7 @@ class TypeGuesserTest extends TestCase
     /**
      * @return void
      */
-    public function testGuessTypeWithoutColumn()
+    public function testGuessTypeWithoutColumn(): void
     {
         $value = $this->guesser->guessType(self::CLASS_NAME, 'property');
 
@@ -159,14 +177,14 @@ class TypeGuesserTest extends TestCase
     }
 
     /**
-     * @param $property
-     * @param $type
-     * @param $confidence
-     * @param $multiple
+     * @param string $property
+     * @param mixed $type
+     * @param mixed $confidence
+     * @param mixed $multiple
      * @return void
      */
-    #[DataProvider('dataProviderForGuessType')]
-    public function testGuessType($property, $type, $confidence, $multiple = null)
+    #[DataProvider(methodName: 'dataProviderForGuessType')]
+    public function testGuessType(string $property, mixed $type, mixed $confidence, mixed $multiple = null): void
     {
         $value = $this->guesser->guessType(self::CLASS_NAME, $property);
 

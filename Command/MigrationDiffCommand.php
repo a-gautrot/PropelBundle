@@ -10,62 +10,94 @@
 
 namespace Propel\Bundle\PropelBundle\Command;
 
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputInterface;
-
+use Override;
 use Propel\Generator\Command\MigrationDiffCommand as BaseMigrationCommand;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
 
 /**
+ * # MigrationDiffCommand
  * @author Kévin Gomez <contact@kevingomez.fr>
+ * @api
  */
+#[AsCommand(name: 'propel:migration:diff', description: 'Generate diff classes')]
 class MigrationDiffCommand extends WrappedCommand
 {
     /**
-     * {@inheritdoc}
+     * @return void
+     * @throws InvalidArgumentException
      */
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
 
         $this
-            ->setName('propel:migration:diff')
-            ->setDescription('Generate diff classes')
-
-            ->addOption('connection',       null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Connection to use. Example: default, bookstore')
-            ->addOption('output-dir',       null, InputOption::VALUE_OPTIONAL,    'The output directory')
-            ->addOption('migration-table',  null, InputOption::VALUE_OPTIONAL,  'Migration table name (if none given, the configured table is used)', null)
-            ->addOption('table-renaming',     null, InputOption::VALUE_NONE,      'Detect table renaming', null)
-            ->addOption('editor',             null, InputOption::VALUE_OPTIONAL,  'The text editor to use to open diff files', null)
-            ->addOption('skip-removed-table', null, InputOption::VALUE_NONE,      'Option to skip removed table from the migration')
-            ->addOption('skip-tables',        null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'List of excluded tables', array())
-        ;
+            ->addOption(
+                'connection',
+                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                description: 'Connection to use. Example: default, bookstore'
+            )
+            ->addOption('output-dir', mode: InputOption::VALUE_OPTIONAL, description: 'The output directory')
+            ->addOption(
+                'migration-table',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'Migration table name (if none given, the configured table is used)'
+            )
+            ->addOption('table-renaming', mode: InputOption::VALUE_NONE, description: 'Detect table renaming')
+            ->addOption(
+                'editor',
+                mode: InputOption::VALUE_OPTIONAL,
+                description: 'The text editor to use to open diff files'
+            )
+            ->addOption(
+                'skip-removed-table',
+                mode: InputOption::VALUE_NONE,
+                description: 'Option to skip removed table from the migration'
+            )
+            ->addOption(
+                'skip-tables',
+                mode: InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL,
+                description: 'List of excluded tables',
+                default: []
+            );
     }
 
     /**
-     * {@inheritdoc}
+     * @return Command
+     * @throws LogicException
      */
+    #[Override]
     protected function createSubCommandInstance(): Command
     {
         return new BaseMigrationCommand();
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException
+     * @throws ParameterNotFoundException
      */
+    #[Override]
     protected function getSubCommandArguments(InputInterface $input): array
     {
         $config = $this->getConfig();
         $defaultOutputDir = $config['paths']['migrationDir'];
 
-        return array(
-            '--connection'          => $this->getConnections($input->getOption('connection')),
-            '--migration-table'     => $input->getOption('migration-table') ?: $this->getMigrationsTable(),
-            '--output-dir'          => $input->getOption('output-dir') ?: $defaultOutputDir,
-            '--table-renaming'      => $input->getOption('table-renaming'),
-            '--editor'              => $input->getOption('editor'),
-            '--skip-removed-table'  => $input->getOption('skip-removed-table'),
-            '--skip-tables'         => $input->getOption('skip-tables'),
-        );
+        return [
+            '--connection' => $this->getConnections($input->getOption('connection')),
+            '--migration-table' => $input->getOption('migration-table') ?: $this->getMigrationsTable(),
+            '--output-dir' => $input->getOption('output-dir') ?: $defaultOutputDir,
+            '--table-renaming' => $input->getOption('table-renaming'),
+            '--editor' => $input->getOption('editor'),
+            '--skip-removed-table' => $input->getOption('skip-removed-table'),
+            '--skip-tables' => $input->getOption('skip-tables'),
+        ];
     }
 }

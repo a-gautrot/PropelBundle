@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
@@ -11,22 +11,31 @@
 
 namespace Propel\Bundle\PropelBundle\Form\Type;
 
+use Override;
+use Propel\Bundle\PropelBundle\Form\EventListener\TranslationFormListener;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Propel\Bundle\PropelBundle\Form\EventListener\TranslationFormListener;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
+ * # TranslationType
  * Translation type class
  *
  * @author Patrick Kaufmann
+ * @api
+ * @template TData
+ * @extends AbstractType<TData>
  */
 class TranslationType extends AbstractType
 {
     /**
-      * {@inheritdoc}
-      */
+     * {@inheritdoc}
+     * @param FormBuilderInterface<TData|null> $builder
+     * @param array<array-key, mixed> $options
+     * @return void
+     */
+    #[Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addEventSubscriber(
@@ -36,22 +45,34 @@ class TranslationType extends AbstractType
 
     /**
      * {@inheritdoc}
+     * @param OptionsResolver $resolver
+     * @return void
+     * @throws AccessException
      */
+    #[Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setRequired(array(
+        $resolver->setRequired([
             'data_class',
             'columns'
-        ));
+        ]);
     }
 
-    public function getBlockPrefix(): string
-    {
-        return 'propel_translation';
-    }
-
+    /**
+     * @return string
+     */
     public function getName(): string
     {
         return $this->getBlockPrefix();
+    }
+
+
+    /**
+     * @return string
+     */
+    #[Override]
+    public function getBlockPrefix(): string
+    {
+        return 'propel_translation';
     }
 }

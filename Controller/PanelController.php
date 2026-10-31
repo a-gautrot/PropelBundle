@@ -10,31 +10,38 @@
 
 namespace Propel\Bundle\PropelBundle\Controller;
 
+use Exception;
+use InvalidArgumentException;
+use PDO;
 use Propel\Bundle\PropelBundle\DataCollector\PropelDataCollector;
 use Propel\Runtime\Propel;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 
 /**
+ * # PanelController
  * PanelController is designed to display information in the Propel Panel.
  *
  * @author William DURAND <william.durand1@gmail.com>
+ * @api
  */
 class PanelController extends AbstractController
 {
     /**
      * This method renders the global Propel configuration.
+     * @return Response
      */
     public function configurationAction(): Response
     {
         return $this->render(
             '@Propel/Panel/configuration.html.twig',
-            array(
-                'propel_version'     => Propel::VERSION,
-                'configuration'      => $this->getParameter('propel.configuration'),
-                'logging'            => $this->getParameter('propel.logging'),
-            )
+            [
+                'propel_version' => Propel::VERSION,
+                'configuration' => $this->getParameter('propel.configuration'),
+                'logging' => $this->getParameter('propel.logging'),
+            ]
         );
     }
 
@@ -43,16 +50,23 @@ class PanelController extends AbstractController
      *
      * @param string $token The profiler token
      * @param string $connection The connection name
-     * @param integer $query
+     * @param int $query
      *
      * @param Profiler|null $profiler
      * @return Response A Response instance
+     * @throws InvalidArgumentException
      */
     public function explainAction(string $token, string $connection, int $query, ?Profiler $profiler): Response
     {
+        if ($profiler === null) {
+            return new Response('The profiler is unavailable.');
+        }
         $profiler->disable();
 
         $profile = $profiler->loadProfile($token);
+        if ($profile === null) {
+            return new Response('This profile does not exist.');
+        }
 
         /** @var PropelDataCollector $propelDataCollector */
         $propelDataCollector = $profile->getCollector('propel');
@@ -66,19 +80,23 @@ class PanelController extends AbstractController
         $con = Propel::getConnection($connection);
 
         try {
-            $dataFetcher = $con->query('EXPLAIN ' . $queries[$query]['sql']);
-            $results = array();
-            while (($results[] = $dataFetcher->fetch(\PDO::FETCH_ASSOC)));
-        } catch (\Exception $e) {
+            $dataFetcher = $con->query("EXPLAIN {$queries[$query]['sql']}");
+            if ($dataFetcher === false) {
+                throw new RuntimeException('The query could not be explained.');
+            }
+            $results = [];
+            while ($results[] = $dataFetcher->fetch(PDO::FETCH_ASSOC)) {
+            }
+        } catch (Exception) {
             return new Response('<div class="error">This query cannot be explained.</div>');
         }
 
         return $this->render(
             '@Propel/Panel/explain.html.twig',
-            array(
+            [
                 'data' => $results,
                 'query' => $query,
-            )
+            ]
         );
     }
 }

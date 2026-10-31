@@ -25,7 +25,7 @@ use Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\YamlManyToMany
 use Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\YamlManyToManyMultipleFilesAuthorQuery;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\YamlManyToManyMultipleFilesBookAuthorQuery;
 use Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\YamlManyToManyMultipleFilesBookQuery;
-use Propel\Generator\Util\QuickBuilder;
+use Propel\Bundle\PropelBundle\Tests\SchemaBuilder;
 
 /**
  * # YamlDataLoaderTest
@@ -38,7 +38,7 @@ class YamlDataLoaderTest extends TestCase
      * @return void
      * @throws Exception
      */
-    public function testYamlLoadOneToMany()
+    public function testYamlLoadOneToMany(): void
     {
         $fixtures = <<<YAML
 \Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\CoolBookAuthor:
@@ -65,9 +65,10 @@ YAML;
     }
 
     /**
+     * @return void
      * @throws Exception
      */
-    public function testYamlLoadOneToManyExternalReference()
+    public function testYamlLoadOneToManyExternalReference(): void
     {
         $loader = new YamlDataLoader(__DIR__ . '/../../Fixtures/DataFixtures/Loader', []);
 
@@ -103,7 +104,7 @@ YAML;
      * @return void
      * @throws Exception
      */
-    public function testLoadSelfReferencing()
+    public function testLoadSelfReferencing(): void
     {
         $fixtures = <<<YAML
 Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\CoolBookAuthor:
@@ -134,7 +135,7 @@ YAML;
      * @return void
      * @throws Exception
      */
-    public function testLoaderWithPhp()
+    public function testLoaderWithPhp(): void
     {
         $fixtures = <<<YAML
 Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\CoolBookAuthor:
@@ -162,7 +163,7 @@ YAML;
      * @return void
      * @throws Exception
      */
-    public function testLoadWithoutFaker()
+    public function testLoadWithoutFaker(): void
     {
         $fixtures = <<<YAML
 Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\CoolBookAuthor:
@@ -190,9 +191,9 @@ YAML;
      * @return void
      * @throws Exception
      */
-    public function testLoadWithFaker()
+    public function testLoadWithFaker(): void
     {
-        if (!class_exists('Faker\Factory')) {
+        if (!class_exists(Factory::class)) {
             $this->markTestSkipped('Faker is mandatory');
         }
 
@@ -225,7 +226,7 @@ YAML;
      * @return void
      * @throws Exception
      */
-    public function testYamlLoadManyToMany()
+    public function testYamlLoadManyToMany(): void
     {
         $schema = <<<XML
 <database name="default" package="vendor.bundles.Propel.Bundle.PropelBundle.Tests.Fixtures.DataFixtures.Loader" namespace="Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader" defaultIdMethod="native">
@@ -277,12 +278,10 @@ XML;
         author_id: Author_1
 YAML;
 
+        $con = SchemaBuilder::buildSchema($schema);
+        $crossTable = YamlManyToManyBookAuthorQuery::create()->getTableMap()->getName();
+        $fixtures = str_replace('table_book_authors:', "{$crossTable}s:", $fixtures);
         $filename = $this->getTempFile($fixtures);
-
-        $builder = new QuickBuilder();
-        $builder->setSchema($schema);
-
-        $con = $builder->build();
 
         $loader = new YamlDataLoader(__DIR__ . '/../../Fixtures/DataFixtures/Loader', []);
         $loader->load([$filename], 'default');
@@ -311,7 +310,7 @@ YAML;
      * @return void
      * @throws Exception
      */
-    public function testYamlLoadManyToManyMultipleFiles()
+    public function testYamlLoadManyToManyMultipleFiles(): void
     {
         $schema = <<<XML
 <database name="default" package="vendor.bundles.Propel.Bundle.PropelBundle.Tests.Fixtures.DataFixtures.Loader" namespace="Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader" defaultIdMethod="native">
@@ -369,22 +368,21 @@ Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\YamlManyToManyMult
         table_book_author_multiples: [ Book_2 ]
 YAML;
 
+        $con = SchemaBuilder::buildSchema($schema);
+        $crossTable = YamlManyToManyMultipleFilesBookAuthorQuery::create()->getTableMap()->getName();
+        $fixtures2 = str_replace('table_book_author_multiples:', "{$crossTable}s:", $fixtures2);
         $filename1 = $this->getTempFile($fixtures1);
         $filename2 = $this->getTempFile($fixtures2);
-
-        $builder = new QuickBuilder();
-        $builder->setSchema($schema);
-        $con = $builder->build();
 
         $loader = new YamlDataLoader(__DIR__ . '/../../Fixtures/DataFixtures/Loader', []);
         $loader->load([$filename1, $filename2], 'default');
 
-        $books = YamlManyToManyMultipleFilesBookQuery::create()->find($con);
+        $books = YamlManyToManyMultipleFilesBookQuery::create()->orderById()->find($con);
         $this->assertCount(2, $books);
         $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\YamlManyToManyMultipleFilesBook', $books[0]);
         $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\YamlManyToManyMultipleFilesBook', $books[1]);
 
-        $authors = YamlManyToManyMultipleFilesAuthorQuery::create()->find($con);
+        $authors = YamlManyToManyMultipleFilesAuthorQuery::create()->orderById()->find($con);
         $this->assertCount(2, $authors);
         $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\YamlManyToManyMultipleFilesAuthor', $authors[0]);
         $this->assertInstanceOf('Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader\YamlManyToManyMultipleFilesAuthor', $authors[1]);
@@ -403,7 +401,7 @@ YAML;
      * @return void
      * @throws Exception
      */
-    public function testLoadWithInheritedRelationship()
+    public function testLoadWithInheritedRelationship(): void
     {
         $schema = <<<XML
 <database name="default" package="vendor.bundles.Propel.Bundle.PropelBundle.Tests.Fixtures.DataFixtures.Loader" namespace="Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader" defaultIdMethod="native">
@@ -420,6 +418,7 @@ YAML;
     <table name="table_author_inherited_relationship" phpName="YamlInheritedRelationshipAuthor">
         <column name="id" type="integer" primaryKey="true" autoIncrement="true" />
         <column name="name" type="varchar" size="255" />
+        <column name="descendant_class" type="varchar" size="255" />
     </table>
 
     <table name="table_nobelized_author_inherited_relationship" phpName="YamlInheritedRelationshipNobelizedAuthor">
@@ -445,9 +444,7 @@ YAML;
 
         $filename = $this->getTempFile($fixtures);
 
-        $builder = new QuickBuilder();
-        $builder->setSchema($schema);
-        $con = $builder->build();
+        $con = SchemaBuilder::buildSchema($schema);
 
         $loader = new YamlDataLoader(__DIR__ . '/../../Fixtures/DataFixtures/Loader', []);
         $loader->load([$filename], 'default');
@@ -464,12 +461,12 @@ YAML;
      * @return void
      * @throws Exception
      */
-    public function testLoadArrayToObjectType()
+    public function testLoadArrayToObjectType(): void
     {
         $schema = <<<XML
 <database name="default" package="vendor.bundles.Propel.Bundle.PropelBundle.Tests.Fixtures.DataFixtures.Loader" namespace="Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader" defaultIdMethod="native">
     <table name="table_book_with_object" phpName="YamlBookWithObject">
-        <column name="id" type="integer" primaryKey="true" />
+        <column name="id" type="integer" primaryKey="true" autoIncrement="true" />
         <column name="name" type="varchar" size="255" />
         <column name="options" type="object" />
     </table>
@@ -484,9 +481,7 @@ YAML;
 
         $filename = $this->getTempFile($fixtures);
 
-        $builder = new QuickBuilder();
-        $builder->setSchema($schema);
-        $con = $builder->build();
+        $con = SchemaBuilder::buildSchema($schema);
 
         $loader = new YamlDataLoader(__DIR__ . '/../../Fixtures/DataFixtures/Loader', []);
         $loader->load([$filename], 'default');
@@ -501,7 +496,7 @@ YAML;
      * @return void
      * @throws Exception
      */
-    public function testLoadDelegatedOnPrimaryKey()
+    public function testLoadDelegatedOnPrimaryKey(): void
     {
         $schema = <<<XML
 <database name="default" package="vendor.bundles.Propel.Bundle.PropelBundle.Tests.Fixtures.DataFixtures.Loader" namespace="Propel\Bundle\PropelBundle\Tests\Fixtures\DataFixtures\Loader" defaultIdMethod="native">
@@ -538,9 +533,7 @@ YAML;
 
         $filename = $this->getTempFile($fixtures);
 
-        $builder = new QuickBuilder();
-        $builder->setSchema($schema);
-        $con = $builder->build();
+        $con = SchemaBuilder::buildSchema($schema);
 
         $loader = new YamlDataLoader(__DIR__ . '/../../Fixtures/DataFixtures/Loader', []);
         $loader->load([$filename], 'default');
