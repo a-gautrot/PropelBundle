@@ -11,7 +11,6 @@
 namespace Propel\Bundle\PropelBundle\Command;
 
 use Override;
-use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException as BaseRuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -111,6 +110,6 @@ class FixturesDumpCommand extends AbstractCommand
 
         $this->writeNewFile($output, $filename);
 
-        return PropelAbstractCommand::CODE_SUCCESS;
+        return self::SUCCESS;
     }
 }

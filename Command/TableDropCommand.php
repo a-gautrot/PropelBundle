@@ -13,7 +13,6 @@ namespace Propel\Bundle\PropelBundle\Command;
 use InvalidArgumentException;
 use Override;
 use PDO;
-use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Runtime\Adapter\Pdo\MysqlAdapter;
 use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
@@ -77,13 +76,13 @@ class TableDropCommand extends AbstractCommand
         if (!$adapter instanceof MysqlAdapter) {
             $output->writeln('<error>This command is MySQL only.</error>');
 
-            return PropelAbstractCommand::CODE_ERROR;
+            return self::FAILURE;
         }
 
         if (!$input->getOption('force')) {
             $output->writeln('<error>You have to use the "--force" option to drop some tables.</error>');
 
-            return PropelAbstractCommand::CODE_ERROR;
+            return self::FAILURE;
         }
 
         $tablesToDelete = $input->getArgument('table');
@@ -142,6 +141,6 @@ class TableDropCommand extends AbstractCommand
 
         $connection->exec('SET FOREIGN_KEY_CHECKS = 1;');
 
-        return PropelAbstractCommand::CODE_SUCCESS;
+        return self::SUCCESS;
     }
 }

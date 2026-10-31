@@ -54,4 +54,17 @@ class FixturesLoadCommandTest extends TestCase
         self::assertSame(1, $status);
         self::assertStringContainsString('does not exist', $tester->getDisplay());
     }
+
+    /**
+     * @return void
+     */
+    public function testDirectoryWithoutYamlFixturesReturnsSuccess(): void
+    {
+        $tester = $this->createCommandTester();
+
+        $status = $tester->execute(['--dir' => 'Tests/Command', '--yml' => true]);
+
+        self::assertSame(0, $status);
+        self::assertStringContainsString('No YML fixtures found.', $tester->getDisplay());
+    }
 }

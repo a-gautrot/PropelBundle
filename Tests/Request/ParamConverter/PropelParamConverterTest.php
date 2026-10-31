@@ -14,7 +14,7 @@ use Propel\Runtime\Connection\ConnectionWrapper;
 use Propel\Runtime\Propel;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
@@ -442,8 +442,8 @@ XML;
     public function testSymfonyResolvesControllerArgumentsUsingRegisteredService(): void
     {
         $container = new ContainerBuilder();
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../../Resources/config'));
-        $loader->load('converters.xml');
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../../Resources/config'));
+        $loader->load('converters.yml');
         $services = $container->findTaggedServiceIds('controller.argument_value_resolver');
         $this->assertCount(1, $services);
 

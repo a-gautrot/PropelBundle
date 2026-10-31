@@ -14,7 +14,6 @@ use ArrayIterator;
 use InvalidArgumentException;
 use LogicException;
 use Override;
-use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use RuntimeException;
 use SplFileInfo;
 use Symfony\Component\Config\FileLocatorInterface;
@@ -173,7 +172,7 @@ class FixturesLoadCommand extends AbstractCommand
                 "The fixtures directory \"$this->absoluteFixturesPath\" does not exist."
             ], 'fg=white;bg=red');
 
-            return PropelAbstractCommand::CODE_ERROR;
+            return self::FAILURE;
         }
 
         $noOptions = !$input->getOption('xml') && !$input->getOption('sql') && !$input->getOption('yml');
@@ -196,7 +195,7 @@ class FixturesLoadCommand extends AbstractCommand
             }
         }
 
-        return PropelAbstractCommand::CODE_SUCCESS;
+        return self::SUCCESS;
     }
 
     /**
