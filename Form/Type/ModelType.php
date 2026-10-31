@@ -31,7 +31,6 @@ use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
-use Symfony\Component\PropertyAccess\PropertyPathInterface;
 
 /**
  * # ModelType
@@ -170,7 +169,6 @@ class ModelType extends AbstractType
         };
 
         $choiceName = function (Options $options): ?array {
-
             /** @var ModelCriteria $query */
             $query = $options['query'];
             if ($options['index_property']) {
@@ -187,7 +185,6 @@ class ModelType extends AbstractType
         };
 
         $choiceValue = function (Options $options): ?callable {
-
             /** @var ModelCriteria $query */
             $query = $options['query'];
             if ($options['index_property']) {
@@ -200,11 +197,7 @@ class ModelType extends AbstractType
             if (count($identifier) === 1
                 && in_array($firstIdentifier->getPdoType(), [PDO::PARAM_BOOL, PDO::PARAM_INT, PDO::PARAM_STR])
             ) {
-                /**
-                 * @param object|null $object
-                 * @return mixed
-                 */
-                return function (?object $object) use ($firstIdentifier) {
+                return function ($object) use ($firstIdentifier) {
                     if ($object) {
                         return call_user_func([$object, 'get' . ucfirst($firstIdentifier->getPhpName())]);
                     }
@@ -214,11 +207,7 @@ class ModelType extends AbstractType
             return null;
         };
 
-        /**
-         * @param ModelCriteria|null $query
-         * @return ModelCriteria
-         */
-        $queryNormalizer = function (Options $options, ?ModelCriteria $query): ModelCriteria {
+        $queryNormalizer = function (Options $options, $query) {
             if ($query === null) {
                 $queryClass = "{$options['class']}Query";
                 if (!class_exists($queryClass)) {
@@ -239,36 +228,30 @@ class ModelType extends AbstractType
             return $query;
         };
 
-        $choiceLabelNormalizer =
-            /**
-             * @param string|bool|callable|PropertyPathInterface|null $choiceLabel
-             * @return string|bool|callable|PropertyPathInterface|null
-             */
-            function (Options $options, $choiceLabel) {
-                if ($choiceLabel === null) {
-                    if ($options['property'] == null) {
-                        $choiceLabel = [self::class, 'createChoiceLabel'];
-                    } else {
-                        $valueProperty = $options['property'];
-                        /** @var ModelCriteria $query */
-                        $query = $options['query'];
+        $choiceLabelNormalizer = function (Options $options, $choiceLabel) {
+            if ($choiceLabel === null) {
+                if ($options['property'] == null) {
+                    $choiceLabel = [self::class, 'createChoiceLabel'];
+                } else {
+                    $valueProperty = $options['property'];
+                    /** @var ModelCriteria $query */
+                    $query = $options['query'];
 
-                        $choiceLabel = /** @return mixed */
-                            function (object $choice) use ($valueProperty, $query) {
-                                $getter = 'get' . ucfirst($valueProperty);
-                                if (!method_exists($choice, $getter)) {
-                                    $getter = 'get' . ucfirst(
-                                            $query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName()
-                                        );
-                                }
+                    $choiceLabel = function (object $choice) use ($valueProperty, $query) {
+                        $getter = 'get' . ucfirst($valueProperty);
+                        if (!method_exists($choice, $getter)) {
+                            $getter = 'get' . ucfirst(
+                                $query->getTableMapOrFail()->getColumn($valueProperty)->getPhpName()
+                            );
+                        }
 
-                                return call_user_func([$choice, $getter]);
-                            };
-                    }
+                        return call_user_func([$choice, $getter]);
+                    };
                 }
+            }
 
-                return $choiceLabel;
-            };
+            return $choiceLabel;
+        };
 
         $resolver->setDefaults([
             'query' => null,
