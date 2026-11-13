@@ -105,6 +105,9 @@
   "extra": {
     "symfony": {
       "require": "7.4.*"
+    },
+    "branch-alias": {
+      "dev-main": "7.1.x-dev"
     }
   },
   "scripts": {

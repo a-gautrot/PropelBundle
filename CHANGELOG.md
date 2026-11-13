@@ -4,6 +4,7 @@
 
 <!-- TOC -->
 
+* [2026-11-13](#release-2026-11-13)
 * [2026-10-31](#release-2026-10-31)
 * [2026-09-23](#release-2026-09-23)
 * [2026-09-22](#release-2026-09-22)
@@ -13,6 +14,11 @@
 <!-- TOC -->
 
 ---
+
+## Release 2026-11-13
+
+* Added support for Microsoft SQL Server and Oracle
+* Added support for PHP 8.6
 
 ## Release 2026-10-31
 
@@ -95,8 +101,3 @@
     * Removed support for PHP 7.2 and 7.3
     * Removed deprecated content introduced in PHP 8.4 and 8.5
 * Updated `propel/propel` minimum version to its last beta release (2.0.0-beta4)
-
-### 7.1.1.1
-
-* Added support for Microsoft SQL Server and Oracle
-* Added support for PHP 8.6
