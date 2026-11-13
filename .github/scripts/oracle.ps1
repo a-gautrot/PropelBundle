@@ -15,8 +15,8 @@ if ($Action -eq 'Stop') {
     if (!$env:ORACLE_CI_HOME) {
         return
     }
-    $relative = [System.IO.Path]::GetRelativePath($env:RUNNER_TEMP, $env:ORACLE_CI_HOME).Replace('\', '/')
-    if ($relative -cnotmatch '\Aoracle-ci-[a-f0-9]{32}/install/dbhomeFree\z') {
+    $relative = [System.IO.Path]::GetRelativePath(($env:SystemDrive + '\'), $env:ORACLE_CI_HOME).Replace('\', '/')
+    if ($relative -cnotmatch '\Aoracle-ci-[a-f0-9]{32}/dbhomeFree\z') {
         throw 'Refusing to stop Oracle outside its dedicated runner directory.'
     }
     Get-CimInstance Win32_Service | Where-Object {
@@ -34,7 +34,9 @@ $sha256 = '178D6CFD5A8109EA9D26894A597116DB4D95320CD8861D16CA10D4D8C384DAB3'
 $directory = Join-Path $env:RUNNER_TEMP ('oracle-ci-' + [guid]::NewGuid().ToString('N'))
 $null = New-Item -ItemType Directory -Path $directory
 $archive = Join-Path $directory 'oracle.zip'
-$installDirectory = Join-Path $directory 'install'
+# Let Oracle create its own tree with the required ACLs. RUNNER_TEMP's
+# ancestors may be writable by Authenticated Users, which Oracle disallows.
+$installDirectory = Join-Path ($env:SystemDrive + '\') ('oracle-ci-' + [guid]::NewGuid().ToString('N'))
 $oracleHome = Join-Path $installDirectory 'dbhomeFree'
 $log = Join-Path $directory 'setup.log'
 $response = Join-Path $directory 'install.rsp'
@@ -53,7 +55,10 @@ if ($null -eq $setup) {
 
 # Follow the silent response-file installation documented by Oracle.
 # setup-php may have configured Instant Client; the installer requires these unset.
-Remove-Item Env:ORACLE_HOME, Env:TNS_ADMIN -ErrorAction SilentlyContinue
+$clientEnvironment = @{}
+foreach ($name in @('ORACLE_HOME', 'ORACLE_SID', 'TNS_ADMIN', 'PATH')) {
+    $clientEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
+}
 $template = Get-ChildItem -LiteralPath $directory -Filter FREEInstall.rsp -Recurse | Select-Object -First 1
 if ($null -eq $template) {
     throw 'The Oracle installation response file was not found.'
@@ -76,6 +81,7 @@ foreach ($setting in @{
 $settings | Set-Content -LiteralPath $response
 Add-Content -LiteralPath $env:GITHUB_ENV -Value "ORACLE_CI_HOME=$oracleHome"
 try {
+    Remove-Item Env:ORACLE_HOME, Env:TNS_ADMIN -ErrorAction SilentlyContinue
     $installer = Start-Process -FilePath $setup.FullName -PassThru -WindowStyle Hidden -ArgumentList @(
         '/s', "/v`"RSP_FILE=$response`"", "/v`"/L*v $log`"", '/v"/qn"'
     )
@@ -87,27 +93,39 @@ try {
     }
 
     $sqlplus = Join-Path $oracleHome 'bin/sqlplus.exe'
+    # Use the server's configuration and DLLs, not setup-php's Instant Client.
+    $env:ORACLE_HOME = $oracleHome
+    $env:ORACLE_SID = 'FREE'
+    $env:TNS_ADMIN = Join-Path $oracleHome 'network/admin'
+    $env:PATH = (Join-Path $oracleHome 'bin') + ';' + $env:PATH
     # The bootstrap installer may exit before its MSI/database configuration finishes.
     $deadline = [DateTime]::UtcNow.AddMinutes(15)
     $ready = $false
+    $lastProbe = 'sqlplus.exe has not been installed yet.'
+    $reportedProbe = ''
     while ([DateTime]::UtcNow -lt $deadline) {
         if (Test-Path -LiteralPath $sqlplus) {
-            @(
+            $probe = @(
                 'WHENEVER OSERROR EXIT FAILURE',
                 'WHENEVER SQLERROR EXIT FAILURE',
                 "CONNECT sys/`"$password`"@//127.0.0.1:1521/FREEPDB1 AS SYSDBA",
                 'SELECT 1 FROM dual;',
                 'EXIT SUCCESS'
-            ) | & $sqlplus -L -S /nolog | Out-Null
+            ) | & $sqlplus -L -S /nolog 2>&1
             if ($LASTEXITCODE -eq 0) {
                 $ready = $true
                 break
             }
+            $lastProbe = "sqlplus exit code ${LASTEXITCODE}: " + ($probe | Out-String).Trim().Replace($password, '[REDACTED]')
+        }
+        if ($lastProbe -ne $reportedProbe) {
+            Write-Output "Waiting for Oracle FREEPDB1: $lastProbe"
+            $reportedProbe = $lastProbe
         }
         Start-Sleep -Seconds 5
     }
     if (!$ready) {
-        throw 'Oracle FREEPDB1 did not become ready within 15 minutes.'
+        throw "Oracle FREEPDB1 did not become ready within 15 minutes. Last probe: $lastProbe"
     }
     @(
         'WHENEVER OSERROR EXIT FAILURE',
@@ -122,10 +140,28 @@ try {
         throw 'Cannot create the Oracle test schema.'
     }
 } catch {
+    # MSI success alone does not diagnose database creation or listener failures.
+    Get-CimInstance Win32_Service -ErrorAction Continue | Where-Object {
+        $_.PathName -like ('*' + $oracleHome + '\*')
+    } | Select-Object Name, State, PathName | Format-Table -AutoSize | Out-String | Write-Output
+    foreach ($folder in @('cfgtoollogs', 'diag')) {
+        $path = Join-Path $installDirectory $folder
+        if (Test-Path -LiteralPath $path) {
+            Get-ChildItem -LiteralPath $path -Recurse -File -Filter '*.log' -ErrorAction Continue |
+                Sort-Object LastWriteTime -Descending | Select-Object -First 5 | ForEach-Object {
+                    Write-Output "Oracle diagnostic log: $($_.FullName)"
+                    Get-Content -LiteralPath $_.FullName -Tail 60 -ErrorAction Continue |
+                        ForEach-Object { $_.Replace($password, '[REDACTED]') }
+                }
+        }
+    }
     if (Test-Path -LiteralPath $log) {
         Get-Content -LiteralPath $log -Tail 40 | ForEach-Object { $_.Replace($password, '[REDACTED]') }
     }
     throw
 } finally {
+    foreach ($name in $clientEnvironment.Keys) {
+        [Environment]::SetEnvironmentVariable($name, $clientEnvironment[$name], 'Process')
+    }
     Remove-Item -LiteralPath $response -ErrorAction SilentlyContinue
 }
