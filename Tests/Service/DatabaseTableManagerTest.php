@@ -30,7 +30,7 @@ class DatabaseTableManagerTest extends TestCase
         $executed = [];
         $connection->expects(self::exactly(3))->method('exec')->willReturnCallback(static function (string $sql) use (&$executed): int {
             $executed[] = $sql;
-            if (strncmp($sql, 'DROP TABLE', strlen('DROP TABLE')) === 0) {
+            if (str_starts_with($sql, 'DROP TABLE')) {
                 throw new RuntimeException('drop failed');
             }
             return 0;
@@ -88,7 +88,7 @@ class DatabaseTableManagerTest extends TestCase
         $executed = [];
         $connection->method('exec')->willReturnCallback(static function (string $sql) use (&$executed): int {
             $executed[] = $sql;
-            if (strncmp($sql, 'DROP TABLE', strlen('DROP TABLE')) === 0) {
+            if (str_starts_with($sql, 'DROP TABLE')) {
                 throw new RuntimeException('drop failed');
             }
             return 0;

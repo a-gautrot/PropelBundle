@@ -2,6 +2,7 @@
 
 namespace Propel\Bundle\PropelBundle\Service;
 
+use Closure;
 use PDO;
 use Propel\Runtime\Adapter\AdapterInterface;
 use Propel\Runtime\Adapter\Pdo\MssqlAdapter;
@@ -75,7 +76,7 @@ final class DatabaseTableManager
         if ($this->adapter instanceof MysqlAdapter) {
             $this->connection->exec('SET FOREIGN_KEY_CHECKS = 0');
             try {
-                $names = implode(', ', array_map(\Closure::fromCallable([$this, 'quoteIdentifier']), $tables));
+                $names = implode(', ', array_map(Closure::fromCallable([$this, 'quoteIdentifier']), $tables));
                 $this->connection->exec("DROP TABLE $names");
             } finally {
                 $this->connection->exec('SET FOREIGN_KEY_CHECKS = 1');

@@ -64,7 +64,7 @@ class MssqlAdapter extends BaseMssqlAdapter
     #[Override]
     protected function prepareParams(array $params): array
     {
-        if (isset($params['dsn']) && strncmp($params['dsn'], 'mssql:', strlen('mssql:')) === 0) {
+        if (isset($params['dsn']) && str_starts_with($params['dsn'], 'mssql:')) {
             $params['dsn'] = 'dblib:' . substr($params['dsn'], 6);
         }
 

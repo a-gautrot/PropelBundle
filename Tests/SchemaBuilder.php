@@ -2,6 +2,7 @@
 
 namespace Propel\Bundle\PropelBundle\Tests;
 
+use Closure;
 use Propel\Bundle\PropelBundle\Generator\Builder\ObjectBuilder;
 use DOMDocument;
 use Exception;
@@ -76,9 +77,9 @@ final class SchemaBuilder
                 );
         }
         // QuickBuilder creates PDO directly, bypassing OracleAdapter's DSN normalization.
-        if (strncmp($dsn, 'oracle:', strlen('oracle:')) === 0) {
+        if (str_starts_with($dsn, 'oracle:')) {
             $dsn = 'oci:' . substr($dsn, 7);
-        } elseif (strncmp($dsn, 'mssql:', strlen('mssql:')) === 0) {
+        } elseif (str_starts_with($dsn, 'mssql:')) {
             $dsn = 'dblib:' . substr($dsn, 6);
         }
 
@@ -130,7 +131,7 @@ final class SchemaBuilder
             }
             foreach ($behavior->getElementsByTagName('parameter') as $parameter) {
                 if ($parameter->getAttribute('name') === $parameterName) {
-                    $names = array_map(\Closure::fromCallable('trim'), explode(',', $parameter->getAttribute('value')));
+                    $names = array_map(Closure::fromCallable('trim'), explode(',', $parameter->getAttribute('value')));
                     $parameter->setAttribute('value', implode(',', array_map(static fn(string $name): string => $tableNames[$name] ?? $name, $names)));
                 }
             }
