@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException as BaseInvalidArgumentException;
 use Override;
+use Propel\Bundle\PropelBundle\Util\DatabaseDsn;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
 use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
@@ -97,7 +98,14 @@ class DatabaseDropCommand extends AbstractCommand
 
         $connectionName = $input->getOption('connection') ?: $this->getDefaultConnection();
         $config = $this->getConnectionData($connectionName);
-        $connection = Propel::getConnection($connectionName);
+        if ($config['adapter'] === 'oracle') {
+            $output->writeln(
+                '<error>Oracle databases must be managed separately. '
+                . 'This command cannot drop an Oracle database or schema.</error>'
+            );
+
+            return self::FAILURE;
+        }
         $dbName = $this->parseDbName($config['dsn']);
 
         if ($dbName === null) {
@@ -105,7 +113,7 @@ class DatabaseDropCommand extends AbstractCommand
 
             return self::FAILURE;
         } else {
-            $query = "DROP DATABASE $dbName;";
+            $query = 'DROP DATABASE ' . DatabaseDsn::quoteDatabaseName($dbName, $config['adapter']);
         }
 
 
@@ -117,6 +125,7 @@ class DatabaseDropCommand extends AbstractCommand
         $serviceContainer->setAdapterClass($connectionName, $config['adapter']);
         $serviceContainer->setConnectionManager($manager);
 
+        $connection = Propel::getConnection($connectionName);
 
         $statement = $connection->prepare($query);
         if ($statement === false) {
@@ -140,13 +149,7 @@ class DatabaseDropCommand extends AbstractCommand
      */
     private function getTemporaryConfiguration(array $config): array
     {
-        $dbName = $this->parseDbName($config['dsn']);
-
-        $config['dsn'] = preg_replace(
-            "#;?(dbname|Database)=$dbName#",
-            '',
-            $config['dsn']
-        );
+        $config['dsn'] = DatabaseDsn::forAdministration($config['dsn']);
 
         return $config;
     }

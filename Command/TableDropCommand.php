@@ -12,8 +12,10 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException;
 use Override;
-use PDO;
+use Propel\Bundle\PropelBundle\Service\DatabaseTableManager;
+use Propel\Runtime\Adapter\Pdo\MssqlAdapter;
 use Propel\Runtime\Adapter\Pdo\MysqlAdapter;
+use Propel\Runtime\Adapter\Pdo\OracleAdapter;
 use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Propel;
 use RuntimeException;
@@ -73,8 +75,10 @@ class TableDropCommand extends AbstractCommand
         $connection = Propel::getConnection($input->getOption('connection'));
         $adapter = Propel::getAdapter($connection->getName());
 
-        if (!$adapter instanceof MysqlAdapter) {
-            $output->writeln('<error>This command is MySQL only.</error>');
+        if (!$adapter instanceof MysqlAdapter
+            && !$adapter instanceof MssqlAdapter
+            && !$adapter instanceof OracleAdapter) {
+            $output->writeln('<error>This command supports MySQL, SQL Server and Oracle only.</error>');
 
             return self::FAILURE;
         }
@@ -105,41 +109,31 @@ class TableDropCommand extends AbstractCommand
             }
         }
 
-        $showStatement = $connection->prepare('SHOW TABLES;');
-        if ($showStatement === false) {
-            throw new RuntimeException('Cannot list the database tables.');
-        }
-        $showStatement->execute();
-
-        $allTables = $showStatement->fetchAll(PDO::FETCH_COLUMN);
+        $tableManager = new DatabaseTableManager($connection, $adapter);
+        $allTables = $tableManager->getTables();
 
         if ($nbTable) {
-            foreach ($tablesToDelete as $tableToDelete) {
+            foreach ($tablesToDelete as &$tableToDelete) {
+                if ($adapter instanceof OracleAdapter && !in_array($tableToDelete, $allTables, strict: true)) {
+                    $tableToDelete = strtoupper($tableToDelete);
+                }
                 if (!in_array($tableToDelete, $allTables, strict: true)) {
                     throw new InvalidArgumentException("Table $tableToDelete doesn't exist in the database.");
                 }
             }
+            unset($tableToDelete);
         } else {
             $tablesToDelete = $allTables;
         }
 
-        $connection->exec('SET FOREIGN_KEY_CHECKS = 0;');
-
-        array_walk($tablesToDelete, function (string &$table, int|string $key, MysqlAdapter $dbAdapter): void {
-            $table = $dbAdapter->quoteIdentifierTable($table);
-        }, $adapter);
-
-        $tablesToDelete = implode(', ', $tablesToDelete);
-
-        if ($tablesToDelete !== '') {
-            $connection->exec("DROP TABLE $tablesToDelete ;");
+        if ($tablesToDelete !== []) {
+            $tableManager->dropTables($tablesToDelete);
+            $tablesToDelete = implode(', ', $tablesToDelete);
 
             $output->writeln("Table$tablePlural <info><comment>$tablesToDelete</comment> has been dropped.</info>");
         } else {
             $output->writeln('<info>No tables have been dropped</info>');
         }
-
-        $connection->exec('SET FOREIGN_KEY_CHECKS = 1;');
 
         return self::SUCCESS;
     }

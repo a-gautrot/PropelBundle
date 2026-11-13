@@ -12,4 +12,4 @@
 
 ## 8.0.0
 
-* Added support for Symfony 8.1
+* Added support for Symfony 8.4
