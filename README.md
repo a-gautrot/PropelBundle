@@ -98,10 +98,11 @@ requiring PHP attributes.
 
 ## New to version 5.2
 
+* Added support for Microsoft SQL Server and Oracle
 * Removed support for Symfony 5.0 to 5.3
-* Added support for PHP 8.4 and 8.5
+* Added support for PHP 8.4 to 8.6
     * Removed support for PHP 7.2 and 7.3
-    * Removed deprecated content introduced in PHP 8.4 and 8.5
+    * Removed deprecated content introduced from PHP 8.4 to 8.6
 * Updated `propel/propel` minimum version to latest beta release (2.0.0-beta4)
 
 You can also read the changelogs [here](CHANGELOG.md).

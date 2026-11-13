@@ -15,6 +15,7 @@ use JsonException;
 use LogicException;
 use Override;
 use Propel\Bundle\PropelBundle\Service\SchemaLocator;
+use Propel\Bundle\PropelBundle\Util\DatabaseDsn;
 use ReflectionClass;
 use RuntimeException;
 use SplFileInfo;
@@ -603,14 +604,11 @@ abstract class AbstractCommand extends Command
      * Extract the database name from a given DSN
      *
      * @param string $dsn A DSN
-     * @return ?string The database name extracted from the given DSN
+     * @return string|null The database name extracted from the given DSN
      */
     protected function parseDbName(string $dsn): ?string
     {
-        preg_match('#(dbname|Database)=(\w+)#', $dsn, $matches);
-
-        // e.g. SQLite
-        return $matches[2] ?? null;
+        return DatabaseDsn::getDatabaseName($dsn);
     }
 
     /**

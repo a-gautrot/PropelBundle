@@ -16,6 +16,8 @@ use PDO;
 use PDOStatement;
 use Propel\Bundle\PropelBundle\DataFixtures\AbstractDataHandler;
 use Propel\Generator\Model\PropelTypes;
+use Propel\Runtime\Adapter\Pdo\OracleAdapter;
+use Propel\Runtime\Adapter\Pdo\PgsqlAdapter;
 use Propel\Runtime\Connection\Exception\ConnectionException;
 use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Propel;
@@ -81,7 +83,7 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
             $fixColumn = null;
 
             $position = strrpos($tableName, '\\');
-            $shortTableName = $position === false ? $tableName : substr($tableName, $position + 1);
+            $shortTableName = $position === false ? $tableName : (string)substr($tableName, $position + 1);
 
             foreach ($tableMap->getColumns() as $column) {
                 if ($column->isForeignKey()) {
@@ -110,19 +112,33 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
                 $in = [];
                 $adapter = Propel::getAdapter($this->getDatabaseMap()->getName());
                 foreach ($tableMap->getColumns() as $column) {
-                    $in[] = $adapter->quoteIdentifier(strtolower($column->getName()));
+                    $name = $column->getName();
+                    if ($adapter instanceof OracleAdapter && !$tableMap->isIdentifierQuotingEnabled()) {
+                        $name = strtoupper($name);
+                    } elseif ($adapter instanceof PgsqlAdapter && !$tableMap->isIdentifierQuotingEnabled()) {
+                        $name = strtolower($name);
+                    }
+                    $in[] = $adapter->quoteIdentifier($name);
                 }
                 $columns = implode(', ', $in);
+                $name = $tableMap->getNameOrFail();
+                if ($adapter instanceof OracleAdapter && !$tableMap->isIdentifierQuotingEnabled()) {
+                    $name = strtoupper($name);
+                } elseif ($adapter instanceof PgsqlAdapter && !$tableMap->isIdentifierQuotingEnabled()) {
+                    $name = strtolower($name);
+                }
+                $quotedTable = implode('.', array_map([$adapter, 'quoteIdentifier'], explode('.', $name)));
                 $stmt = $this
                     ->getConnection()
-                    ->query("SELECT $columns FROM {$adapter->quoteIdentifier($tableMap->getNameOrFail())}");
+                    ->query("SELECT $columns FROM $quotedTable");
                 if ($stmt === false) {
                     throw new RuntimeException('Cannot fetch fixture data.');
                 }
 
                 $set = [];
                 while (is_array($row = $stmt->fetch(PDO::FETCH_ASSOC))) {
-                    $set[] = $row;
+                    // Consume LOB streams before advancing the cursor (notably with PDO_OCI).
+                    $set[] = $this->normalizeRow($row);
                 }
                 $resultsSets[] = $set;
                 if ($stmt instanceof PDOStatement) {
@@ -169,7 +185,7 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
                                 }
                             } elseif (!$isPrimaryKey || !$tableMap->isUseIdGenerator()) {
                                 if (!empty($columnValue) && $column->getType() === PropelTypes::PHP_ARRAY) {
-                                    $serialized = substr($columnValue, 2, -2);
+                                    $serialized = (string) substr($columnValue, 2, -2);
                                     $columnValue = $serialized ? explode(' | ', $serialized) : [];
                                 }
 
@@ -284,6 +300,7 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
 
         $in = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $row = $this->normalizeRow($row);
             $in[] = "'{$row[strtolower($column->getRelatedColumnName())]}'";
             $resultsSets[] = $row;
         }
@@ -293,6 +310,22 @@ abstract class AbstractDataDumper extends AbstractDataHandler implements DataDum
         }
 
         return $resultsSets;
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    private function normalizeRow(array $row): array
+    {
+        foreach ($row as &$value) {
+            if (is_resource($value)) {
+                $value = stream_get_contents($value);
+            }
+        }
+        unset($value);
+
+        return array_change_key_case($row, CASE_LOWER);
     }
 
     /**

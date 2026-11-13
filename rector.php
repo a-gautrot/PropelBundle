@@ -10,6 +10,7 @@ use Rector\ValueObject\PhpVersion;
 
 return RectorConfig::configure()
     ->withPaths([
+        __DIR__ . '/Adapter',
         __DIR__ . '/AppBundle.php',
         __DIR__ . '/Command',
         __DIR__ . '/Controller',
@@ -17,6 +18,7 @@ return RectorConfig::configure()
         __DIR__ . '/DataFixtures',
         __DIR__ . '/DependencyInjection',
         __DIR__ . '/Form',
+        __DIR__ . '/Generator',
         __DIR__ . '/Logger',
         __DIR__ . '/PropelBundle.php',
         __DIR__ . '/Request',

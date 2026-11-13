@@ -13,6 +13,8 @@ namespace Propel\Bundle\PropelBundle\DependencyInjection;
 use Exception;
 use InvalidArgumentException;
 use Override;
+use Propel\Bundle\PropelBundle\Generator\Builder\ObjectBuilder;
+use Propel\Bundle\PropelBundle\Generator\Platform\OraclePlatform;
 use Symfony\Bundle\WebProfilerBundle\DependencyInjection\WebProfilerExtension;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -47,6 +49,17 @@ class PropelExtension extends Extension
             $defaultConnection = array_keys($config['database']['connections'])[0];
             $config['runtime']['defaultConnection'] ??= $defaultConnection;
             $config['generator']['defaultConnection'] ??= $defaultConnection;
+        }
+
+        // A global platform is safe to infer only when every configured connection uses Oracle.
+        if ($config['generator']['platformClass'] === null
+            && array_unique(array_column($config['database']['connections'], 'adapter')) === ['oracle']) {
+            $config['generator']['platformClass'] = OraclePlatform::class;
+        }
+        if (in_array('oracle', array_column($config['database']['connections'], 'adapter'), true)
+            && ltrim($config['generator']['objectModel']['builders']['object'], '\\')
+                === \Propel\Generator\Builder\Om\ObjectBuilder::class) {
+            $config['generator']['objectModel']['builders']['object'] = ObjectBuilder::class;
         }
 
         $container->setParameter('propel.logging', $config['runtime']['logging']);

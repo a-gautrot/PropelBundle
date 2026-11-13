@@ -5,6 +5,7 @@
 <!-- TOC -->
 
 * [5.2.1](#521)
+    * [5.2.1.1](#5211)
 * [5.2.0](#520)
     * [5.2.0.1](#5201)
     * [5.2.0.2](#5202)
@@ -52,3 +53,8 @@
     * Now uses Docker for some UTs
     * Fixed UTs for its Book schema
 * Fixed fixture path validation, SQL result handling, and static type declarations
+
+### 5.2.1.1
+
+* Added support for Microsoft SQL Server and Oracle
+* Added support for PHP 8.6
