@@ -78,9 +78,9 @@ Nightly release:
         * LTS for Symfony 6.4 was migrated to a new branch: [6.1](https://github.com/a-gautrot/PropelBundle/tree/6.1)
         * Extended LTS for Symfony 5.4 was migrated to a new
           branch: [5.2](https://github.com/a-gautrot/PropelBundle/tree/5.2)
-* Added support for PHP 8.4 and 8.5
+* Added support for PHP 8.4 to 8.6
     * Removed support for PHP 8.0 and 8.1
-    * Removed deprecated content introduced in PHP 8.4 and 8.5
+    * Removed deprecated content introduced from PHP 8.4 to 8.6
 * Updated `propel/propel` minimum version to its official stable release (2.0.0)
 
 You can also read the changelogs [here](CHANGELOG.md).

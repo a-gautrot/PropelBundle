@@ -5,6 +5,7 @@
 <!-- TOC -->
 
 * [7.1.1](#711)
+    * [7.1.1.1](#7111)
 * [7.1.0](#710)
     * [7.1.0.1](#7101)
     * [7.1.0.2](#7102)
@@ -53,3 +54,8 @@
     * Now uses Docker for some UTs
     * Fixed UTs for its Book schema
 * Fixed fixture path validation, SQL result handling, and static type declarations
+
+### 7.1.1.1
+
+* Added support for Microsoft SQL Server and Oracle
+* Added support for PHP 8.6

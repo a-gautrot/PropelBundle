@@ -2,13 +2,22 @@
 
 namespace Propel\Bundle\PropelBundle\Tests;
 
+use Propel\Bundle\PropelBundle\Generator\Builder\ObjectBuilder;
 use DOMDocument;
 use Exception;
 use InvalidArgumentException;
 use PDO;
+use Propel\Bundle\PropelBundle\Adapter\MssqlAdapter;
+use Propel\Bundle\PropelBundle\Adapter\OracleAdapter;
+use Propel\Bundle\PropelBundle\Adapter\SqlsrvAdapter;
+use Propel\Bundle\PropelBundle\Generator\Platform\OraclePlatform;
+use Propel\Generator\Model\Table;
+use Propel\Generator\Config\QuickGeneratorConfig;
 use Propel\Generator\Platform\MysqlPlatform;
+use Propel\Generator\Platform\MssqlPlatform;
 use Propel\Generator\Platform\PgsqlPlatform;
 use Propel\Generator\Platform\SqlitePlatform;
+use Propel\Generator\Platform\SqlsrvPlatform;
 use Propel\Generator\Util\QuickBuilder;
 use Propel\Runtime\Adapter\Pdo\MysqlAdapter;
 use Propel\Runtime\Adapter\Pdo\PgsqlAdapter;
@@ -34,8 +43,31 @@ final class SchemaBuilder
             'mysql' => [new MysqlPlatform(), new MysqlAdapter()],
             'pgsql' => [new PgsqlPlatform(), new PgsqlAdapter()],
             'sqlite' => [new SqlitePlatform(), new SqliteAdapter()],
-            default => throw new InvalidArgumentException('TEST_DSN must use mysql, pgsql, or sqlite.'),
+            // Propel's SQL Server DROP blocks cannot be split by QuickBuilder's SQL parser.
+            // Every test table has a unique name, so no DROP statements are needed.
+            'sqlsrv' => [new class extends SqlsrvPlatform {
+                public function getDropTableDDL(Table $table): string
+                {
+                    return '';
+                }
+            }, new SqlsrvAdapter()],
+            'dblib', 'mssql' => [new class extends MssqlPlatform {
+                public function getDropTableDDL(Table $table): string
+                {
+                    return '';
+                }
+            }, new MssqlAdapter()],
+            'oci', 'oracle' => [new OraclePlatform(), new OracleAdapter()],
+            default => throw new InvalidArgumentException(
+                'TEST_DSN must use mysql, pgsql, sqlite, sqlsrv, dblib, mssql, oci, or oracle.'
+            ),
         };
+        // QuickBuilder creates PDO directly, bypassing OracleAdapter's DSN normalization.
+        if (str_starts_with($dsn, 'oracle:')) {
+            $dsn = 'oci:' . substr($dsn, 7);
+        } elseif (str_starts_with($dsn, 'mssql:')) {
+            $dsn = 'dblib:' . substr($dsn, 6);
+        }
 
         $document = new DOMDocument();
         if (!$document->loadXML($schema)) {
@@ -45,13 +77,26 @@ final class SchemaBuilder
         $tableNames = [];
         foreach ($document->getElementsByTagName('table') as $table) {
             $name = $table->getAttribute('name');
-            $tableNames[$name] = "$name$suffix";
+            // Leave room for the random suffix within Oracle's legacy identifier limit.
+            $physicalName = $platform instanceof OraclePlatform && strlen($name) > 21
+                ? substr($name, 0, 12) . '_' . substr(hash('sha256', $name), 0, 8)
+                : $name;
+            $tableNames[$name] = "$physicalName$suffix";
             if (!$table->hasAttribute('phpName')) {
                 $table->setAttribute('phpName', str_replace(' ', '', ucwords(str_replace('_', ' ', $name))));
             }
             $table->setAttribute('name', $tableNames[$name]);
         }
         foreach ($document->getElementsByTagName('foreign-key') as $foreignKey) {
+            foreach (['onDelete', 'onUpdate'] as $action) {
+                if ($foreignKey->getAttribute($action) === 'RESTRICT') {
+                    if ($platform instanceof OraclePlatform) {
+                        $foreignKey->removeAttribute($action);
+                    } elseif ($platform instanceof MssqlPlatform) {
+                        $foreignKey->setAttribute($action, 'NO ACTION');
+                    }
+                }
+            }
             $name = $foreignKey->getAttribute('foreignTable');
             if (isset($tableNames[$name])) {
                 $foreignKey->setAttribute('foreignTable', $tableNames[$name]);
@@ -73,6 +118,11 @@ final class SchemaBuilder
         }
 
         $builder = new QuickBuilder();
+        if ($platform instanceof OraclePlatform) {
+            $builder->setConfig(new QuickGeneratorConfig(['propel' => ['generator' => [
+                'objectModel' => ['builders' => ['object' => ObjectBuilder::class]],
+            ]]]));
+        }
         $builder->setPlatform($platform);
         $builder->setSchema($document->saveXML());
 
