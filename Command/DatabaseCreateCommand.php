@@ -12,6 +12,7 @@ namespace Propel\Bundle\PropelBundle\Command;
 
 use InvalidArgumentException;
 use Override;
+use Propel\Bundle\PropelBundle\Util\DatabaseDsn;
 use Propel\Generator\Command\AbstractCommand as PropelAbstractCommand;
 use Propel\Runtime\Connection\ConnectionManagerSingle;
 use Propel\Runtime\Connection\Exception\ConnectionException;
@@ -65,6 +66,13 @@ class DatabaseCreateCommand extends AbstractCommand
     {
         $connectionName = $input->getOption('connection') ?: $this->getDefaultConnection();
         $config = $this->getConnectionData($connectionName);
+        if ($config['adapter'] === 'oracle') {
+            $output->writeln(
+                '<error>Oracle databases must be provisioned separately. Configure an existing Oracle schema.</error>'
+            );
+
+            return PropelAbstractCommand::CODE_ERROR;
+        }
         $dbName = $this->parseDbName($config['dsn']);
 
         if ($dbName === null) {
@@ -72,7 +80,7 @@ class DatabaseCreateCommand extends AbstractCommand
 
             return PropelAbstractCommand::CODE_ERROR;
         } else {
-            $query = "CREATE DATABASE $dbName;";
+            $query = 'CREATE DATABASE ' . DatabaseDsn::quoteDatabaseName($dbName, $config['adapter']);
         }
 
         $manager = new ConnectionManagerSingle($connectionName);
@@ -108,13 +116,7 @@ class DatabaseCreateCommand extends AbstractCommand
      */
     private function getTemporaryConfiguration(array $config): array
     {
-        $dbName = $this->parseDbName($config['dsn']);
-
-        $config['dsn'] = preg_replace(
-            "#;?(dbname|Database)=$dbName#",
-            '',
-            $config['dsn']
-        );
+        $config['dsn'] = DatabaseDsn::forAdministration($config['dsn']);
 
         return $config;
     }

@@ -95,3 +95,8 @@
     * Removed support for PHP 7.2 and 7.3
     * Removed deprecated content introduced in PHP 8.4 and 8.5
 * Updated `propel/propel` minimum version to its last beta release (2.0.0-beta4)
+
+### 7.1.1.1
+
+* Added support for Microsoft SQL Server and Oracle
+* Added support for PHP 8.6

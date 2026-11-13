@@ -5,6 +5,10 @@
 
 namespace Propel\Bundle\PropelBundle\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use Propel\Bundle\PropelBundle\Adapter\MssqlAdapter;
+use Propel\Bundle\PropelBundle\Adapter\OracleAdapter;
+use Propel\Bundle\PropelBundle\Adapter\SqlsrvAdapter;
 use Propel\Bundle\PropelBundle\Logger\PropelLogger;
 use Propel\Bundle\PropelBundle\PropelBundle;
 use Propel\Generator\Util\VfsTrait;
@@ -24,6 +28,39 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 class PropelBundleTest extends TestCase
 {
     use VfsTrait;
+
+    /**
+     * @return iterable
+     */
+    public static function databaseAdapters(): iterable
+    {
+        yield ['mssql', MssqlAdapter::class];
+        yield ['sqlsrv', SqlsrvAdapter::class];
+        yield ['oracle', OracleAdapter::class];
+    }
+
+    /**
+     * @param string $adapter
+     * @param string $expectedClass
+     * @return void
+     */
+    #[DataProvider(methodName: 'databaseAdapters')]
+    public function testUsesDatabaseCompatibilityAdapters(string $adapter, string $expectedClass): void
+    {
+        Propel::setServiceContainer(new StandardServiceContainer());
+        $this->initPropelBundle([
+            'paths' => ['loaderScriptDir' => 'not_exists'],
+            'database' => ['connections' => [
+                'database' => ['dsn' => 'unused:dsn', 'adapter' => $adapter],
+            ]],
+            'runtime' => ['defaultConnection' => 'database'],
+        ]);
+
+        self::assertInstanceOf(
+            $expectedClass,
+            Propel::getAdapter('database')
+        );
+    }
 
     /**
      * cant be tested with current implementation because it loads PropelExtension which look for file
@@ -55,6 +92,35 @@ class PropelBundleTest extends TestCase
 //        $container->compile();
 //        $this->assertTrue($container->hasExtension('security'));
 //    }
+
+    /**
+     * initialize PropelBundle with given configuration
+     * @param array<string, mixed> $configuration propel configuration parameters
+     * @param mixed $logger
+     * @return ContainerBuilder
+     */
+    private function initPropelBundle(array $configuration, mixed $logger = false): ContainerBuilder
+    {
+        // init new container
+        $container = $this->getContainer();
+
+        // logger optional
+        if ($logger !== false) {
+            $container->set('propel.logger', $logger);
+        }
+        // required to be set value dosant really mater
+        $container->setParameter('propel.logging', (bool)$logger);
+
+        // set config parameters
+        $container->setParameter('propel.configuration', $configuration);
+
+        // init PropelBundle
+        $propelBundleClass = new PropelBundle();
+        $propelBundleClass->setContainer($container);
+        $propelBundleClass->boot();
+
+        return $container;
+    }
 
     /**
      * @return void
@@ -160,35 +226,6 @@ class PropelBundleTest extends TestCase
         $this->assertInstanceOf(ConnectionManagerPrimaryReplica::class, $serviceContainer->getConnectionManager('mysource3'));
         // connection 2
         $this->assertInstanceOf(ConnectionManagerSingle::class, $serviceContainer->getConnectionManager('mysource4'));
-    }
-
-    /**
-     * initialize PropelBundle with given configuration
-     * @param array<string, mixed> $configuration propel configuration parameters
-     * @param mixed $logger
-     * @return ContainerBuilder
-     */
-    private function initPropelBundle(array $configuration, mixed $logger = false): ContainerBuilder
-    {
-        // init new container
-        $container = $this->getContainer();
-
-        // logger optional
-        if ($logger !== false) {
-            $container->set('propel.logger', $logger);
-        }
-        // required to be set value dosant really mater
-        $container->setParameter('propel.logging', (bool)$logger);
-
-        // set config parameters
-        $container->setParameter('propel.configuration', $configuration);
-
-        // init PropelBundle
-        $propelBundleClass = new PropelBundle();
-        $propelBundleClass->setContainer($container);
-        $propelBundleClass->boot();
-
-        return $container;
     }
 
     /**

@@ -1,0 +1,254 @@
+name: Database tests
+
+on:
+  workflow_call:
+    inputs:
+      database:
+        required: true
+        type: string
+      runner:
+        required: true
+        type: string
+      php-version:
+        required: true
+        type: string
+      dependencies:
+        type: string
+        default: highest
+      extensions:
+        required: true
+        type: string
+      service:
+        type: string
+        default: ''
+      docker-dsn:
+        required: true
+        type: string
+      native-dsn:
+        type: string
+        default: ''
+      windows-dsn:
+        type: string
+        default: ''
+      docker-user:
+        type: string
+        default: ''
+      native-user:
+        type: string
+        default: ''
+      password:
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  SYMFONY_REQUIRE: '6.4.*'
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 45
+    env:
+      MYSQL_TEST_PORT: '0'
+      MARIADB_TEST_PORT: '0'
+      POSTGRES_TEST_PORT: '0'
+      SQLSRV_TEST_PORT: '0'
+      ORACLE_TEST_PORT: '0'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP, with composer and extensions
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: ${{ inputs.php-version }}
+          extensions: ${{ inputs.extensions }}
+          coverage: none
+        env:
+          fail-fast: true
+
+      - name: Install Microsoft ODBC driver on Linux
+        if: runner.os == 'Linux' && inputs.database == 'sqlsrv'
+        run: |
+          source /etc/os-release
+          curl -fsSL "https://packages.microsoft.com/config/ubuntu/${VERSION_ID}/packages-microsoft-prod.deb" -o "$RUNNER_TEMP/packages-microsoft-prod.deb"
+          sudo dpkg -i "$RUNNER_TEMP/packages-microsoft-prod.deb"
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc
+          odbcinst -q -d -n 'ODBC Driver 18 for SQL Server'
+
+      - name: Install Microsoft ODBC driver on macOS
+        if: runner.os == 'macOS' && inputs.database == 'sqlsrv'
+        run: |
+          brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
+          if brew help trust >/dev/null 2>&1; then
+            brew trust microsoft/mssql-release
+          fi
+          HOMEBREW_ACCEPT_EULA=Y brew install msodbcsql18
+          odbcinst -q -d -n 'ODBC Driver 18 for SQL Server'
+
+      - name: Composer get cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Composer cache dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-${{ runner.arch }}-php-${{ inputs.php-version }}-${{ inputs.dependencies }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-php-${{ inputs.php-version }}-
+
+      - name: Setup Symfony Flex
+        run: |
+          composer global config --no-plugins allow-plugins.symfony/flex true
+          composer global require --no-progress --no-scripts --no-plugins symfony/flex
+
+      - name: Install dependencies
+        if: inputs.dependencies != 'lowest'
+        run: composer u -n --prefer-dist --no-progress --prefer-stable
+
+      - name: Install lowest supported dependencies
+        if: inputs.dependencies == 'lowest'
+        run: composer u -n --prefer-dist --no-progress --prefer-lowest --prefer-stable
+
+      - run: composer validate --strict
+
+      - name: Start Docker on macOS Intel
+        if: runner.os == 'macOS' && (inputs.service == 'sqlsrv' || inputs.service == 'oracle')
+        run: |
+          brew install colima docker docker-compose
+          mkdir -p "$HOME/.docker/cli-plugins"
+          ln -sf "$(brew --prefix)/opt/docker-compose/bin/docker-compose" "$HOME/.docker/cli-plugins/docker-compose"
+          colima start --vm-type vz --cpu 3 --memory 6 --disk 20
+          docker info
+
+      - name: Start database with Docker
+        id: database_docker
+        if: inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv')
+        run: |
+          docker compose -f Tests/compose.yaml up -d --wait --wait-timeout 600 "$DATABASE_SERVICE"
+          case "$DATABASE_SERVICE" in
+            mysql|mariadb) container_port=3306 ;;
+            postgres) container_port=5432 ;;
+            sqlsrv) container_port=1433 ;;
+            oracle) container_port=1521 ;;
+            *) echo "Unknown database service: $DATABASE_SERVICE" >&2; exit 1 ;;
+          esac
+          address=$(docker compose -f Tests/compose.yaml port "$DATABASE_SERVICE" "$container_port")
+          port=${address##*:}
+          if [[ ! "$port" =~ ^[0-9]+$ ]] || (( port == 0 )); then
+            echo "Cannot determine the published database port: $address" >&2
+            exit 1
+          fi
+          dsn=$(printf '%s' "$DATABASE_DSN" | sed -E "s/(127[.]0[.]0[.]1[:,])[0-9]+/\1${port}/; s/(;port=)[0-9]+/\1${port}/")
+          echo "dsn=$dsn" >> "$GITHUB_OUTPUT"
+        env:
+          DATABASE_SERVICE: ${{ inputs.service }}
+          DATABASE_DSN: ${{ inputs.docker-dsn }}
+
+      - name: Create SQL Server test database
+        if: runner.os != 'Windows' && inputs.service == 'sqlsrv'
+        run: >-
+          docker compose -f Tests/compose.yaml exec -T sqlsrv
+          /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Bundle_test_2026!' -C -b
+          -Q 'CREATE DATABASE propel_bundle'
+
+      - name: Start native MySQL
+        if: runner.os == 'macOS' && inputs.database == 'mysql'
+        uses: ankane/setup-mysql@4aa1b08412d4c8bf537fea5bc412e4e831d839d7 # v1
+        with:
+          mysql-version: '8.4'
+          database: propel_bundle
+          user: ci
+
+      - name: Start MySQL on Windows
+        id: mysql_windows
+        if: runner.os == 'Windows' && inputs.database == 'mysql'
+        shell: pwsh
+        run: ./.github/scripts/mysql.ps1 -Database propel_bundle
+
+      - name: Start native MariaDB
+        if: runner.os != 'Linux' && inputs.database == 'mariadb'
+        uses: ankane/setup-mariadb@e34d4859081a8192918ea2302b7c9a71475a0d73 # v1
+        with:
+          mariadb-version: '11.4'
+          database: propel_bundle
+          user: ci
+
+      - name: Start native PostgreSQL
+        if: runner.os != 'Linux' && inputs.database == 'postgres'
+        uses: ankane/setup-postgres@b1a598d92f86cb2ed364411898d150d4eac6d5ca # v1
+        with:
+          postgres-version: '17'
+          database: propel_bundle
+          user: ci
+
+      - name: Start native SQL Server LocalDB
+        if: runner.os == 'Windows' && inputs.database == 'sqlsrv'
+        shell: powershell
+        run: |
+          $localDb = Get-ChildItem 'C:\Program Files\Microsoft SQL Server\*\Tools\Binn\SqlLocalDB.exe' |
+            Sort-Object FullName -Descending | Select-Object -First 1
+          if ($null -eq $localDb) { throw 'SQL Server LocalDB was not found.' }
+          & $localDb.FullName create PropelBundle -s
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot start SQL Server LocalDB.' }
+          $connection = New-Object System.Data.SqlClient.SqlConnection 'Server=(localdb)\PropelBundle;Database=master;Integrated Security=True'
+          try {
+            $connection.Open()
+            $command = $connection.CreateCommand()
+            $command.CommandText = 'CREATE DATABASE propel_bundle'
+            $command.ExecuteNonQuery()
+          } finally {
+            $connection.Dispose()
+          }
+
+      - name: Run tests
+        run: |
+          if [[ "$TEST_DSN" == sqlsrv:* ]]; then
+            php -r '$pdo = new PDO(getenv("TEST_DSN"), getenv("TEST_USER") ?: null, getenv("TEST_PASSWORD") ?: null); $pdo->query("SELECT 1"); echo "SQL Server PDO connection OK\n";'
+          fi
+          composer test -- --display-deprecations --display-phpunit-deprecations
+        env:
+          TEST_DSN: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') && steps.database_docker.outputs.dsn || runner.os == 'Windows' && inputs.windows-dsn || inputs.native-dsn }}
+          TEST_USER: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') && inputs.docker-user || inputs.native-user }}
+          TEST_PASSWORD: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') && inputs.password || runner.os == 'Windows' && inputs.database == 'mysql' && steps.mysql_windows.outputs.password || '' }}
+
+      - name: Stop MySQL on Windows
+        if: ${{ always() && runner.os == 'Windows' && inputs.database == 'mysql' }}
+        shell: pwsh
+        run: ./.github/scripts/mysql.ps1 -Action Stop
+
+      - name: Database logs on failure
+        if: ${{ failure() && inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') }}
+        run: docker compose -f Tests/compose.yaml logs "$DATABASE_SERVICE"
+        env:
+          DATABASE_SERVICE: ${{ inputs.service }}
+
+      - name: Stop test databases
+        if: ${{ always() && inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') }}
+        run: docker compose -f Tests/compose.yaml down --volumes
+
+      - name: Stop Docker on macOS Intel
+        if: ${{ always() && runner.os == 'macOS' && inputs.service == 'sqlsrv' }}
+        run: colima stop
+
+      - name: Stop native SQL Server LocalDB
+        if: ${{ always() && runner.os == 'Windows' && inputs.database == 'sqlsrv' }}
+        shell: powershell
+        run: |
+          $localDb = Get-ChildItem 'C:\Program Files\Microsoft SQL Server\*\Tools\Binn\SqlLocalDB.exe' |
+            Sort-Object FullName -Descending | Select-Object -First 1
+          if ($null -ne $localDb) {
+            & $localDb.FullName stop PropelBundle -k
+            & $localDb.FullName delete PropelBundle
+          }
+

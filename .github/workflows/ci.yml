@@ -21,8 +21,7 @@ env:
 
 jobs:
   sqlite:
-    name: "Test Suite (SQLite, ${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})"
-    runs-on: ${{ matrix.platform.runner }}
+    name: 'SQLite (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
     strategy:
       fail-fast: false
       matrix:
@@ -31,23 +30,24 @@ jobs:
           - '8.3'
           - '8.4'
           - '8.5'
+          - '8.6'
         platform:
-          - name: Linux arm64
+          - name: 'Linux arm64'
             runner: ubuntu-26.04-arm
-          - name: Linux x64
+          - name: 'Linux x64'
             runner: ubuntu-26.04
-          - name: Windows arm64
+          - name: 'Windows arm64'
             runner: windows-11-arm
-          - name: Windows x64
+          - name: 'Windows x64'
             runner: windows-2025
-          - name: macOS arm64
+          - name: 'macOS Apple Silicon'
             runner: macos-26
-          - name: macOS Intel
+          - name: 'macOS Intel'
             runner: macos-26-intel
         include:
           - php-version: '8.2'
             platform:
-              name: Linux x64
+              name: 'Linux x64'
               runner: ubuntu-26.04
             dependencies: lowest
 
@@ -92,232 +92,206 @@ jobs:
       - run: composer test -- --display-deprecations --display-phpunit-deprecations
 
   mysql:
-    name: "Test Suite (MySQL, ${{ matrix.os }}, PHP ${{ matrix.php-version }})"
-    runs-on: ${{ matrix.os }}
+    name: 'MySQL (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-26.04
-          - ubuntu-26.04-arm
-          - windows-2025
-          - macos-26
-          - macos-26-intel
         php-version:
           - '8.2'
           - '8.3'
           - '8.4'
           - '8.5'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-version }}
-          extensions: pdo_mysql, pdo_sqlite
-          coverage: none
-
-      - name: Composer get cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
-
-      - name: Composer cache dependencies
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-${{ runner.arch }}-php-${{ matrix.php-version }}-highest-composer-${{ hashFiles('composer.json') }}
-          restore-keys: ${{ runner.os }}-${{ runner.arch }}-php-${{ matrix.php-version }}-
-
-      - name: Install dependencies with Symfony Flex
-        run: |
-          composer global config --no-plugins allow-plugins.symfony/flex true
-          composer global require --no-progress --no-scripts --no-plugins symfony/flex
-          composer u -n --prefer-dist --no-progress --prefer-stable
-
-      - run: composer validate --strict
-
-      - name: Start MySQL with Docker on Linux
-        if: runner.os == 'Linux'
-        run: docker compose -f Tests/compose.yaml up -d --wait mysql
-
-      - name: Start native MySQL
-        if: runner.os != 'Linux'
-        uses: ankane/setup-mysql@v1
-        with:
-          mysql-version: '8.4'
-          database: propel_bundle
-          user: ci
-
-      - name: Run MySQL tests
-        run: composer test -- --display-deprecations --display-phpunit-deprecations
-        env:
-          TEST_DSN: mysql:host=127.0.0.1;port=${{ runner.os == 'Linux' && '33381' || '3306' }};dbname=propel_bundle
-          TEST_USER: ${{ runner.os == 'Linux' && 'root' || 'ci' }}
-          TEST_PASSWORD: ${{ runner.os == 'Linux' && 'bundle_test' || '' }}
-
-      - name: Stop test databases
-        if: ${{ always() && runner.os == 'Linux' }}
-        run: docker compose -f Tests/compose.yaml down --volumes
+          - '8.6'
+        platform:
+          - name: 'Linux x64'
+            runner: ubuntu-26.04
+          - name: 'Linux arm64'
+            runner: ubuntu-26.04-arm
+          - name: 'Windows x64'
+            runner: windows-2025
+          - name: 'macOS Apple Silicon'
+            runner: macos-26
+          - name: 'macOS Intel'
+            runner: macos-26-intel
+    uses: ./.github/workflows/test-database.yml
+    with:
+      database: mysql
+      runner: '${{ matrix.platform.runner }}'
+      php-version: '${{ matrix.php-version }}'
+      extensions: 'pdo_mysql, pdo_sqlite'
+      service: mysql
+      docker-dsn: 'mysql:host=127.0.0.1;port=33381;dbname=propel_bundle'
+      native-dsn: 'mysql:host=127.0.0.1;port=3306;dbname=propel_bundle'
+      windows-dsn: 'mysql:host=127.0.0.1;port=3307;dbname=propel_bundle'
+      docker-user: root
+      native-user: ci
+      password: Bundle_test_2026!
 
   mariadb:
-    name: "Test Suite (MariaDB, ${{ matrix.os }}, PHP ${{ matrix.php-version }})"
-    runs-on: ${{ matrix.os }}
+    name: 'MariaDB (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-26.04
-          - ubuntu-26.04-arm
-          - windows-2025
-          - macos-26
-          - macos-26-intel
         php-version:
           - '8.2'
           - '8.3'
           - '8.4'
           - '8.5'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-version }}
-          extensions: pdo_mysql, pdo_sqlite
-          coverage: none
-
-      - name: Composer get cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
-
-      - name: Composer cache dependencies
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-${{ runner.arch }}-php-${{ matrix.php-version }}-highest-composer-${{ hashFiles('composer.json') }}
-          restore-keys: ${{ runner.os }}-${{ runner.arch }}-php-${{ matrix.php-version }}-
-
-      - name: Install dependencies with Symfony Flex
-        run: |
-          composer global config --no-plugins allow-plugins.symfony/flex true
-          composer global require --no-progress --no-scripts --no-plugins symfony/flex
-          composer u -n --prefer-dist --no-progress --prefer-stable
-
-      - run: composer validate --strict
-
-      - name: Start MariaDB with Docker on Linux
-        if: runner.os == 'Linux'
-        run: docker compose -f Tests/compose.yaml up -d --wait mariadb
-
-      - name: Start native MariaDB
-        if: runner.os != 'Linux'
-        uses: ankane/setup-mariadb@v1
-        with:
-          mariadb-version: '11.4'
-          database: propel_bundle
-          user: ci
-
-      - name: Run MariaDB tests
-        run: composer test -- --display-deprecations --display-phpunit-deprecations
-        env:
-          TEST_DSN: mysql:host=127.0.0.1;port=${{ runner.os == 'Linux' && '33382' || '3306' }};dbname=propel_bundle
-          TEST_USER: ${{ runner.os == 'Linux' && 'root' || 'ci' }}
-          TEST_PASSWORD: ${{ runner.os == 'Linux' && 'bundle_test' || '' }}
-
-      - name: Stop test databases
-        if: ${{ always() && runner.os == 'Linux' }}
-        run: docker compose -f Tests/compose.yaml down --volumes
+          - '8.6'
+        platform:
+          - name: 'Linux x64'
+            runner: ubuntu-26.04
+          - name: 'Linux arm64'
+            runner: ubuntu-26.04-arm
+          - name: 'Windows x64'
+            runner: windows-2025
+          - name: 'macOS Apple Silicon'
+            runner: macos-26
+          - name: 'macOS Intel'
+            runner: macos-26-intel
+    uses: ./.github/workflows/test-database.yml
+    with:
+      database: mariadb
+      runner: '${{ matrix.platform.runner }}'
+      php-version: '${{ matrix.php-version }}'
+      extensions: 'pdo_mysql, pdo_sqlite'
+      service: mariadb
+      docker-dsn: 'mysql:host=127.0.0.1;port=33382;dbname=propel_bundle'
+      native-dsn: 'mysql:host=127.0.0.1;port=3306;dbname=propel_bundle'
+      docker-user: root
+      native-user: ci
+      password: Bundle_test_2026!
 
   postgres:
-    name: "Test Suite (PostgreSQL, ${{ matrix.os }}, PHP ${{ matrix.php-version }})"
-    runs-on: ${{ matrix.os }}
+    name: 'PostgreSQL (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-26.04
-          - ubuntu-26.04-arm
-          - windows-2025
-          - macos-26
-          - macos-26-intel
         php-version:
           - '8.2'
           - '8.3'
           - '8.4'
           - '8.5'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+          - '8.6'
+        platform:
+          - name: 'Linux x64'
+            runner: ubuntu-26.04
+          - name: 'Linux arm64'
+            runner: ubuntu-26.04-arm
+          - name: 'Windows x64'
+            runner: windows-2025
+          - name: 'macOS Apple Silicon'
+            runner: macos-26
+          - name: 'macOS Intel'
+            runner: macos-26-intel
+    uses: ./.github/workflows/test-database.yml
+    with:
+      database: postgres
+      runner: '${{ matrix.platform.runner }}'
+      php-version: '${{ matrix.php-version }}'
+      extensions: 'pdo_pgsql, pdo_sqlite'
+      service: postgres
+      docker-dsn: 'pgsql:host=127.0.0.1;port=35453;dbname=propel_bundle'
+      native-dsn: 'pgsql:host=127.0.0.1;port=5432;dbname=propel_bundle'
+      docker-user: postgres
+      native-user: ci
+      password: Bundle_test_2026!
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-version }}
-          extensions: pdo_pgsql, pdo_sqlite
-          coverage: none
+  sqlsrv:
+    name: 'SQL Server (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - '8.2'
+          - '8.3'
+          - '8.4'
+          - '8.5'
+          - '8.6'
+        platform:
+          - name: 'Linux x64'
+            runner: ubuntu-26.04
+          - name: 'Windows x64'
+            runner: windows-2025
+          - name: 'macOS Intel'
+            runner: macos-26-intel
+    uses: ./.github/workflows/test-database.yml
+    with:
+      database: sqlsrv
+      runner: '${{ matrix.platform.runner }}'
+      php-version: '${{ matrix.php-version }}'
+      extensions: 'pdo_sqlsrv, pdo_sqlite'
+      service: sqlsrv
+      docker-dsn: 'sqlsrv:Server=127.0.0.1,31433;Database=propel_bundle;TrustServerCertificate=1'
+      native-dsn: 'sqlsrv:Server=(localdb)\PropelBundle;Database=propel_bundle;TrustServerCertificate=1'
+      docker-user: sa
+      password: Bundle_test_2026!
 
-      - name: Composer get cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+  mssql:
+    name: 'MSSQL (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - '8.2'
+          - '8.3'
+          - '8.4'
+          - '8.5'
+          - '8.6'
+        platform:
+          - name: 'Linux x64'
+            runner: ubuntu-26.04
+          - name: 'macOS Intel'
+            runner: macos-26-intel
+    uses: ./.github/workflows/test-database.yml
+    with:
+      database: mssql
+      runner: '${{ matrix.platform.runner }}'
+      php-version: '${{ matrix.php-version }}'
+      extensions: 'pdo_dblib, pdo_sqlite'
+      service: sqlsrv
+      docker-dsn: 'dblib:host=127.0.0.1:31433;dbname=propel_bundle;charset=UTF-8;version=7.4'
+      docker-user: sa
+      password: Bundle_test_2026!
 
-      - name: Composer cache dependencies
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-${{ runner.arch }}-php-${{ matrix.php-version }}-highest-composer-${{ hashFiles('composer.json') }}
-          restore-keys: ${{ runner.os }}-${{ runner.arch }}-php-${{ matrix.php-version }}-
-
-      - name: Install dependencies with Symfony Flex
-        run: |
-          composer global config --no-plugins allow-plugins.symfony/flex true
-          composer global require --no-progress --no-scripts --no-plugins symfony/flex
-          composer u -n --prefer-dist --no-progress --prefer-stable
-
-      - run: composer validate --strict
-
-      - name: Start PostgreSQL with Docker on Linux
-        if: runner.os == 'Linux'
-        run: docker compose -f Tests/compose.yaml up -d --wait postgres
-
-      - name: Start native PostgreSQL
-        if: runner.os != 'Linux'
-        uses: ankane/setup-postgres@v1
-        with:
-          postgres-version: '17'
-          database: propel_bundle
-          user: ci
-
-      - name: Run PostgreSQL tests
-        run: composer test -- --display-deprecations --display-phpunit-deprecations
-        env:
-          TEST_DSN: pgsql:host=127.0.0.1;port=${{ runner.os == 'Linux' && '35453' || '5432' }};dbname=propel_bundle
-          TEST_USER: ${{ runner.os == 'Linux' && 'postgres' || 'ci' }}
-          TEST_PASSWORD: ${{ runner.os == 'Linux' && 'bundle_test' || '' }}
-
-      - name: Stop test databases
-        if: ${{ always() && runner.os == 'Linux' }}
-        run: docker compose -f Tests/compose.yaml down --volumes
+  oracle:
+    name: 'Oracle (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - '8.2'
+          - '8.3'
+          - '8.4'
+          - '8.5'
+#          - '8.6'
+        platform:
+          - name: 'Linux x64'
+            runner: ubuntu-26.04
+          - name: 'Linux arm64'
+            runner: ubuntu-26.04-arm
+    uses: ./.github/workflows/test-database.yml
+    with:
+      database: oracle
+      runner: '${{ matrix.platform.runner }}'
+      php-version: '${{ matrix.php-version }}'
+      extensions: 'pdo_oci, pdo_sqlite'
+      service: oracle
+      docker-dsn: 'oci:dbname=//127.0.0.1:31521/FREEPDB1;charset=AL32UTF8'
+      docker-user: propel_bundle
+      password: bundle_test
 
   coverage:
     name: Coverage, PHP 8.4
     runs-on: ubuntu-26.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.4'
           extensions: pdo_sqlite
@@ -328,7 +302,7 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
       - name: Composer cache dependencies
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-${{ runner.arch }}-php-8.4-coverage-composer-${{ hashFiles('composer.json') }}
@@ -338,15 +312,20 @@ jobs:
         run: |
           composer global config --no-plugins allow-plugins.symfony/flex true
           composer global require --no-progress --no-scripts --no-plugins symfony/flex
+          export COMPOSER_IGNORE_PLATFORM_REQ=php+
           composer u -n --prefer-dist --no-progress --prefer-stable
 
       - run: composer validate --strict
+      - name: Check coverage extensions
+        run: |
+          php --ri xdebug
+          php --ri pdo_sqlite
       - run: composer test:coverage -- --display-deprecations --display-phpunit-deprecations
         env:
           XDEBUG_MODE: coverage
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: Tests/coverage.xml
@@ -357,7 +336,7 @@ jobs:
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
