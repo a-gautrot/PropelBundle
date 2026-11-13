@@ -31,6 +31,7 @@ jobs:
           - '8.3'
           - '8.4'
           - '8.5'
+          - '8.6'
         platform:
           - name: 'Linux arm64'
             runner: ubuntu-26.04-arm
@@ -71,6 +72,7 @@ jobs:
           - '8.3'
           - '8.4'
           - '8.5'
+          - '8.6'
         platform:
           - name: 'Linux x64'
             runner: ubuntu-26.04
@@ -91,6 +93,7 @@ jobs:
       service: mysql
       docker-dsn: 'mysql:host=127.0.0.1;port=33381;dbname=propel_bundle'
       native-dsn: 'mysql:host=127.0.0.1;port=3306;dbname=propel_bundle'
+      windows-dsn: 'mysql:host=127.0.0.1;port=3307;dbname=propel_bundle'
       docker-user: root
       native-user: ci
       password: Bundle_test_2026!
@@ -106,6 +109,7 @@ jobs:
           - '8.3'
           - '8.4'
           - '8.5'
+          - '8.6'
         platform:
           - name: 'Linux x64'
             runner: ubuntu-26.04
@@ -141,6 +145,7 @@ jobs:
           - '8.3'
           - '8.4'
           - '8.5'
+          - '8.6'
         platform:
           - name: 'Linux x64'
             runner: ubuntu-26.04
@@ -177,6 +182,7 @@ jobs:
           - '8.3'
           - '8.4'
           - '8.5'
+          - '8.6'
         platform:
           - name: 'Linux x64'
             runner: ubuntu-26.04
@@ -206,6 +212,7 @@ jobs:
           - '8.3'
           - '8.4'
           - '8.5'
+          - '8.6'
         platform:
           - name: 'Linux x64'
             runner: ubuntu-26.04
@@ -232,6 +239,7 @@ jobs:
           - '8.3'
           - '8.4'
           - '8.5'
+          - '8.6'
         platform:
           - name: 'Linux x64'
             runner: ubuntu-26.04

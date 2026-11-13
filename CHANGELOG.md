@@ -55,3 +55,4 @@
 ### 6.1.1.1
 
 * Added support for Microsoft SQL Server and Oracle
+* Added support for PHP 8.6

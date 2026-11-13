@@ -27,6 +27,9 @@ on:
       native-dsn:
         type: string
         default: ''
+      windows-dsn:
+        type: string
+        default: ''
       docker-user:
         type: string
         default: ''
@@ -107,12 +110,18 @@ jobs:
           -Q 'CREATE DATABASE propel_bundle'
 
       - name: Start native MySQL
-        if: runner.os != 'Linux' && inputs.database == 'mysql'
+        if: runner.os == 'macOS' && inputs.database == 'mysql'
         uses: ankane/setup-mysql@4aa1b08412d4c8bf537fea5bc412e4e831d839d7 # v1
         with:
           mysql-version: '8.4'
           database: propel_bundle
           user: ci
+
+      - name: Start MySQL on Windows
+        id: mysql_windows
+        if: runner.os == 'Windows' && inputs.database == 'mysql'
+        shell: pwsh
+        run: ./.github/scripts/mysql.ps1 -Database propel_bundle
 
       - name: Start native MariaDB
         if: runner.os != 'Linux' && inputs.database == 'mariadb'
@@ -152,9 +161,14 @@ jobs:
       - name: Run tests
         run: composer test -- --display-deprecations --display-phpunit-deprecations
         env:
-          TEST_DSN: ${{ runner.os == 'Linux' && inputs.docker-dsn || inputs.native-dsn }}
+          TEST_DSN: ${{ runner.os == 'Linux' && inputs.docker-dsn || runner.os == 'Windows' && inputs.windows-dsn || inputs.native-dsn }}
           TEST_USER: ${{ runner.os == 'Linux' && inputs.docker-user || inputs.native-user }}
-          TEST_PASSWORD: ${{ runner.os == 'Linux' && inputs.password || '' }}
+          TEST_PASSWORD: ${{ runner.os == 'Linux' && inputs.password || runner.os == 'Windows' && inputs.database == 'mysql' && steps.mysql_windows.outputs.password || '' }}
+
+      - name: Stop MySQL on Windows
+        if: ${{ always() && runner.os == 'Windows' && inputs.database == 'mysql' }}
+        shell: pwsh
+        run: ./.github/scripts/mysql.ps1 -Action Stop
 
       - name: Database logs on failure
         if: ${{ failure() && runner.os == 'Linux' && inputs.service != '' }}
