@@ -179,7 +179,7 @@ jobs:
       password: Bundle_test_2026!
 
   sqlsrv:
-    name: 'SQL Server / PDO_SQLSRV (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
+    name: 'SQL Server (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
     strategy:
       fail-fast: false
       matrix:
@@ -212,7 +212,7 @@ jobs:
       password: Bundle_test_2026!
 
   mssql:
-    name: 'MSSQL / FreeTDS (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
+    name: 'MSSQL (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
     strategy:
       fail-fast: false
       matrix:

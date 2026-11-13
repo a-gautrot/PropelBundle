@@ -55,6 +55,12 @@ jobs:
     name: Tests
     runs-on: ${{ inputs.runner }}
     timeout-minutes: 45
+    env:
+      MYSQL_TEST_PORT: '0'
+      MARIADB_TEST_PORT: '0'
+      POSTGRES_TEST_PORT: '0'
+      SQLSRV_TEST_PORT: '0'
+      ORACLE_TEST_PORT: '0'
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -69,6 +75,26 @@ jobs:
           coverage: none
         env:
           fail-fast: true
+
+      - name: Install Microsoft ODBC driver on Linux
+        if: runner.os == 'Linux' && inputs.database == 'sqlsrv'
+        run: |
+          source /etc/os-release
+          curl -fsSL "https://packages.microsoft.com/config/ubuntu/${VERSION_ID}/packages-microsoft-prod.deb" -o "$RUNNER_TEMP/packages-microsoft-prod.deb"
+          sudo dpkg -i "$RUNNER_TEMP/packages-microsoft-prod.deb"
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc
+          odbcinst -q -d -n 'ODBC Driver 18 for SQL Server'
+
+      - name: Install Microsoft ODBC driver on macOS
+        if: runner.os == 'macOS' && inputs.database == 'sqlsrv'
+        run: |
+          brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
+          if brew commands | grep -qx trust; then
+            brew trust microsoft/mssql-release
+          fi
+          HOMEBREW_ACCEPT_EULA=Y brew install msodbcsql18
+          odbcinst -q -d -n 'ODBC Driver 18 for SQL Server'
 
       - name: Composer get cache directory
         id: composer-cache
@@ -112,10 +138,28 @@ jobs:
           docker info
 
       - name: Start database with Docker
+        id: database_docker
         if: inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && (inputs.service == 'sqlsrv' || inputs.service == 'oracle'))
-        run: docker compose -f Tests/compose.yaml up -d --wait --wait-timeout 600 "$DATABASE_SERVICE"
+        run: |
+          docker compose -f Tests/compose.yaml up -d --wait --wait-timeout 600 "$DATABASE_SERVICE"
+          case "$DATABASE_SERVICE" in
+            mysql|mariadb) container_port=3306 ;;
+            postgres) container_port=5432 ;;
+            sqlsrv) container_port=1433 ;;
+            oracle) container_port=1521 ;;
+            *) echo "Unknown database service: $DATABASE_SERVICE" >&2; exit 1 ;;
+          esac
+          address=$(docker compose -f Tests/compose.yaml port "$DATABASE_SERVICE" "$container_port")
+          port=${address##*:}
+          if [[ ! "$port" =~ ^[0-9]+$ ]] || (( port == 0 )); then
+            echo "Cannot determine the published database port: $address" >&2
+            exit 1
+          fi
+          dsn=$(printf '%s' "$DATABASE_DSN" | sed -E "s/(127[.]0[.]0[.]1[:,])[0-9]+/\1${port}/; s/(;port=)[0-9]+/\1${port}/")
+          echo "dsn=$dsn" >> "$GITHUB_OUTPUT"
         env:
           DATABASE_SERVICE: ${{ inputs.service }}
+          DATABASE_DSN: ${{ inputs.docker-dsn }}
 
       - name: Create SQL Server test database
         if: runner.os != 'Windows' && inputs.service == 'sqlsrv'
@@ -179,9 +223,13 @@ jobs:
         run: ./.github/scripts/oracle.ps1
 
       - name: Run tests
-        run: composer test -- --display-deprecations --display-phpunit-deprecations
+        run: |
+          if [[ "$TEST_DSN" == sqlsrv:* ]]; then
+            php -r '$pdo = new PDO(getenv("TEST_DSN"), getenv("TEST_USER") ?: null, getenv("TEST_PASSWORD") ?: null); $pdo->query("SELECT 1"); echo "SQL Server PDO connection OK\n";'
+          fi
+          composer test -- --display-deprecations --display-phpunit-deprecations
         env:
-          TEST_DSN: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && (inputs.service == 'sqlsrv' || inputs.service == 'oracle')) && inputs.docker-dsn || runner.os == 'Windows' && inputs.windows-dsn || inputs.native-dsn }}
+          TEST_DSN: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && (inputs.service == 'sqlsrv' || inputs.service == 'oracle')) && steps.database_docker.outputs.dsn || runner.os == 'Windows' && inputs.windows-dsn || inputs.native-dsn }}
           TEST_USER: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && (inputs.service == 'sqlsrv' || inputs.service == 'oracle')) && inputs.docker-user || inputs.native-user }}
           TEST_PASSWORD: ${{ (runner.os == 'Linux' || inputs.database == 'oracle' || runner.os == 'macOS' && inputs.service == 'sqlsrv') && inputs.password || runner.os == 'Windows' && inputs.database == 'mysql' && steps.mysql_windows.outputs.password || '' }}
 
