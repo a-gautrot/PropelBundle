@@ -88,12 +88,12 @@ XML
         try {
             $create = new DatabaseCreateCommand($container);
             $create->setApplication(new Application($kernel));
-            self::assertSame(0, (new CommandTester($create))->execute([]));
+            self::assertSame(0, new CommandTester($create)->execute([]));
             self::assertNotNull($admin->query("SELECT DB_ID('$name')")->fetchColumn());
 
             $drop = new DatabaseDropCommand($container);
             $drop->setApplication(new Application($kernel));
-            self::assertSame(0, (new CommandTester($drop))->execute(['--force' => true]));
+            self::assertSame(0, new CommandTester($drop)->execute(['--force' => true]));
             self::assertNull($admin->query("SELECT DB_ID('$name')")->fetchColumn());
         } finally {
             $admin->exec('DROP DATABASE IF EXISTS ' . DatabaseDsn::quoteDatabaseName($name, 'sqlsrv'));

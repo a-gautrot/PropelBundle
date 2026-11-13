@@ -36,7 +36,7 @@ class DatabaseTableManagerTest extends TestCase
             return 0;
         });
         try {
-            (new DatabaseTableManager($connection, new MysqlAdapter()))->dropTables(['book']);
+            new DatabaseTableManager($connection, new MysqlAdapter())->dropTables(['book']);
             self::fail('Expected the database error.');
         } catch (RuntimeException $exception) {
             self::assertSame('drop failed', $exception->getMessage());
@@ -55,7 +55,7 @@ class DatabaseTableManagerTest extends TestCase
         $connection->expects(self::never())->method('beginTransaction');
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('outside the selection');
-        (new DatabaseTableManager($connection, new SqlsrvAdapter()))->dropTables(['book']);
+        new DatabaseTableManager($connection, new SqlsrvAdapter())->dropTables(['book']);
     }
 
     /**
@@ -94,7 +94,7 @@ class DatabaseTableManagerTest extends TestCase
             return 0;
         });
         try {
-            (new DatabaseTableManager($connection, new SqlsrvAdapter()))->dropTables(['book', 'author']);
+            new DatabaseTableManager($connection, new SqlsrvAdapter())->dropTables(['book', 'author']);
             self::fail('Expected the database error.');
         } catch (RuntimeException $exception) {
             self::assertSame('drop failed', $exception->getMessage());
@@ -111,6 +111,6 @@ class DatabaseTableManagerTest extends TestCase
     {
         $connection = $this->createMock(ConnectionInterface::class);
         $connection->expects(self::once())->method('exec')->with('DROP TABLE "Book""s" CASCADE CONSTRAINTS')->willReturn(0);
-        (new DatabaseTableManager($connection, new OracleAdapter()))->dropTables(['Book"s']);
+        new DatabaseTableManager($connection, new OracleAdapter())->dropTables(['Book"s']);
     }
 }

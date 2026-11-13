@@ -51,7 +51,7 @@ class OracleConfigurationTest extends TestCase
             ];
         }
         $container = $this->getContainer();
-        (new PropelExtension())->load([[
+        new PropelExtension()->load([[
             'database' => ['connections' => $connections], 'generator' => $generator,
         ]], $container);
         $config = $container->getParameter('propel.configuration');
