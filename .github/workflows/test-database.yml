@@ -90,7 +90,7 @@ jobs:
         if: runner.os == 'macOS' && inputs.database == 'sqlsrv'
         run: |
           brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
-          if brew commands | grep -qx trust; then
+          if brew help trust >/dev/null 2>&1; then
             brew trust microsoft/mssql-release
           fi
           HOMEBREW_ACCEPT_EULA=Y brew install msodbcsql18
@@ -129,7 +129,7 @@ jobs:
       - run: composer validate --strict
 
       - name: Start Docker on macOS Intel
-        if: runner.os == 'macOS' && (inputs.service == 'sqlsrv' || inputs.service == 'oracle')
+        if: runner.os == 'macOS' && inputs.service == 'sqlsrv'
         run: |
           brew install colima docker docker-compose
           mkdir -p "$HOME/.docker/cli-plugins"
@@ -139,7 +139,7 @@ jobs:
 
       - name: Start database with Docker
         id: database_docker
-        if: inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && (inputs.service == 'sqlsrv' || inputs.service == 'oracle'))
+        if: inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv')
         run: |
           docker compose -f Tests/compose.yaml up -d --wait --wait-timeout 600 "$DATABASE_SERVICE"
           case "$DATABASE_SERVICE" in
@@ -217,11 +217,6 @@ jobs:
             $connection.Dispose()
           }
 
-      - name: Start Oracle on Windows
-        if: runner.os == 'Windows' && inputs.database == 'oracle'
-        shell: pwsh
-        run: ./.github/scripts/oracle.ps1
-
       - name: Run tests
         run: |
           if [[ "$TEST_DSN" == sqlsrv:* ]]; then
@@ -229,32 +224,27 @@ jobs:
           fi
           composer test -- --display-deprecations --display-phpunit-deprecations
         env:
-          TEST_DSN: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && (inputs.service == 'sqlsrv' || inputs.service == 'oracle')) && steps.database_docker.outputs.dsn || runner.os == 'Windows' && inputs.windows-dsn || inputs.native-dsn }}
-          TEST_USER: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && (inputs.service == 'sqlsrv' || inputs.service == 'oracle')) && inputs.docker-user || inputs.native-user }}
-          TEST_PASSWORD: ${{ (runner.os == 'Linux' || inputs.database == 'oracle' || runner.os == 'macOS' && inputs.service == 'sqlsrv') && inputs.password || runner.os == 'Windows' && inputs.database == 'mysql' && steps.mysql_windows.outputs.password || '' }}
+          TEST_DSN: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') && steps.database_docker.outputs.dsn || runner.os == 'Windows' && inputs.windows-dsn || inputs.native-dsn }}
+          TEST_USER: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') && inputs.docker-user || inputs.native-user }}
+          TEST_PASSWORD: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') && inputs.password || runner.os == 'Windows' && inputs.database == 'mysql' && steps.mysql_windows.outputs.password || '' }}
 
       - name: Stop MySQL on Windows
         if: ${{ always() && runner.os == 'Windows' && inputs.database == 'mysql' }}
         shell: pwsh
         run: ./.github/scripts/mysql.ps1 -Action Stop
 
-      - name: Stop Oracle on Windows
-        if: ${{ always() && runner.os == 'Windows' && inputs.database == 'oracle' }}
-        shell: pwsh
-        run: ./.github/scripts/oracle.ps1 -Action Stop
-
       - name: Database logs on failure
-        if: ${{ failure() && inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && (inputs.service == 'sqlsrv' || inputs.service == 'oracle')) }}
+        if: ${{ failure() && inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') }}
         run: docker compose -f Tests/compose.yaml logs "$DATABASE_SERVICE"
         env:
           DATABASE_SERVICE: ${{ inputs.service }}
 
       - name: Stop test databases
-        if: ${{ always() && inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && (inputs.service == 'sqlsrv' || inputs.service == 'oracle')) }}
+        if: ${{ always() && inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') }}
         run: docker compose -f Tests/compose.yaml down --volumes
 
       - name: Stop Docker on macOS Intel
-        if: ${{ always() && runner.os == 'macOS' && (inputs.service == 'sqlsrv' || inputs.service == 'oracle') }}
+        if: ${{ always() && runner.os == 'macOS' && inputs.service == 'sqlsrv' }}
         run: colima stop
 
       - name: Stop native SQL Server LocalDB

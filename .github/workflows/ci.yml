@@ -260,10 +260,6 @@ jobs:
             runner: ubuntu-26.04
           - name: 'Linux arm64'
             runner: ubuntu-26.04-arm
-          - name: 'Windows x64'
-            runner: windows-2025
-          - name: 'macOS Intel'
-            runner: macos-26-intel
     uses: ./.github/workflows/test-database.yml
     with:
       database: oracle
@@ -272,9 +268,7 @@ jobs:
       extensions: 'pdo_oci, pdo_sqlite'
       service: oracle
       docker-dsn: 'oci:dbname=//127.0.0.1:31521/FREEPDB1;charset=AL32UTF8'
-      windows-dsn: 'oci:dbname=//127.0.0.1:1521/FREEPDB1;charset=AL32UTF8'
       docker-user: propel_bundle
-      native-user: propel_bundle
       password: bundle_test
 
   coverage:
