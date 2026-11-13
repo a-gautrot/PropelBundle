@@ -27,7 +27,7 @@ class SqlsrvAdapter extends MssqlAdapter
     public function initConnection(ConnectionInterface $con, array $settings): void
     {
         $con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $con->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
+        $con->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, value: false);
 
         parent::initConnection($con, $settings);
     }

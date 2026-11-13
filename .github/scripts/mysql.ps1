@@ -6,7 +6,7 @@ param(
     [string] $Action = 'Start',
 
     [ValidatePattern('\A[A-Za-z_][A-Za-z0-9_]*\z')]
-    [string] $Database = 'json_behavior',
+    [string] $Database = 'propel_bundle',
 
     [ValidatePattern('\A[0-9]+\.[0-9]+\.[0-9]+\z')]
     [string] $Version = '8.4.13',

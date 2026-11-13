@@ -41,7 +41,7 @@ jobs:
             runner: windows-11-arm
           - name: 'Windows x64'
             runner: windows-2025
-          - name: 'macOS arm64'
+          - name: 'macOS Apple Silicon'
             runner: macos-26
           - name: 'macOS Intel'
             runner: macos-26-intel
@@ -80,7 +80,7 @@ jobs:
             runner: ubuntu-26.04-arm
           - name: 'Windows x64'
             runner: windows-2025
-          - name: 'macOS arm64'
+          - name: 'macOS Apple Silicon'
             runner: macos-26
           - name: 'macOS Intel'
             runner: macos-26-intel
@@ -117,7 +117,7 @@ jobs:
             runner: ubuntu-26.04-arm
           - name: 'Windows x64'
             runner: windows-2025
-          - name: 'macOS arm64'
+          - name: 'macOS Apple Silicon'
             runner: macos-26
           - name: 'macOS Intel'
             runner: macos-26-intel
@@ -153,7 +153,7 @@ jobs:
             runner: ubuntu-26.04-arm
           - name: 'Windows x64'
             runner: windows-2025
-          - name: 'macOS arm64'
+          - name: 'macOS Apple Silicon'
             runner: macos-26
           - name: 'macOS Intel'
             runner: macos-26-intel
@@ -170,7 +170,6 @@ jobs:
       native-user: ci
       password: Bundle_test_2026!
 
-  # SQL Server: Linux x64 containers and native Windows x64 LocalDB.
   sqlsrv:
     name: 'SQL Server / PDO_SQLSRV (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
     strategy:
@@ -188,6 +187,8 @@ jobs:
             runner: ubuntu-26.04
           - name: 'Windows x64'
             runner: windows-2025
+          - name: 'macOS Intel'
+            runner: macos-26-intel
     uses: ./.github/workflows/test-database.yml
     with:
       database: sqlsrv
@@ -200,7 +201,6 @@ jobs:
       docker-user: sa
       password: Bundle_test_2026!
 
-  # FreeTDS is a Unix driver; the test server requires Linux x64.
   mssql:
     name: 'MSSQL / FreeTDS (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
     strategy:
@@ -216,6 +216,8 @@ jobs:
         platform:
           - name: 'Linux x64'
             runner: ubuntu-26.04
+          - name: 'macOS Intel'
+            runner: macos-26-intel
     uses: ./.github/workflows/test-database.yml
     with:
       database: mssql
@@ -227,7 +229,6 @@ jobs:
       docker-user: sa
       password: Bundle_test_2026!
 
-  # Oracle Free containers are available for Linux x64 and ARM64.
   oracle:
     name: 'Oracle (${{ matrix.platform.name }}, PHP ${{ matrix.php-version }})'
     strategy:
@@ -245,6 +246,10 @@ jobs:
             runner: ubuntu-26.04
           - name: 'Linux arm64'
             runner: ubuntu-26.04-arm
+          - name: 'Windows x64'
+            runner: windows-2025
+          - name: 'macOS Intel'
+            runner: macos-26-intel
     uses: ./.github/workflows/test-database.yml
     with:
       database: oracle
@@ -253,7 +258,9 @@ jobs:
       extensions: 'pdo_oci, pdo_sqlite'
       service: oracle
       docker-dsn: 'oci:dbname=//127.0.0.1:31521/FREEPDB1;charset=AL32UTF8'
+      windows-dsn: 'oci:dbname=//127.0.0.1:1521/FREEPDB1;charset=AL32UTF8'
       docker-user: propel_bundle
+      native-user: propel_bundle
       password: bundle_test
 
   coverage:
@@ -287,9 +294,14 @@ jobs:
         run: |
           composer global config --no-plugins allow-plugins.symfony/flex true
           composer global require --no-progress --no-scripts --no-plugins symfony/flex
+          export COMPOSER_IGNORE_PLATFORM_REQ=php+
           composer u -n --prefer-dist --no-progress --prefer-stable
 
       - run: composer validate --strict
+      - name: Check coverage extensions
+        run: |
+          php --ri xdebug
+          php --ri pdo_sqlite
       - run: composer test:coverage -- --display-deprecations --display-phpunit-deprecations
         env:
           XDEBUG_MODE: coverage
