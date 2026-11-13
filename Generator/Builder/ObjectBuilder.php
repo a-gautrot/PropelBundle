@@ -65,7 +65,7 @@ class ObjectBuilder extends BaseObjectBuilder
                     '$con',
                     $sequence,
                     '            ',
-                    $column->getPhpCastType()
+                    $column->getPhpType()
                 );
                 $script .= "\n" . '            $this->modifiedColumns['
                     . $this->getColumnConstant($column) . "] = true;\n        }\n";
