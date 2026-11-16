@@ -113,6 +113,8 @@
   "scripts": {
     "test": "@php Tests/run.php",
     "test:coverage": "@test --coverage-clover Tests/coverage.xml --log-junit Tests/junit.xml",
+    "test:models:generate:ps1": "powershell -NoProfile -ExecutionPolicy Bypass -File Tests/generate-models.ps1",
+    "test:models:generate:bash": "bash Tests/generate-models.sh",
     "phpstan": "@php vendor/bin/phpstan analyse -c phpstan.dist.neon --memory-limit=1G",
     "psalm": "@php -d memory_limit=1G vendor/bin/psalm.phar --config=psalm.dist.xml",
     "phpcs": "@php vendor/bin/phpcs --standard=phpcs.dist.xml",

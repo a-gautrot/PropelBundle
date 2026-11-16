@@ -1,0 +1,8 @@
+propel:
+  database:
+    connections:
+      bookstore:
+        adapter: sqlite
+        dsn: 'sqlite::memory:'
+        user: ~
+        password: ~
