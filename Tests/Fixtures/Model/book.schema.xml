@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<database namespace="Propel\Bundle\PropelBundle\Tests\Fixtures\Model" name="bookstore" defaultIdMethod="native">
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="../../../vendor/propel/propel/resources/xsd/database.xsd"
+          namespace="Propel\Bundle\PropelBundle\Tests\Fixtures\Model" name="bookstore" defaultIdMethod="native">
     <table name="book" description="Book Table">
-        <column name="id" required="true" primaryKey="true" autoIncrement="true" type="INTEGER" description="Book Id" />
-        <column name="title" type="VARCHAR" required="true" description="Book Title" primaryString="true" />
-        <column name="isbn" required="true" type="VARCHAR" size="24" phpName="ISBN" description="ISBN Number" primaryString="false" />
-        <column name="price" required="false" type="FLOAT" description="Price of the book." />
-        <column name="publisher_id" required="false" type="INTEGER" description="Foreign Key Publisher" />
-        <column name="author_id" required="false" type="INTEGER" description="Foreign Key Author" />
+        <column name="id" required="true" primaryKey="true" autoIncrement="true" type="INTEGER" description="Book ID"/>
+        <column name="title" required="true" description="Book's title" primaryString="true"/>
+        <column name="isbn" required="true" size="24" phpName="ISBN" description="Book's ISBN number"/>
+        <column name="price" type="FLOAT" description="Book's price"/>
+        <column name="publisher_id" type="INTEGER" description="FK: Publisher"/>
+        <column name="author_id" type="INTEGER" description="FK: Author"/>
+    </table>
+    <table name="user">
+        <column name="id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true" description="User ID"/>
+        <column name="username" size="255" primaryString="true" description="User name"/>
+        <column name="algorithm" size="50" description="Algorithm"/>
+        <column name="salt" size="255" description="Salted password"/>
+        <column name="password" size="255" description="User's password"/>
+        <column name="expires_at" type="TIMESTAMP" description="Account's expiration date"/>
+        <column name="roles" type="ARRAY" description="User's roles"/>
     </table>
 </database>
