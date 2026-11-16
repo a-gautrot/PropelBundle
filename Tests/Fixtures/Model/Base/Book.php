@@ -63,42 +63,42 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * The value for the id field.
-     * Book Id
+     * Book ID
      * @var        int
      */
     protected $id;
 
     /**
      * The value for the title field.
-     * Book Title
+     * Book's title
      * @var        string
      */
     protected $title;
 
     /**
      * The value for the isbn field.
-     * ISBN Number
+     * Book's ISBN number
      * @var        string
      */
     protected $isbn;
 
     /**
      * The value for the price field.
-     * Price of the book.
+     * Book's price
      * @var        double|null
      */
     protected $price;
 
     /**
      * The value for the publisher_id field.
-     * Foreign Key Publisher
+     * FK: Publisher
      * @var        int|null
      */
     protected $publisher_id;
 
     /**
      * The value for the author_id field.
-     * Foreign Key Author
+     * FK: Author
      * @var        int|null
      */
     protected $author_id;
@@ -339,7 +339,7 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * Get the [id] column value.
-     * Book Id
+     * Book ID
      * @return int
      */
     public function getId()
@@ -349,7 +349,7 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * Get the [title] column value.
-     * Book Title
+     * Book's title
      * @return string
      */
     public function getTitle()
@@ -359,7 +359,7 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * Get the [isbn] column value.
-     * ISBN Number
+     * Book's ISBN number
      * @return string
      */
     public function getISBN()
@@ -369,7 +369,7 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * Get the [price] column value.
-     * Price of the book.
+     * Book's price
      * @return double|null
      */
     public function getPrice()
@@ -379,7 +379,7 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * Get the [publisher_id] column value.
-     * Foreign Key Publisher
+     * FK: Publisher
      * @return int|null
      */
     public function getPublisherId()
@@ -389,7 +389,7 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * Get the [author_id] column value.
-     * Foreign Key Author
+     * FK: Author
      * @return int|null
      */
     public function getAuthorId()
@@ -399,7 +399,7 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * Set the value of [id] column.
-     * Book Id
+     * Book ID
      * @param int $v New value
      * @return $this The current object (for fluent API support)
      */
@@ -419,7 +419,7 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * Set the value of [title] column.
-     * Book Title
+     * Book's title
      * @param string $v New value
      * @return $this The current object (for fluent API support)
      */
@@ -439,7 +439,7 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * Set the value of [isbn] column.
-     * ISBN Number
+     * Book's ISBN number
      * @param string $v New value
      * @return $this The current object (for fluent API support)
      */
@@ -459,7 +459,7 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * Set the value of [price] column.
-     * Price of the book.
+     * Book's price
      * @param double|null $v New value
      * @return $this The current object (for fluent API support)
      */
@@ -479,7 +479,7 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * Set the value of [publisher_id] column.
-     * Foreign Key Publisher
+     * FK: Publisher
      * @param int|null $v New value
      * @return $this The current object (for fluent API support)
      */
@@ -499,7 +499,7 @@ abstract class Book implements ActiveRecordInterface
 
     /**
      * Set the value of [author_id] column.
-     * Foreign Key Author
+     * FK: Author
      * @param int|null $v New value
      * @return $this The current object (for fluent API support)
      */
