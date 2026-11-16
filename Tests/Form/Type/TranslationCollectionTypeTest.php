@@ -20,13 +20,13 @@ use Symfony\Component\Form\Exception\UnexpectedTypeException;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormExtensionInterface;
-use Symfony\Component\Form\Test\TypeTestCase;
+use Symfony\Component\Form\Test\FormIntegrationTestCase;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
 /**
  * # TranslationCollectionTypeTest
  */
-class TranslationCollectionTypeTest extends TypeTestCase
+class TranslationCollectionTypeTest extends FormIntegrationTestCase
 {
     /**
      *
