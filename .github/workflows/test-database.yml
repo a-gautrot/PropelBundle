@@ -86,16 +86,6 @@ jobs:
           sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc
           odbcinst -q -d -n 'ODBC Driver 18 for SQL Server'
 
-      - name: Install Microsoft ODBC driver on macOS
-        if: runner.os == 'macOS' && inputs.database == 'sqlsrv'
-        run: |
-          brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
-          if brew help trust >/dev/null 2>&1; then
-            brew trust microsoft/mssql-release
-          fi
-          HOMEBREW_ACCEPT_EULA=Y brew install msodbcsql18
-          odbcinst -q -d -n 'ODBC Driver 18 for SQL Server'
-
       - name: Composer get cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
@@ -128,18 +118,9 @@ jobs:
 
       - run: composer validate --strict
 
-      - name: Start Docker on macOS Intel
-        if: runner.os == 'macOS' && inputs.service == 'sqlsrv'
-        run: |
-          brew install colima docker docker-compose
-          mkdir -p "$HOME/.docker/cli-plugins"
-          ln -sf "$(brew --prefix)/opt/docker-compose/bin/docker-compose" "$HOME/.docker/cli-plugins/docker-compose"
-          colima start --vm-type vz --cpu 3 --memory 6 --disk 20
-          docker info
-
       - name: Start database with Docker
         id: database_docker
-        if: inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv')
+        if: inputs.service != '' && runner.os == 'Linux'
         run: |
           docker compose -f Tests/compose.yaml up -d --wait --wait-timeout 600 "$DATABASE_SERVICE"
           case "$DATABASE_SERVICE" in
@@ -162,19 +143,11 @@ jobs:
           DATABASE_DSN: ${{ inputs.docker-dsn }}
 
       - name: Create SQL Server test database
-        if: runner.os != 'Windows' && inputs.service == 'sqlsrv'
+        if: runner.os == 'Linux' && inputs.service == 'sqlsrv'
         run: >-
           docker compose -f Tests/compose.yaml exec -T sqlsrv
           /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Bundle_test_2026!' -C -b
           -Q 'CREATE DATABASE propel_bundle'
-
-      - name: Start native MySQL
-        if: runner.os == 'macOS' && inputs.database == 'mysql'
-        uses: ankane/setup-mysql@4aa1b08412d4c8bf537fea5bc412e4e831d839d7 # v1
-        with:
-          mysql-version: '8.4'
-          database: propel_bundle
-          user: ci
 
       - name: Start MySQL on Windows
         id: mysql_windows
@@ -183,7 +156,7 @@ jobs:
         run: ./.github/scripts/mysql.ps1 -Database propel_bundle
 
       - name: Start native MariaDB
-        if: runner.os != 'Linux' && inputs.database == 'mariadb'
+        if: runner.os == 'Windows' && inputs.database == 'mariadb'
         uses: ankane/setup-mariadb@e34d4859081a8192918ea2302b7c9a71475a0d73 # v1
         with:
           mariadb-version: '11.4'
@@ -191,7 +164,7 @@ jobs:
           user: ci
 
       - name: Start native PostgreSQL
-        if: runner.os != 'Linux' && inputs.database == 'postgres'
+        if: runner.os == 'Windows' && inputs.database == 'postgres'
         uses: ankane/setup-postgres@b1a598d92f86cb2ed364411898d150d4eac6d5ca # v1
         with:
           postgres-version: '17'
@@ -224,9 +197,9 @@ jobs:
           fi
           composer test -- --display-deprecations --display-phpunit-deprecations
         env:
-          TEST_DSN: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') && steps.database_docker.outputs.dsn || runner.os == 'Windows' && inputs.windows-dsn || inputs.native-dsn }}
-          TEST_USER: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') && inputs.docker-user || inputs.native-user }}
-          TEST_PASSWORD: ${{ (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') && inputs.password || runner.os == 'Windows' && inputs.database == 'mysql' && steps.mysql_windows.outputs.password || '' }}
+          TEST_DSN: ${{ runner.os == 'Linux' && steps.database_docker.outputs.dsn || runner.os == 'Windows' && inputs.windows-dsn || inputs.native-dsn }}
+          TEST_USER: ${{ runner.os == 'Linux' && inputs.docker-user || inputs.native-user }}
+          TEST_PASSWORD: ${{ runner.os == 'Linux' && inputs.password || runner.os == 'Windows' && inputs.database == 'mysql' && steps.mysql_windows.outputs.password || '' }}
 
       - name: Stop MySQL on Windows
         if: ${{ always() && runner.os == 'Windows' && inputs.database == 'mysql' }}
@@ -234,18 +207,14 @@ jobs:
         run: ./.github/scripts/mysql.ps1 -Action Stop
 
       - name: Database logs on failure
-        if: ${{ failure() && inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') }}
+        if: ${{ failure() && inputs.service != '' && runner.os == 'Linux' }}
         run: docker compose -f Tests/compose.yaml logs "$DATABASE_SERVICE"
         env:
           DATABASE_SERVICE: ${{ inputs.service }}
 
       - name: Stop test databases
-        if: ${{ always() && inputs.service != '' && (runner.os == 'Linux' || runner.os == 'macOS' && inputs.service == 'sqlsrv') }}
+        if: ${{ always() && inputs.service != '' && runner.os == 'Linux' }}
         run: docker compose -f Tests/compose.yaml down --volumes
-
-      - name: Stop Docker on macOS Intel
-        if: ${{ always() && runner.os == 'macOS' && inputs.service == 'sqlsrv' }}
-        run: colima stop
 
       - name: Stop native SQL Server LocalDB
         if: ${{ always() && runner.os == 'Windows' && inputs.database == 'sqlsrv' }}
