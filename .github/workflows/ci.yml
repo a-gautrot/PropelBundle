@@ -38,10 +38,6 @@ jobs:
             runner: windows-11-arm
           - name: 'Windows x64'
             runner: windows-2025
-          - name: 'macOS Apple Silicon'
-            runner: macos-26
-          - name: 'macOS Intel'
-            runner: macos-26-intel
         include:
           - php-version: '8.4'
             platform:
@@ -74,10 +70,6 @@ jobs:
             runner: ubuntu-26.04-arm
           - name: 'Windows x64'
             runner: windows-2025
-          - name: 'macOS Apple Silicon'
-            runner: macos-26
-          - name: 'macOS Intel'
-            runner: macos-26-intel
     uses: ./.github/workflows/test-database.yml
     with:
       database: mysql
@@ -108,10 +100,6 @@ jobs:
             runner: ubuntu-26.04-arm
           - name: 'Windows x64'
             runner: windows-2025
-          - name: 'macOS Apple Silicon'
-            runner: macos-26
-          - name: 'macOS Intel'
-            runner: macos-26-intel
     uses: ./.github/workflows/test-database.yml
     with:
       database: mariadb
@@ -141,10 +129,6 @@ jobs:
             runner: ubuntu-26.04-arm
           - name: 'Windows x64'
             runner: windows-2025
-          - name: 'macOS Apple Silicon'
-            runner: macos-26
-          - name: 'macOS Intel'
-            runner: macos-26-intel
     uses: ./.github/workflows/test-database.yml
     with:
       database: postgres
@@ -172,8 +156,6 @@ jobs:
             runner: ubuntu-26.04
           - name: 'Windows x64'
             runner: windows-2025
-          - name: 'macOS Intel'
-            runner: macos-26-intel
     uses: ./.github/workflows/test-database.yml
     with:
       database: sqlsrv
@@ -198,8 +180,6 @@ jobs:
         platform:
           - name: 'Linux x64'
             runner: ubuntu-26.04
-          - name: 'macOS Intel'
-            runner: macos-26-intel
     uses: ./.github/workflows/test-database.yml
     with:
       database: mssql
