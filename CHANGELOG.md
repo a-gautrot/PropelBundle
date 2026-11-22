@@ -4,7 +4,7 @@
 
 <!-- TOC -->
 
-* [2026-11-13](#release-2026-11-13)
+* [2026-11-22](#release-2026-11-22)
 * [2026-10-31](#release-2026-10-31)
 * [2026-09-23](#release-2026-09-23)
 * [2026-09-22](#release-2026-09-22)
@@ -15,7 +15,7 @@
 
 ---
 
-## Release 2026-11-13
+## Release 2026-11-22
 
 * Added support for Microsoft SQL Server and Oracle
 * Added support for PHP 8.6
